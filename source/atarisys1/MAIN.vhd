@@ -46,6 +46,7 @@ entity MAIN is
 		O_CRBUSn    : out std_logic;
 
 		O_VBKACKn   : out std_logic;
+		O_SNDINTn   : out std_logic;
 		O_VBUSn     : out std_logic;
 		O_MISCn     : out std_logic;
 		O_PFSPCn    : out std_logic;
@@ -53,7 +54,6 @@ entity MAIN is
 		O_HSCRLDn   : out std_logic;
 
 		O_SNDNMIn   : out std_logic;
-		O_SNDINTn   : out std_logic;
 		O_SBD       : out std_logic_vector( 7 downto 0);
 		I_SBD       : in  std_logic_vector( 7 downto 0);
 
@@ -222,7 +222,6 @@ begin
 	O_VSCRLDn    <= sl_VSCRLDn;
 	O_HSCRLDn    <= sl_HSCRLDn;
 	O_SNDNMIn    <= sl_SNDNMIn;
-	O_SNDINTn    <= sl_SNDINTn;
 	O_ADC_SEL    <= sl_RAJS;
 	O_ADC_CLK    <= sl_4H;
 	O_ADC_ADDR   <= slv_cpu_ad(3 downto 1);
@@ -232,6 +231,7 @@ begin
 	O_VRAMWR     <= sl_VRAMWR;
 	O_CRAMn      <= sl_CRAMn;
 	O_CRBUSn     <= sl_CRBUSn;
+	O_SNDINTn    <= sl_SNDINTn;
 
 	slv_VBUSD    <= I_VBUSD;
 	slv_ADC_data <= I_ADC_DATA;
@@ -242,6 +242,7 @@ begin
 	sl_INT3n     <= I_INT3n;
 	sl_WAITn     <= I_WAITn;
 	sl_VBLANKn   <= I_VBLANKn;
+	sl_VBKINTn   <= I_VBKINTn;
 	slv_PB       <= I_PB;
 	sl_RD68Kn    <= I_RD68Kn;
 	sl_WR68Kn    <= I_WR68Kn;
@@ -251,7 +252,6 @@ begin
 	slv_LETA_DIR <= I_LETA_DIR;
 	sl_LETA_TST  <= I_LETA_TST;
 	sl_LETA_RES  <= I_LETA_RES;
-	sl_VBKINTn   <= I_VBKINTn;
 	sl_68KBUF    <= not sl_SNDNMIn;
 	sl_SNDBUFn   <= not sl_SNDINTn;
 	sl_VRAC2     <= I_VRAC2;
@@ -284,11 +284,11 @@ begin
 
 	-- 17L interrupt priority
 	slv_IPL <=
-		"001" when sl_INT1n   = '0' else
-		"010" when sl_AJSINTn = '0' else
-		"011" when sl_INT3n   = '0' else
-		"100" when sl_VBKINTn = '0' else
-		"110" when sl_SNDINTn = '0' else
+		"110" when sl_INT1n   = '0' else -- 1
+		"101" when sl_AJSINTn = '0' else -- 2
+		"100" when sl_INT3n   = '0' else -- 3
+		"011" when sl_VBKINTn = '0' else -- 4
+		"001" when sl_SNDINTn = '0' else -- 6
 		"111";
 
 	-- FIXME pick one
@@ -547,11 +547,11 @@ begin
 	p_16Hb : process(I_MCKR, sl_SNDRSTn, sl_SNDRDn, sl_WR68Kn)
 	begin
 		if sl_SNDRDn = '0' or sl_SNDRSTn = '0' then
-			sl_SNDINTn <= '0';
+			sl_SNDINTn <= '1';
 		elsif rising_edge(sl_WR68Kn) then
 --			sl_WR68K_last <= sl_WR68Kn;
 --			if sl_WR68Kn_last = '0' and sl_WR68Kn = '1' then
-				sl_SNDINTn <= '1';
+				sl_SNDINTn <= '0';
 --			end if;
 		end if;
 	end process;

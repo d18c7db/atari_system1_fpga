@@ -46,12 +46,17 @@ port(
 	O_INT3n      : out std_logic;
 	O_WAITn      : out std_logic;
 	I_MA18n      : in  std_logic;
+
+	-- sound ROMs
+	I_SROMn      : in  std_logic_vector( 2 downto 0);
+	I_SBA        : in  std_logic_vector(13 downto 0);
+	O_SMD        : out std_logic_vector( 7 downto 0);
+
+	-- main ROMs
+	I_ROMn       : in  std_logic_vector( 3 downto 0);
 	I_MA         : in  std_logic_vector(15 downto 1);
 	O_MD         : out std_logic_vector(15 downto 0);
 
-	I_ROMn       : in  std_logic_vector( 3 downto 0);
-	I_SROMn      : in  std_logic_vector( 2 downto 0);
-	I_SBA        : in  std_logic_vector(13 downto 0);
 	I_MGRA       : in  std_logic_vector(19 downto 1);
 	I_MATCHn     : in  std_logic;
 	I_MGHF       : in  std_logic;
@@ -188,6 +193,8 @@ begin
 	slv_MA      <= I_MA;
 	O_MD        <= slv_MD;
 
+	O_SMD       <= slv_SMD;
+
 	slv_ROMn    <= I_ROMn;
 	slv_SROMn   <= I_SROMn;
 
@@ -197,7 +204,7 @@ begin
 	O_INT3n     <= sl_INT3n;
 	O_WAITn     <= sl_WAITn;
 
-	O_SNDL <= (others=>'0'); -- FIXME
+	O_SNDL <= (others=>'0'); -- FIXME audio
 	O_SNDR <= (others=>'0');
 
 	-------------
@@ -240,16 +247,16 @@ begin
 	-- FIXME implement 14D/E 6522
 	-- FIXME implement 14E   TMS5220
 
---	slv_SMD <=
---		slv_ROM_13D when sl_SNDBW_Rn = '0' and slv_SROMn(0) = '0' else
---		slv_ROM_14D when sl_SNDBW_Rn = '0' and slv_SROMn(1) = '0' else
---		slv_ROM_16D when sl_SNDBW_Rn = '0' and slv_SROMn(2) = '0' else
---		(others=>'Z');
---
---	-- AUDIO CPU ROMs
---	ROM_13D : entity work.ROM_153 port map ( CLK=>I_MCKR, DATA=>slv_ROM_13D, ADDR=>slv_SBA(13 downto 0) );
---	ROM_14D : entity work.ROM_154 port map ( CLK=>I_MCKR, DATA=>slv_ROM_14D, ADDR=>slv_SBA(13 downto 0) );
---	ROM_16D : entity work.ROM_155 port map ( CLK=>I_MCKR, DATA=>slv_ROM_16D, ADDR=>slv_SBA(13 downto 0) );
+	slv_SMD <=
+		slv_ROM_13D when sl_SNDBW_Rn = '0' and slv_SROMn(0) = '0' else
+		slv_ROM_14D when sl_SNDBW_Rn = '0' and slv_SROMn(1) = '0' else
+		slv_ROM_16D when sl_SNDBW_Rn = '0' and slv_SROMn(2) = '0' else
+		(others=>'Z');
+
+	-- AUDIO CPU ROMs
+	ROM_13D : entity work.ROM_153 port map ( CLK=>I_MCKR, DATA=>slv_ROM_13D, ADDR=>slv_SBA(13 downto 0) );
+	ROM_14D : entity work.ROM_154 port map ( CLK=>I_MCKR, DATA=>slv_ROM_14D, ADDR=>slv_SBA(13 downto 0) );
+	ROM_16D : entity work.ROM_155 port map ( CLK=>I_MCKR, DATA=>slv_ROM_16D, ADDR=>slv_SBA(13 downto 0) );
 
 	-- PROMs
 	ROM_4A  : entity work.ROM_151 port map ( CLK=>I_MCKR, DATA=>slv_ROM_4A, ADDR(8)=>sl_BMO_PFn, ADDR(7 downto 0)=>slv_MGRA(19 downto 12) );

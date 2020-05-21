@@ -51,7 +51,9 @@ entity VIDEO is
 		O_MATCHn   : out std_logic;
 		O_VBKINTn  : out std_logic;
 		O_VRAC2    : out std_logic;
-		O_4H    : out std_logic;
+		O_1H       : out std_logic;
+		O_2H       : out std_logic;
+		O_4H       : out std_logic;
 		O_MGRA     : out std_logic_vector(19 downto 1);
 
 		O_I        : out std_logic_vector( 3 downto 0);
@@ -60,7 +62,8 @@ entity VIDEO is
 		O_B        : out std_logic_vector( 3 downto 0);
 		O_HSYNC    : out std_logic;
 		O_VSYNC    : out std_logic;
-		O_CSYNC    : out std_logic
+		O_CSYNC    : out std_logic;
+		O_VBLANKn  : out std_logic
 	);
 end VIDEO;
 
@@ -88,6 +91,7 @@ architecture RTL of VIDEO is
 		sl_MATCHn,
 		sl_MGHF,
 		sl_MISCn,
+		sl_MISCn_last,
 		sl_MM19,
 		sl_MM18,
 		sl_MM8,
@@ -365,6 +369,7 @@ begin
 	O_VSYNC    <= sl_VSYNCn;
 	O_HSYNC    <= sl_HSYNCn;
 	O_CSYNC    <= sl_COMPSYNCn;
+	O_VBLANKn  <= sl_VBLANKn;
 
 	O_TBTEST   <= sl_TBTEST;
 	O_TBRESn   <= sl_TBRESn;
@@ -376,7 +381,9 @@ begin
 	O_VBKINTn  <= sl_VBKINTn;
 	O_SNDRESn  <= sl_SNDRSTn;
 	O_VRAC2    <= slv_VRAC(2);
-	O_4H       <= sl_4H;
+	O_1H       <= slv_H(0);
+	O_2H       <= slv_H(1);
+	O_4H       <= slv_H(2);
 	O_CPU_D    <= slv_MDO;
 
 	slv_MDI    <= I_CPU_D;
@@ -524,8 +531,10 @@ begin
 	slv_VBD <= slv_MDI when sl_VBUSn = '0' and sl_BR_Wn = '0' else slv_7F_7H;
 
 	-- 9C latch
-	p_9C : process(sl_MISCn,sl_SYSRESn)
+	p_9C : process
 	begin
+		wait until rising_edge(I_MCKR);
+		sl_MISCn_last <= sl_MISCn;
 		if sl_SYSRESn = '0' then
 			sl_SNDRSTn  <= '0';
 			sl_TBTEST   <= '0';
@@ -535,7 +544,7 @@ begin
 			sl_PP19     <= '0';
 			sl_TBRESn   <= '0';
 			sl_ALBNK    <= '0';
-		elsif rising_edge(sl_MISCn) then
+		elsif (sl_MISCn_last='1' and sl_MISCn='0' ) then
 			sl_SNDRSTn  <= slv_VBD(7); -- Sound CPU reset
 			sl_TBTEST   <= slv_VBD(6); -- Trackball test
 			slv_MPBS(2) <= slv_VBD(5); -- MO RAM bank select

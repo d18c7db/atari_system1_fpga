@@ -93,16 +93,18 @@ architecture RTL of FPGA_ATARISYS1 is
 		sl_4H,
 		sl_32V,
 		sl_W_Rn,
+		sl_SNDBW_Rn,
 		sl_LDSn,
 		sl_UDSn,
 		sl_BLDS,
+		sl_B02,
 		sl_MEXTn,
 		sl_VCPU,
 		sl_WR68Kn,
 		sl_RD68Kn,
 		sl_SNDNMIn,
-		sl_SNDINTn,
 		sl_SNDRESn,
+		sl_SNDINTn,
 		sl_MO_PFn,
 		sl_MATCHn,
 		sl_MGHF,
@@ -136,6 +138,7 @@ architecture RTL of FPGA_ATARISYS1 is
 								: std_logic_vector( 6 downto 0) := (others=>'0');
 	signal
 		slv_PFSR,
+		slv_SMD,
 		slv_SBDI,
 		slv_SBDO
 								: std_logic_vector( 7 downto 0) := (others=>'0');
@@ -246,7 +249,7 @@ begin
 		O_ADC_CLK   => open,
 		O_ADC_ADDR  => open,
 		I_ADC_DATA  => (others=>'1'),
-		I_ADC_EOC   => '1', -- active low
+		I_ADC_EOC   => '0', -- active high
 
 		-- trackball interface
 		I_LETA_CLK  => (others=>'1'),
@@ -282,7 +285,7 @@ begin
 		I_PFSPCn    => sl_PFSPCn,
 		I_VSCRLDn   => sl_VSCRLDn,
 		I_HSCRLDn   => sl_HSCRLDn,
-		I_VBKACKn   => '0',
+		I_VBKACKn   => sl_VBKACKn,
 		I_MOSR      => slv_MOSR,
 		I_PFSR      => slv_PFSR,
 		I_CPU_A     => slv_MA(13 downto 1),
@@ -297,6 +300,8 @@ begin
 		O_VBKINTn   => sl_VBKINTn,
 		O_MGRA      => slv_MGRA,
 		O_VRAC2     => sl_VRAC2,
+		O_1H        => sl_1H,
+		O_2H        => sl_2H,
 		O_4H        => sl_4H,
 		O_TBTEST    => sl_TBTEST,
 		O_TBRESn    => sl_TBRESn,
@@ -307,7 +312,8 @@ begin
 		O_B         => O_VIDEO_B,
 		O_HSYNC     => O_HSYNC,
 		O_VSYNC     => O_VSYNC,
-		O_CSYNC     => O_CSYNC
+		O_CSYNC     => O_CSYNC,
+		O_VBLANKn   => sl_VBLANKn
 	);
 
 	u_cart : entity work.INDY_CART
@@ -322,21 +328,24 @@ begin
 		O_INT1n     => sl_INT1n,
 		O_INT3n     => sl_INT3n,
 		O_WAITn     => sl_WAITn,
+
 		I_ROMn      => slv_ROMn,
 		I_MA18n     => sl_MA18n,
 		I_MA        => slv_MA,
 		O_MD        => slv_MEXTD,
 
 		I_SROMn     => slv_SROMn,
+		O_SMD       => slv_SMD,
 		I_SBA       => slv_SBA,
+
 		I_MGRA      => slv_MGRA,
 		I_MATCHn    => sl_MATCHn,
 		I_MGHF      => sl_MGHF,
 		I_GLDn      => sl_GLDn,
 		I_MO_PFn    => sl_MO_PFn,
 		I_SNDRSTn   => sl_SNDRESn,
-		I_SNDBW_Rn  => sl_W_Rn,
-		I_B02       => '0', -- From Sound Section
+		I_SNDBW_Rn  => sl_SNDBW_Rn,
+		I_B02       => sl_B02,
 
 		-- video
 		O_MOSR      => slv_MOSR,
@@ -347,35 +356,33 @@ begin
 		O_SNDR      => open
 	);
 
---	u_audio : entity work.AUDIO
---	port map (
---		I_MCKR      => I_CLK_7M,
---
---		I_1H        => sl_1H,
---		I_2H        => sl_2H,
---		I_32V       => sl_32V,
---		I_VBLANKn   => sl_VBLANKn,
---
---		I_SNDNMIn   => sl_SNDNMIn,
---		I_SNDINTn   => sl_SNDINTn,
---		I_SNDRESn   => sl_SNDRESn,
---
---		I_SELFTESTn => I_SYS(4),
---		I_COIN      => I_SYS(3 downto 0),	-- 1L, 2, 3, 4R
---
---		I_SBD       => slv_SBDI,
---		O_SBD       => slv_SBDO,
---		O_WR68Kn    => sl_WR68Kn,
---		O_RD68Kn    => sl_RD68Kn,
---
---		O_CCTR1n    => open,	-- coin counter open collector active low
---		O_CCTR2n    => open,	-- coin counter open collector active low
---		O_AUDIO_L   => O_AUDIO_L,
---		O_AUDIO_R   => O_AUDIO_R,
---
---		-- external audio ROMs
---		O_AP_EN     => O_AP_EN,
---		O_AP_AD     => O_AP_ADDR,
---		I_AP_DI     => I_AP_DATA
---	);
+	u_audio : entity work.AUDIO
+	port map (
+		I_MCKR      => I_CLK_7M,
+		I_1H        => sl_1H,
+		I_2H        => sl_2H,
+		O_B02       => sl_B02,
+		I_SNDNMIn   => sl_SNDNMIn,
+		I_SNDRSTn   => sl_SNDRESn,
+		I_SNDINTn   => sl_SNDINTn,
+		O_SNDBW_Rn  => sl_SNDBW_Rn,
+
+		I_SELFTESTn => '1', -- FIXME connect inputs
+		I_COIN_AUX  => '1', -- FIXME connect inputs
+		I_COIN_L    => '1', -- FIXME connect inputs
+		I_COIN_R    => '1', -- FIXME connect inputs
+
+		I_SMD       => slv_SMD,
+		I_SBD       => slv_SBDI,
+		O_SBD       => slv_SBDO,
+		O_SBA       => slv_SBA,
+		O_SROMn     => slv_SROMn,
+		O_WR68Kn    => sl_WR68Kn,
+		O_RD68Kn    => sl_RD68Kn,
+
+		O_LED       => open,	-- LED indicators
+		O_CCTRn     => open,	-- coin counters open collector active low
+		O_AUDIO_L   => O_AUDIO_L,
+		O_AUDIO_R   => O_AUDIO_R
+	);
 end RTL;

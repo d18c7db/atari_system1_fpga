@@ -111,7 +111,7 @@ architecture RTL of ATARISYS1_TOP is
 		s_blank,
 		clk_7M,    gclk_7M,
 		clk_14M,   gclk_14M,
-		clk_28M,   gclk_28M,
+		clk_28M,   gclk_28M, clk_28M_inv,
 		clk_dvi_p, gclk_dvi_p,
 		clk_dvi_n, gclk_dvi_n,
 
@@ -181,7 +181,8 @@ begin
 
 	-- this isn't needed, just used in the testbench to simulate a 10ns access delay
 	ODDR2_inst : ODDR2 generic map(DDR_ALIGNMENT=>"NONE", INIT=>'0', SRTYPE=>"SYNC")
-		port map (Q=>MEM_CK, C0=>clk_28M, C1=>not clk_28M, CE=>'1', D0=>'1', D1=>'0', R=>'0', S=>'0');
+		port map (Q=>MEM_CK, C0=>clk_28M, C1=>clk_28M_inv, CE=>'1', D0=>'1', D1=>'0', R=>'0', S=>'0');
+	clk_28M_inv <= not clk_28M;
 
 	u_bs : entity work.bootstrap
 	generic map (
