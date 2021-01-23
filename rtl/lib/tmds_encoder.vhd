@@ -17,15 +17,15 @@ entity TMDS_encoder is
 		data    : in  std_logic_vector (7 downto 0);
 		c       : in  std_logic_vector (1 downto 0);
 		blank   : in  std_logic;
-		encoded : out std_logic_vector (9 downto 0)
+		encoded : out std_logic_vector (9 downto 0) := (others => '0')
 	);
 end TMDS_encoder;
 
 architecture RTL of TMDS_encoder is
-	signal xored  : std_logic_vector (8 downto 0);
-	signal xnored : std_logic_vector (8 downto 0);
-	signal ones   : std_logic_vector (3 downto 0);
+	signal xored  : std_logic_vector (8 downto 0) := (others => '0');
+	signal xnored : std_logic_vector (8 downto 0) := (others => '0');
 
+	signal ones                : std_logic_vector (3 downto 0) := (others => '0');
 	signal data_word           : std_logic_vector (8 downto 0) := (others => '0');
 	signal data_word_inv       : std_logic_vector (8 downto 0) := (others => '0');
 	signal data_word_disparity : std_logic_vector (3 downto 0) := (others => '0');
