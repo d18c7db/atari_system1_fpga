@@ -69,7 +69,7 @@ architecture RTL of DEBUG is
 begin
 	O_ENA <= ena_out;
 
-	ser: entity async_transmitter
+	ser: entity work.async_transmitter
 	port map (
 		clk					=> I_CK,
 		TxD					=> O_TX,
@@ -79,7 +79,7 @@ begin
 		TxD_busy				=> TxD_busy				-- busy when set
 	);
 
-	des: entity async_receiver
+	des: entity work.async_receiver
 	port map (
 		clk					=> I_CK,
 		RxD					=> I_RX,
