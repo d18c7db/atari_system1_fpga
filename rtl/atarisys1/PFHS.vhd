@@ -136,5 +136,4 @@ begin
 		end if;
 	end process;
 	sl_H03 <= slv_hcnt(1) and slv_hcnt(0);
-
 end RTL;
