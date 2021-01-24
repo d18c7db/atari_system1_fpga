@@ -50,6 +50,30 @@ entity AUDIO is
 end AUDIO;
 
 architecture RTL of AUDIO is
+	component jt51
+	port (
+		rst		:	 in std_logic;
+		clk		:	 in std_logic;
+		cen		:	 in std_logic;
+		cen_p1	:	 in std_logic;
+		cs_n		:	 in std_logic;
+		wr_n		:	 in std_logic;
+		a0			:	 in std_logic;
+		din		:	 in std_logic_vector(7 downto 0);
+		dout		:	 out std_logic_vector(7 downto 0);
+		ct1		:	 out std_logic;
+		ct2		:	 out std_logic;
+		irq_n		:	 out std_logic;
+		sample	:	 out std_logic;
+		left		:	 out std_logic_vector(15 downto 0);
+		right		:	 out std_logic_vector(15 downto 0);
+		xleft		:	 out signed(15 downto 0);
+		xright	:	 out signed(15 downto 0);
+		dacleft	:	 out std_logic_vector(15 downto 0);
+		dacright	:	 out std_logic_vector(15 downto 0)
+	);
+	end component;
+
 	signal
 		sl_POKEYn,
 		sl_14L_CSn,
@@ -128,6 +152,31 @@ architecture RTL of AUDIO is
 		slv_SBA
 								: std_logic_vector(23 downto 0) := (others => '0');
 begin
+
+--	-- FIXME this mixing isn't ideal, sound volume ends up too low
+--	-- Pokey sounds OK, but YM seems a bit distorted, try and do better
+--	p_volmux : process
+--	begin
+--		wait until rising_edge(I_MCKR);
+--
+--		-- volume control applied to signed outputs
+--		s_audio_TMS <= signed('0' & slv_SM_vol) * signed(s_TMS_out);
+--		s_audio_POK <= signed('0' & slv_PM_vol) * signed(s_POK_out);
+--		s_audio_YML <= signed('0' & slv_YM_vol) * signed(s_YML_out(15 downto 8));
+--		s_audio_YMR <= signed('0' & slv_YM_vol) * signed(s_YMR_out(15 downto 8));
+--
+--		-- sign extend to 14 bits and add all outputs together as signed integers
+--		s_chan_l <=  signed(s_audio_YML(11) & s_audio_YML(11) & s_audio_YML)
+--					+ ( signed(s_audio_POK(11) & s_audio_POK(11) & s_audio_POK)
+--					+   signed(s_audio_TMS(11) & s_audio_TMS(11) & s_audio_TMS) );
+--		s_chan_r <=  signed(s_audio_YMR(11) & s_audio_YMR(11) & s_audio_YMR)
+--					+ ( signed(s_audio_POK(11) & s_audio_POK(11) & s_audio_POK)
+--					+   signed(s_audio_TMS(11) & s_audio_TMS(11) & s_audio_TMS) );
+--
+--		-- convert output back to unsigned for DAC usage
+--		slv_l <= std_logic_vector(not s_chan_l(13) & s_chan_l(12 downto 6));
+--		slv_r <= std_logic_vector(not s_chan_r(13) & s_chan_r(12 downto 6));
+--	end process;
 		sl_1H        <= I_1H;
 		sl_2H        <= I_2H;
 		sl_SNDNMIn   <= I_SNDNMIn;
@@ -339,29 +388,4 @@ begin
 			end if;
 		end if;
 	end process;
-
---	-- FIXME this mixing isn't ideal, sound volume ends up too low
---	-- Pokey sounds OK, but YM seems a bit distorted, try and do better
---	p_volmux : process
---	begin
---		wait until rising_edge(I_MCKR);
---
---		-- volume control applied to signed outputs
---		s_audio_TMS <= signed('0' & slv_SM_vol) * signed(s_TMS_out);
---		s_audio_POK <= signed('0' & slv_PM_vol) * signed(s_POK_out);
---		s_audio_YML <= signed('0' & slv_YM_vol) * signed(s_YML_out(15 downto 8));
---		s_audio_YMR <= signed('0' & slv_YM_vol) * signed(s_YMR_out(15 downto 8));
---
---		-- sign extend to 14 bits and add all outputs together as signed integers
---		s_chan_l <=  signed(s_audio_YML(11) & s_audio_YML(11) & s_audio_YML)
---					+ ( signed(s_audio_POK(11) & s_audio_POK(11) & s_audio_POK)
---					+   signed(s_audio_TMS(11) & s_audio_TMS(11) & s_audio_TMS) );
---		s_chan_r <=  signed(s_audio_YMR(11) & s_audio_YMR(11) & s_audio_YMR)
---					+ ( signed(s_audio_POK(11) & s_audio_POK(11) & s_audio_POK)
---					+   signed(s_audio_TMS(11) & s_audio_TMS(11) & s_audio_TMS) );
---
---		-- convert output back to unsigned for DAC usage
---		slv_l <= std_logic_vector(not s_chan_l(13) & s_chan_l(12 downto 6));
---		slv_r <= std_logic_vector(not s_chan_r(13) & s_chan_r(12 downto 6));
---	end process;
 end RTL;

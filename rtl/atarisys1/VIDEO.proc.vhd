@@ -36,8 +36,8 @@ entity VIDEO is
 		I_VBKACKn  : in  std_logic;
 		I_MOSR     : in  std_logic_vector( 6 downto 0);
 		I_PFSR     : in  std_logic_vector( 7 downto 0);
-		I_CPU_D    : in  std_logic_vector(15 downto 0);
 		I_CPU_A    : in  std_logic_vector(13 downto 1);
+		I_CPU_D    : in  std_logic_vector(15 downto 0);
 
 		O_TBTEST   : out std_logic;
 		O_TBRESn   : out std_logic;
@@ -48,7 +48,9 @@ entity VIDEO is
 		O_MATCHn   : out std_logic;
 		O_VBKINTn  : out std_logic;
 		O_VRAC2    : out std_logic;
-		O_4H    : out std_logic;
+		O_1H       : out std_logic;
+		O_2H       : out std_logic;
+		O_4H       : out std_logic;
 		O_MGRA     : out std_logic_vector(19 downto 1);
 
 		O_I        : out std_logic_vector( 3 downto 0);
@@ -57,7 +59,8 @@ entity VIDEO is
 		O_B        : out std_logic_vector( 3 downto 0);
 		O_HSYNC    : out std_logic;
 		O_VSYNC    : out std_logic;
-		O_CSYNC    : out std_logic
+		O_CSYNC    : out std_logic;
+		O_VBLANKn  : out std_logic
 	);
 end VIDEO;
 
@@ -368,6 +371,7 @@ begin
 	O_VSYNC    <= sl_VSYNCn;
 	O_HSYNC    <= sl_HSYNCn;
 	O_CSYNC    <= sl_COMPSYNCn;
+	O_VBLANKn  <= sl_VBLANKn;
 
 	O_TBTEST   <= sl_TBTEST;
 	O_TBRESn   <= sl_TBRESn;
@@ -379,6 +383,8 @@ begin
 	O_VBKINTn  <= sl_VBKINTn;
 	O_SNDRESn  <= sl_SNDRSTn;
 	O_VRAC2    <= slv_VRAC(2);
+	O_1H       <= slv_H(0);
+	O_2H       <= slv_H(1);
 	O_4H       <= sl_4H;
 
 	slv_MD     <= I_CPU_D;
@@ -419,7 +425,6 @@ begin
 		O_C1      => slv_VRAC(1),
 		O_C2      => slv_VRAC(2),
 		O_LMPDn   => sl_LMPDn,
-		O_HBKn    => open,
 		O_VIDBn   => sl_VIDBLANKn,
 		O_VRESn   => sl_VRESETn,
 
@@ -428,6 +433,7 @@ begin
 		O_PFHSTn  => sl_PFHSTn,
 		O_BUFCLRn => open,
 
+		O_HBLKn   => open,
 		O_VBLKn   => sl_VBLANKn,
 		O_VSCK    => sl_VSCRCLK,
 		O_CK0n    => open, -- same as MCKF

@@ -26,9 +26,6 @@ library ieee;
 --pragma translate_on
 
 entity FPGA_ATARISYS1 is
-	generic (
-		slap_type  : integer range 100 to 118 := 104
-	);
 	port(
 		-- System Clock
 		I_CLK_14M  : in  std_logic;
@@ -45,6 +42,7 @@ entity FPGA_ATARISYS1 is
 		I_DIR      : in  std_logic_vector(3 downto 0);
 		-- System inputs
 		I_SYS      : in  std_logic_vector(4 downto 0);
+		I_SLAP_TYPE: in  integer range 0 to 118; -- slapstic type can be changed dynamically
 
 		O_LEDS     : out std_logic_vector(2 downto 1);
 
@@ -63,19 +61,8 @@ entity FPGA_ATARISYS1 is
 
 		I_USB_RXD  : in  std_logic;
 		O_USB_TXD  : out std_logic := '1';
-
-		-- GFX ROMs, read from non existent ROMs MUST return FFFFFFFF
-		O_GP_EN    : out std_logic := '0';
-		O_GP_ADDR  : out std_logic_vector(17 downto 0) := (others=>'0');
-		I_GP_DATA  : in  std_logic_vector(31 downto 0) := (others=>'0');
-		-- Main Program ROMs
-		O_MP_EN    : out std_logic := '0';
-		O_MP_ADDR  : out std_logic_vector(18 downto 0) := (others=>'0');
-		I_MP_DATA  : in  std_logic_vector(15 downto 0) := (others=>'0');
-		-- Audio Program ROMs
-		O_AP_EN    : out std_logic := '0';
-		O_AP_ADDR  : out std_logic_vector(15 downto 0) := (others=>'0');
-		I_AP_DATA  : in  std_logic_vector( 7 downto 0) := (others=>'0')
+		O_HBLANK   : out	std_logic;
+		O_VBLANK   : out	std_logic
 	);
 end FPGA_ATARISYS1;
 
@@ -120,6 +107,7 @@ architecture RTL of FPGA_ATARISYS1 is
 		sl_MBUSn,
 		sl_VRDTACK,
 		sl_VBLANKn,
+		sl_HBLANKn,
 		sl_VBKACKn,
 		sl_VBKINTn,
 		sl_MISCn,
@@ -203,12 +191,18 @@ begin
 --	end process;
 -- pragma translate_on
 
+	O_HBLANK <= sl_HBLANKn;
+	O_VBLANK <= sl_VBLANKn;
+
 	u_main : entity work.MAIN
 	port map (
 		I_MCKR      => I_CLK_7M,
 		I_XCKR      => I_CLK_14M,
-		I_4H        => sl_4H,
 		I_RESET     => I_RESET,
+		I_VBLANKn   => sl_VBLANKn,
+		I_VBKINTn   => sl_VBKINTn,
+
+		I_4H        => sl_4H,
 		I_INT1n     => sl_INT1n,
 		I_INT3n     => sl_INT3n,
 		I_WAITn     => sl_WAITn,
@@ -216,8 +210,6 @@ begin
 		I_WR68Kn    => sl_WR68Kn,
 		I_RD68Kn    => sl_RD68Kn,
 
-		I_VBLANKn   => sl_VBLANKn,
-		I_VBKINTn   => sl_VBKINTn,
 		I_SNDRESn   => sl_SNDRESn,
 
 		I_USB_RXD   => I_USB_RXD,
@@ -229,14 +221,14 @@ begin
 		O_VRAMWR    => sl_VRAMWR,
 		O_CRBUSn    => sl_CRBUSn,
 
+		O_HSCRLDn   => sl_HSCRLDn,
+		O_SNDNMIn   => sl_SNDNMIn,
+		O_SNDINTn   => sl_SNDINTn,
 		O_VBKACKn   => sl_VBKACKn,
 		O_VBUSn     => sl_VBUSn,
 		O_MISCn     => sl_MISCn,
 		O_PFSPCn    => sl_PFSPCn,
 		O_VSCRLDn   => sl_VSCRLDn,
-		O_HSCRLDn   => sl_HSCRLDn,
-		O_SNDNMIn   => sl_SNDNMIn,
-		O_SNDINTn   => sl_SNDINTn,
 		O_SBD       => slv_SBDI,
 		I_SBD       => slv_SBDO,
 
@@ -306,14 +298,15 @@ begin
 		O_TBTEST    => sl_TBTEST,
 		O_TBRESn    => sl_TBRESn,
 
+		O_VBLANKn   => sl_VBLANKn,
+		O_HBLANKn   => sl_HBLANKn,
 		O_I         => O_VIDEO_I,
 		O_R         => O_VIDEO_R,
 		O_G         => O_VIDEO_G,
 		O_B         => O_VIDEO_B,
 		O_HSYNC     => O_HSYNC,
 		O_VSYNC     => O_VSYNC,
-		O_CSYNC     => O_CSYNC,
-		O_VBLANKn   => sl_VBLANKn
+		O_CSYNC     => O_CSYNC
 	);
 
 	u_cart : entity work.INDY_CART

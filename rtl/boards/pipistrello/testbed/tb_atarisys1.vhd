@@ -45,6 +45,7 @@ architecture RTL of TB_ATARISYS1 is
 	--Outputs
 
 	signal I_USB_RXD		: std_logic;
+	signal serio			: std_logic := 'Z';
 
 	signal txval 			: std_logic_vector( 7 downto 0);
 
@@ -103,7 +104,6 @@ begin
 		MEM_nBLE		=> open,
 		MEM_CK		=> MEM_CK,
 
-
 		O_USB_TXD	=> open,
 		I_USB_RXD	=> I_USB_RXD,
 
@@ -116,8 +116,8 @@ begin
 		O_AUDIO_R	=> open,
 
 		-- External controls
-		PMOD1_IO		=> "1111",
-		PMOD2_IO		=> "1111",
+		PMOD1_IO1	=> '1',
+		PMOD1_IO4	=> serio,
 
 		I_RESET		=> I_RESET,
 		CLK_IN		=> CLK
@@ -130,7 +130,7 @@ begin
 		CLK <= not CLK;
 	end process;
 
-	CLKS <= MEM_CK after 10ns; -- simulate 10ns access time SRAM
+	CLKS <= MEM_CK after 10 ns; -- simulate 10ns access time SRAM
 
 	-- Stimulus process
 	p_stim : process

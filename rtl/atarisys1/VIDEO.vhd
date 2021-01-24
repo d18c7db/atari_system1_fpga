@@ -50,6 +50,8 @@ entity VIDEO is
 		O_MO_PFn   : out std_logic;
 		O_MATCHn   : out std_logic;
 		O_VBKINTn  : out std_logic;
+		O_VBLANKn  : out std_logic;
+		O_HBLANKn  : out std_logic;
 		O_VRAC2    : out std_logic;
 		O_1H       : out std_logic;
 		O_2H       : out std_logic;
@@ -62,8 +64,7 @@ entity VIDEO is
 		O_B        : out std_logic_vector( 3 downto 0);
 		O_HSYNC    : out std_logic;
 		O_VSYNC    : out std_logic;
-		O_CSYNC    : out std_logic;
-		O_VBLANKn  : out std_logic
+		O_CSYNC    : out std_logic
 	);
 end VIDEO;
 
@@ -112,6 +113,7 @@ architecture RTL of VIDEO is
 		sl_VBKACKn,
 		sl_VBKINTn,
 		sl_VBLANKn,
+		sl_HBLANKn,
 		sl_VBUSn,
 		sl_VIDBLANKn,
 		sl_VRAMRDn,
@@ -369,7 +371,8 @@ begin
 	O_VSYNC    <= sl_VSYNCn;
 	O_HSYNC    <= sl_HSYNCn;
 	O_CSYNC    <= sl_COMPSYNCn;
-	O_VBLANKn  <= sl_VBLANKn;
+	O_VBLANKn <= sl_VBLANKn;
+	O_HBLANKn <= sl_HBLANKn;
 
 	O_TBTEST   <= sl_TBTEST;
 	O_TBRESn   <= sl_TBRESn;
@@ -413,7 +416,6 @@ begin
 		O_C1      => slv_VRAC(1),
 		O_C2      => slv_VRAC(2),
 		O_LMPDn   => sl_LMPDn,
-		O_HBKn    => open,
 		O_VIDBn   => sl_VIDBLANKn,
 		O_VRESn   => sl_VRESETn,
 
@@ -422,6 +424,7 @@ begin
 		O_PFHSTn  => sl_PFHSTn,
 		O_BUFCLRn => open,
 
+		O_HBLKn   => open,
 		O_VBLKn   => sl_VBLANKn,
 		O_VSCK    => sl_VSCRCLK,
 		O_CK0n    => open, -- same as MCKF

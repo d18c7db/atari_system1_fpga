@@ -26,9 +26,6 @@ library ieee;
 library unisim;
 	use unisim.vcomponents.all;
 
-library std;
-	use std.textio.all;
-
 entity ATARISYS1_TOP is
 	port(
 		-- FLASH
@@ -69,9 +66,9 @@ entity ATARISYS1_TOP is
 		O_AUDIO_R			: out	std_logic;
 
 		-- External controller
-		PMOD1_IO				: in	std_logic_vector(4 downto 1);
-		PMOD2_IO				: in	std_logic_vector(4 downto 1);
-		LEDS					: out	std_logic_vector(4 downto 1);
+		PMOD1_IO4			: inout std_logic; -- gamecube controller I/O line
+		PMOD1_IO1			: in	std_logic;   -- spare
+		LEDS					: out	std_logic_vector(5 downto 1);
 
 		I_RESET				: in	std_logic;								-- active high reset
 
@@ -106,9 +103,10 @@ architecture RTL of ATARISYS1_TOP is
 	--
 	signal ram_state_ctr		: natural range 0 to 7 := 0;
 	signal
+	-- player buttons active low
+		p1_coin, p1_start, p1_fire, p1_down, p1_up, p1_left, p1_right,
+		but_A, but_B, but_X, but_Y, but_Z, but_S,
 		int_reset,
-		ready,
-		s_blank,
 		clk_7M,    gclk_7M,
 		clk_14M,   gclk_14M,
 		clk_28M,   gclk_28M, clk_28M_inv,
@@ -121,41 +119,50 @@ architecture RTL of ATARISYS1_TOP is
 		user_nBLE,
 		user_nBHE,
 
-		s_cmpblk_n,
-		s_cmpblk_n_out,
-		s_dac_out_l,
-		s_dac_out_r,
-		s_hsync_n,
-		s_vsync_n,
-		s_AP_EN,
-		s_GP_EN,
-		s_MP_EN,
-		HSync,
-		VSync
+		sl_cmpblk_n,
+		sl_dac_out_l,
+		sl_dac_out_r,
+		sl_HSync_n,
+		sl_VSync_n,
+		sl_HSync,
+		sl_VSync,
+		sl_blank,
+		sl_AP_EN,
+		sl_GP_EN,
+		sl_MP_EN
 								: std_logic := '1';
 	-- video
 	signal
-		s_int,
-		s_red,
-		s_grn,
-		s_blu,
-		VideoI,
-		VideoR,
-		VideoG,
-		VideoB
+		slv_int,
+		slv_red,
+		slv_grn,
+		slv_blu,
+		slv_R,
+		slv_G,
+		slv_B,
+		slv_VideoI,
+		slv_VideoR,
+		slv_VideoG,
+		slv_VideoB
 								: std_logic_vector(3 downto 0) := (others => '0');
 	signal
-		s_audio_l,
-		s_audio_r
+		joy_X,
+		joy_Y
+								: std_logic_vector( 7 downto 0) := (others => '1');
+	signal
+		slv_audio_l,
+		slv_audio_r
 								: std_logic_vector( 7 downto 0) := (others => '0');
 
-	signal s_GP_DATA		: std_logic_vector(31 downto 0) := (others => '0');
-	signal s_MP_DATA		: std_logic_vector(15 downto 0) := (others => '0');
-	signal s_AP_DATA		: std_logic_vector( 7 downto 0) := (others => '0');
+	signal slv_GP_DATA		: std_logic_vector(31 downto 0) := (others => '0');
+	signal slv_MP_DATA		: std_logic_vector(15 downto 0) := (others => '0');
+	signal slv_AP_DATA		: std_logic_vector( 7 downto 0) := (others => '0');
+	signal slv_CP_DATA		: std_logic_vector( 7 downto 0) := (others => '0');
 
-	signal s_GP_ADDR		: std_logic_vector(17 downto 0) := (others => '0');
-	signal s_MP_ADDR		: std_logic_vector(18 downto 0) := (others => '0');
-	signal s_AP_ADDR		: std_logic_vector(15 downto 0) := (others => '0');
+	signal slv_GP_ADDR		: std_logic_vector(17 downto 0) := (others => '0');
+	signal slv_MP_ADDR		: std_logic_vector(18 downto 0) := (others => '0');
+	signal slv_AP_ADDR		: std_logic_vector(15 downto 0) := (others => '0');
+	signal slv_CP_ADDR		: std_logic_vector(13 downto 0) := (others => '0');
 
 	signal user_AD			: std_logic_vector(20 downto 0) := (others => '0');
 	signal user_DI			: std_logic_vector(15 downto 0) := (others => '0');
@@ -169,6 +176,7 @@ begin
 
 	-- SRAM muxer, allows access to physical SRAM by either bootstrap or user
 	MEM_D		<= bs_DO		when bs_done = '0' and bs_nWE = '0' else (others => 'Z');	-- no need for user write
+
 	MEM_A		<= bs_AD		when bs_done = '0' else user_AD;
 	SRAM_nCS	<= bs_nCS	when bs_done = '0' else user_nCS;
 	MEM_nWE	<= bs_nWE	when bs_done = '0' else user_nWE;
@@ -218,15 +226,15 @@ begin
 ------------------------------------------------------------------------------
 
 	-- Audio output
-	O_AUDIO_L	<= s_dac_out_l;
-	O_AUDIO_R	<= s_dac_out_r;
+	O_AUDIO_L	<= sl_dac_out_l;
+	O_AUDIO_R	<= sl_dac_out_r;
 
 	-- VGA output
---	O_HSYNC		<= HSync;
---	O_VSYNC		<= VSync;
---	O_VIDEO_R	<= VideoR;
---	O_VIDEO_G	<= VideoG;
---	O_VIDEO_B	<= VideoB;
+--	O_HSYNC		<= sl_HSync;
+--	O_VSYNC		<= sl_VSync;
+--	O_VIDEO_R	<= slv_VideoR;
+--	O_VIDEO_G	<= slv_VideoG;
+--	O_VIDEO_B	<= slv_VideoB;
 
 	user_nCS		<= '0';				-- SRAM always selected
 	user_nOE		<= '0';				-- SRAM output enabled
@@ -235,9 +243,10 @@ begin
 	user_nBHE	<= '0';
 
 	int_reset	<= not bs_done;	-- active high reset
+--	int_reset	<=     sl_debug;	-- active high reset
 
 	-- Clock
-	u_clks : entity work.TIMING
+	u_clks : entity work.CLOCKS
 	generic map (
 		clk_type => clk_type
 	)
@@ -261,7 +270,6 @@ begin
 	clk4_bufg : BUFG port map (O => gclk_dvi_n, I => clk_dvi_n);
 
 	u_ATARISYS1 : entity work.FPGA_ATARISYS1
-	generic map (slap_type=>slap_type)
 	port map(
 		-- System Clock
 		I_CLK_14M	=> gclk_14M,
@@ -287,47 +295,76 @@ begin
 
 		-- system inputs, active low
 		I_SYS			=> "11111",		-- SW 5, 4, 3, 2, 1
+		I_SLAP_TYPE	=>	slap_type,			-- slapstic type can be changed dynamically
 
 		O_LEDS		=> open,	-- LED2, LED1
 
 		-- Audio out
-		O_AUDIO_L	=> s_audio_l,
-		O_AUDIO_R	=> s_audio_r,
+		O_AUDIO_L	=> slv_audio_l,
+		O_AUDIO_R	=> slv_audio_r,
 
 		-- VGA monitor output
-		O_VIDEO_I	=> s_int,
-		O_VIDEO_R	=> s_red,
-		O_VIDEO_G	=> s_grn,
-		O_VIDEO_B	=> s_blu,
-		O_HSYNC		=> s_hsync_n,
-		O_VSYNC		=> s_vsync_n,
-		O_CSYNC		=> s_cmpblk_n,
+		O_VIDEO_I	=> slv_int,
+		O_VIDEO_R	=> slv_red,
+		O_VIDEO_G	=> slv_grn,
+		O_VIDEO_B	=> slv_blu,
+		O_HSYNC		=> sl_HSync_n,
+		O_VSYNC		=> sl_VSync_n,
+		O_CSYNC		=> open,
+		O_HBLANK		=> open,
+		O_VBLANK		=> open,
 
 		I_USB_RXD	=> I_USB_RXD,
-		O_USB_TXD	=> O_USB_TXD,
-
-		-- Access to external ROMs
-		-- GFX ROMs
-		O_GP_EN		=> s_GP_EN,  -- active high (GPEN)
-		O_GP_ADDR	=> s_GP_ADDR,
-		I_GP_DATA	=> s_GP_DATA,
-		-- Main Program ROMs
-		O_MP_EN		=> s_MP_EN,  -- active high (AS)
-		O_MP_ADDR	=> s_MP_ADDR,
-		I_MP_DATA	=> s_MP_DATA,
-		-- Audio Program ROMs
-		O_AP_EN		=> s_AP_EN,  -- active high (CPUENA)
-		O_AP_ADDR	=> s_AP_ADDR,
-		I_AP_DATA	=> s_AP_DATA
+		O_USB_TXD	=> O_USB_TXD
 	);
 
 -- Status indicators for debugging
-	LEDS <= bs_reset & int_reset & I_RESET & '0';
---					L4			L3			L2			L1
+	LEDS <= I_RESET & int_reset & bs_reset & bs_done & '0';
+--				L5				L4				L3			L2			L1
 --	L5    L2
 -- uSD   L1
 --	L3  HDMI
 --	L4
+
+	-- convert input video from 16bit IRGB to 12 bit RGB
+	u_R : entity work.RGBI port map (ADDR(7 downto 4)=>slv_int, ADDR(3 downto 0)=>slv_red, DATA=>slv_R);
+	u_G : entity work.RGBI port map (ADDR(7 downto 4)=>slv_int, ADDR(3 downto 0)=>slv_grn, DATA=>slv_G);
+	u_B : entity work.RGBI port map (ADDR(7 downto 4)=>slv_int, ADDR(3 downto 0)=>slv_blu, DATA=>slv_B);
+
+	u_gc : entity work.gamecube
+	port map (
+		clk	=> gclk_28M,
+		reset	=> int_reset,
+		serio	=> PMOD1_IO4,
+
+		but_S	=> but_S,	-- button Start
+		but_X	=> but_X,	-- button X
+		but_Y	=> but_Y,	-- button Y
+		but_Z	=> but_Z,	-- button Z
+		but_A	=> but_A,	-- button A
+		but_B	=> but_B,	-- button B
+		but_L	=> open,		-- button Left
+		but_R	=> open,		-- button Right
+		but_DU=> open,		-- button Dpad up
+		but_DD=> open,		-- button Dpad down
+		but_DL=> open,		-- button Dpad left
+		but_DR=> open,		-- button Dpad right
+
+		joy_X	=> joy_X,	-- Joy X analog
+		joy_Y	=> joy_Y,	-- Joy Y analog
+		cst_X	=> open,		-- C-Stick X analog
+		cst_Y	=> open,		-- C-Stick Y analog
+		ana_L	=> open,		-- Left Button analog
+		ana_R	=> open		-- Right Button analog
+	);
+
+	p1_right	<= '0' when (joy_X > x"A0") else '1';
+	p1_left	<= '0' when (joy_X < x"60") else '1';
+	p1_up		<= '0' when (joy_Y > x"A0") else '1';
+	p1_down	<= '0' when (joy_Y < x"60") else '1';
+	p1_coin	<= '0' when (but_Z = '1')   else '1';
+	p1_start	<= '0' when (but_B = '1')   else '1';
+	p1_fire	<= '0' when (but_A = '1')   else '1';
 
 	-----------------------------------------------------------------
 	-- video scan converter required to display video on VGA hardware
@@ -356,27 +393,27 @@ begin
 		vpad			=>   0	-- create V black border
 	)
 	port map (
-		I_VIDEO(15 downto 12)=> s_int,
-		I_VIDEO(11 downto 8) => s_red,
-		I_VIDEO( 7 downto 4) => s_grn,
-		I_VIDEO( 3 downto 0) => s_blu,
+		I_VIDEO(15 downto 12)=> "0000",
+		I_VIDEO(11 downto 8) => slv_R,
+		I_VIDEO( 7 downto 4) => slv_G,
+		I_VIDEO( 3 downto 0) => slv_B,
 
-		I_HSYNC					=> s_hsync_n,
-		I_VSYNC					=> s_vsync_n,
+		I_HSYNC					=> sl_HSync_n,
+		I_VSYNC					=> sl_VSync_n,
 		--
-		O_VIDEO(15 downto 12)=> VideoI,
-		O_VIDEO(11 downto 8) => VideoR,
-		O_VIDEO( 7 downto 4) => VideoG,
-		O_VIDEO( 3 downto 0) => VideoB,
-		O_HSYNC					=> HSync,
-		O_VSYNC					=> VSync,
-		O_CMPBLK_N				=> s_cmpblk_n_out,
+		O_VIDEO(15 downto 12)=> slv_VideoI,
+		O_VIDEO(11 downto 8) => slv_VideoR,
+		O_VIDEO( 7 downto 4) => slv_VideoG,
+		O_VIDEO( 3 downto 0) => slv_VideoB,
+		O_HSYNC					=> sl_HSync,
+		O_VSYNC					=> sl_VSync,
+		O_CMPBLK_N				=> sl_cmpblk_n,
 		--
 		CLK						=> clk_7M,
 		CLK_x2					=> gclk_14M
 	);
 
-	s_blank <= not s_cmpblk_n_out;
+	sl_blank <= not sl_cmpblk_n;
 
 	u_dvid : entity work.dvid
 	port map(
@@ -385,15 +422,15 @@ begin
 		clk_n					=> gclk_dvi_n,
 		clk_pixel			=> gclk_28M,
 		-- inputs
-		red_p(7 downto 4)	=> VideoR,
+		red_p(7 downto 4)	=> slv_VideoR,
 		red_p(3 downto 0)	=> x"0",
-		grn_p(7 downto 4)	=> VideoG,
+		grn_p(7 downto 4)	=> slv_VideoG,
 		grn_p(3 downto 0)	=> x"0",
-		blu_p(7 downto 4)	=> VideoB,
+		blu_p(7 downto 4)	=> slv_VideoB,
 		blu_p(3 downto 0)	=> x"0",
-		blank					=> s_blank,
-		hsync					=> HSync,
-		vsync					=> VSync,
+		blank					=> sl_blank,
+		hsync					=> sl_HSync,
+		vsync					=> sl_VSync,
 		-- outputs
 		tmds_p				=> TMDS_P,
 		tmds_n				=> TMDS_N
@@ -407,8 +444,8 @@ begin
 	port map (
 		clk_i	=> gclk_28M,
 		res_i	=> int_reset,
-		dac_i	=> s_audio_l,
-		dac_o	=> s_dac_out_l
+		dac_i	=> slv_audio_l,
+		dac_o	=> sl_dac_out_l
 	);
 
 	u_dacr : entity work.DAC
@@ -416,8 +453,8 @@ begin
 	port map (
 		clk_i	=> gclk_28M,
 		res_i	=> int_reset,
-		dac_i	=> s_audio_r,
-		dac_o	=> s_dac_out_r
+		dac_i	=> slv_audio_r,
+		dac_o	=> sl_dac_out_r
 	);
 
 --	#################################################
@@ -471,43 +508,38 @@ begin
 
 		case ram_state_ctr is
 			when 3 =>
-				user_AD <= "01" & s_MP_ADDR;			-- set 68K program ROM address
+				user_AD <= "01" & slv_MP_ADDR;		-- set 68K program ROM address
 			when 0 =>
-				user_AD <= "000" & s_GP_ADDR;			-- set graphics ROM address for lower data word
-				s_MP_DATA <= MEM_D; 						-- get 68K program data word
+				user_AD <= "000" & slv_GP_ADDR;		-- set graphics ROM address for lower data word
+				slv_MP_DATA <= MEM_D; 					-- get 68K program data word
 			when 1 =>
-				user_AD <= "001" & s_GP_ADDR;			-- set graphics ROM address for upper data word
-				s_GP_DATA(15 downto  0) <= MEM_D;	-- get graphics ROM lower data word
+				user_AD <= "001" & slv_GP_ADDR;		-- set graphics ROM address for upper data word
+				slv_GP_DATA(15 downto  0) <= MEM_D;	-- get graphics ROM lower data word
 			when 2 =>
-				s_GP_DATA(31 downto 16) <= MEM_D;	-- get graphics ROM upper data word
+				slv_GP_DATA(31 downto 16) <= MEM_D;	-- get graphics ROM upper data word
 			when others => null;
 		end case;
 	end process;
 
-	-- 6502 directly connected ROMS
---	ROM_16R : entity work.ROM_16R port map ( CLK=>gclk_28M, DATA=>slv_ROM_16R, ADDR=>s_AP_ADDR(13 downto 0) );	-- @4000-7FFF
---	ROM_16S : entity work.ROM_16S port map ( CLK=>gclk_28M, DATA=>slv_ROM_16S, ADDR=>s_AP_ADDR(14 downto 0) );	-- @8000-FFFF
---	s_AP_DATA <= slv_ROM_16S when s_AP_ADDR(15)='1' else slv_ROM_16R;
-
 	-- 68K directly connected ROMS
---	ROM_9A  : entity work.ROM_9A  port map ( CLK=>gclk_28M, DATA=>slv_ROM_9A,  ADDR=>s_MP_ADDR(14 downto 0) );
---	ROM_9B  : entity work.ROM_9B  port map ( CLK=>gclk_28M, DATA=>slv_ROM_9B,  ADDR=>s_MP_ADDR(14 downto 0) );
---	ROM_10A : entity work.ROM_10A port map ( CLK=>gclk_28M, DATA=>slv_ROM_10A, ADDR=>s_MP_ADDR(13 downto 0) );
---	ROM_10B : entity work.ROM_10B port map ( CLK=>gclk_28M, DATA=>slv_ROM_10B, ADDR=>s_MP_ADDR(13 downto 0) );
---	ROM_7A  : entity work.ROM_7A  port map ( CLK=>gclk_28M, DATA=>slv_ROM_7A,  ADDR=>s_MP_ADDR(14 downto 0) );
---	ROM_7B  : entity work.ROM_7B  port map ( CLK=>gclk_28M, DATA=>slv_ROM_7B,  ADDR=>s_MP_ADDR(14 downto 0) );
---	ROM_6A  : entity work.ROM_6A  port map ( CLK=>gclk_28M, DATA=>slv_ROM_6A,  ADDR=>s_MP_ADDR(14 downto 0) );
---	ROM_6B  : entity work.ROM_6B  port map ( CLK=>gclk_28M, DATA=>slv_ROM_6B,  ADDR=>s_MP_ADDR(14 downto 0) );
---	ROM_5A  : entity work.ROM_5A  port map ( CLK=>gclk_28M, DATA=>slv_ROM_5A,  ADDR=>s_MP_ADDR(14 downto 0) );
---	ROM_5B  : entity work.ROM_5B  port map ( CLK=>gclk_28M, DATA=>slv_ROM_5B,  ADDR=>s_MP_ADDR(14 downto 0) );
---	ROM_3A  : entity work.ROM_3A  port map ( CLK=>gclk_28M, DATA=>slv_ROM_3A,  ADDR=>s_MP_ADDR(14 downto 0) );
---	ROM_3B  : entity work.ROM_3B  port map ( CLK=>gclk_28M, DATA=>slv_ROM_3B,  ADDR=>s_MP_ADDR(14 downto 0) );
---	s_MP_DATA <=
---		slv_ROM_9A  & slv_ROM_9B  when s_MP_ADDR(18 downto 15)="0000" else -- /ROM0 00000
---		slv_ROM_10A & slv_ROM_10B when s_MP_ADDR(18 downto 15)="0011" else -- /SLAP 38000
---		slv_ROM_7A  & slv_ROM_7B  when s_MP_ADDR(18 downto 15)="0100" else -- /ROM1 40000
---		slv_ROM_6A  & slv_ROM_6B  when s_MP_ADDR(18 downto 15)="0101" else -- /ROM2 50000
---		slv_ROM_5A  & slv_ROM_5B  when s_MP_ADDR(18 downto 15)="0110" else -- /ROM3 60000
---		slv_ROM_3A  & slv_ROM_3B  when s_MP_ADDR(18 downto 15)="0111" else -- /ROM4 70000
+--	ROM_9A  : entity work.ROM_9A  port map ( CLK=>gclk_28M, DATA=>slv_ROM_9A,  ADDR=>slv_MP_ADDR(14 downto 0) );
+--	ROM_9B  : entity work.ROM_9B  port map ( CLK=>gclk_28M, DATA=>slv_ROM_9B,  ADDR=>slv_MP_ADDR(14 downto 0) );
+--	ROM_10A : entity work.ROM_10A port map ( CLK=>gclk_28M, DATA=>slv_ROM_10A, ADDR=>slv_MP_ADDR(13 downto 0) );
+--	ROM_10B : entity work.ROM_10B port map ( CLK=>gclk_28M, DATA=>slv_ROM_10B, ADDR=>slv_MP_ADDR(13 downto 0) );
+--	ROM_7A  : entity work.ROM_7A  port map ( CLK=>gclk_28M, DATA=>slv_ROM_7A,  ADDR=>slv_MP_ADDR(14 downto 0) );
+--	ROM_7B  : entity work.ROM_7B  port map ( CLK=>gclk_28M, DATA=>slv_ROM_7B,  ADDR=>slv_MP_ADDR(14 downto 0) );
+--	ROM_6A  : entity work.ROM_6A  port map ( CLK=>gclk_28M, DATA=>slv_ROM_6A,  ADDR=>slv_MP_ADDR(14 downto 0) );
+--	ROM_6B  : entity work.ROM_6B  port map ( CLK=>gclk_28M, DATA=>slv_ROM_6B,  ADDR=>slv_MP_ADDR(14 downto 0) );
+--	ROM_5A  : entity work.ROM_5A  port map ( CLK=>gclk_28M, DATA=>slv_ROM_5A,  ADDR=>slv_MP_ADDR(14 downto 0) );
+--	ROM_5B  : entity work.ROM_5B  port map ( CLK=>gclk_28M, DATA=>slv_ROM_5B,  ADDR=>slv_MP_ADDR(14 downto 0) );
+--	ROM_3A  : entity work.ROM_3A  port map ( CLK=>gclk_28M, DATA=>slv_ROM_3A,  ADDR=>slv_MP_ADDR(14 downto 0) );
+--	ROM_3B  : entity work.ROM_3B  port map ( CLK=>gclk_28M, DATA=>slv_ROM_3B,  ADDR=>slv_MP_ADDR(14 downto 0) );
+--	slv_MP_DATA <=
+--		slv_ROM_9A  & slv_ROM_9B  when slv_MP_ADDR(18 downto 15)="0000" else -- /ROM0 00000
+--		slv_ROM_10A & slv_ROM_10B when slv_MP_ADDR(18 downto 15)="0011" else -- /SLAP 38000
+--		slv_ROM_7A  & slv_ROM_7B  when slv_MP_ADDR(18 downto 15)="0100" else -- /ROM1 40000
+--		slv_ROM_6A  & slv_ROM_6B  when slv_MP_ADDR(18 downto 15)="0101" else -- /ROM2 50000
+--		slv_ROM_5A  & slv_ROM_5B  when slv_MP_ADDR(18 downto 15)="0110" else -- /ROM3 60000
+--		slv_ROM_3A  & slv_ROM_3B  when slv_MP_ADDR(18 downto 15)="0111" else -- /ROM4 70000
 --		(others=>'1');
 end RTL;

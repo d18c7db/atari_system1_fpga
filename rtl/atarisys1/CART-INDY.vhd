@@ -212,13 +212,13 @@ begin
 	-- sheet 3 --
 	-------------
 	p_17A : entity work.SLAPSTIC
-	generic map (chip_type=>105)
 	port map (
 		I_CK  => I_MCKR,
 		I_ASn => sl_BASn,
 		I_CSn => sl_SLAPn,
 		I_A   => slv_MA(14 downto 1),
-		O_BS  => slv_BS
+		O_BS  => slv_BS,
+		I_SLAP_TYPE => 105
 	);
 
 	-- SLAPSTIC controlled ROMs
