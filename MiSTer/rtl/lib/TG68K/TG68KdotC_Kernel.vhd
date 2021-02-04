@@ -98,11 +98,6 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use work.TG68K_Pack.all;
 
-----pragma translate_off
-	use ieee.std_logic_textio.all;
-	use std.textio.all;
-----pragma translate_on
-
 entity TG68KdotC_Kernel is
 	generic(
 		SR_Read : integer:= 2;				--0=>user,		1=>privileged,		2=>switchable with CPU(0)
@@ -117,9 +112,7 @@ entity TG68KdotC_Kernel is
 		);
 	port(clk						: in std_logic;
 		nReset					: in std_logic;			--low active
-		clkena				: in std_logic:='1';
-		I_USB_RXD			: in 	std_logic;
-		O_USB_TXD			: out	std_logic := '1';
+		clkena_in				: in std_logic:='1';
 		data_in					: in std_logic_vector(15 downto 0);
 		IPL						: in std_logic_vector(2 downto 0):="111";
 		IPL_autovector			: in std_logic:='0';
@@ -181,6 +174,7 @@ architecture logic of TG68KdotC_Kernel is
 	signal rf_source_addr	: std_logic_vector(3 downto 0);
 	signal rf_source_addrd	: std_logic_vector(3 downto 0);
 
+	signal regin				: std_logic_vector(31 downto 0);
 	type   regfile_t is array(0 to 15) of std_logic_vector(31 downto 0);
 	signal regfile				: regfile_t := (OTHERS => (OTHERS => '0')); -- mikej stops sim X issues;
 
@@ -366,49 +360,9 @@ architecture logic of TG68KdotC_Kernel is
 	signal micro_state		: micro_states;
 	signal next_micro_state	: micro_states;
 
-  signal clkena_in              : std_logic:='1';
-  signal regin                  : std_logic_vector(31 downto 0):=(others=>'0');
-  signal dbg_sel,dbg_ena        : std_logic:='1';
-  signal dbg_data               : std_logic_vector(15 downto 0):=(others=>'1');
-  signal dbg_addr               : std_logic_vector(31 downto 0):=(others=>'1');
+
 
 BEGIN
-	dbg_sel  <= '1'     when setopcode='1' and clkena_lw='1' else '0';
-	dbg_data <= data_in when dbg_sel='1'   and state="00"    else last_opc_read;
-	dbg_addr <= addr    when dbg_sel='1'   and state="00"    else last_opc_pc;
-	clkena_in<= clkena and dbg_ena;
-
-	u_dbg : entity work.DEBUG
-	port map (
-		I_RX				=> I_USB_RXD,
-		O_TX				=> O_USB_TXD,
-
-		I_CK				=> clk,
-		I_RST				=> nReset, -- active low reset
---		O_ENA				=> dbg_ena,
-
-		I_SEL				=> dbg_sel,
-		I_ADDR			=> dbg_addr,
-		I_DATA			=> dbg_data
-	);
---pragma translate_off
-	p_debug_writemem : process
-		file		file_xx		: TEXT open WRITE_MODE is "T68K.log";
-		variable	s				: line;
-	begin
-		wait until falling_edge(clk);
-		if setopcode = '1' and clkena_lw = '1' then
-			if state="00" then
-				hwrite(s,        addr(23 downto 0)); write(s, string'(" -- ")); hwrite(s,       data_in);
-			else
-				hwrite(s, last_opc_pc(23 downto 0)); write(s, string'(" -- ")); hwrite(s, last_opc_read);
-			end if;
-			write(s, string'(" - "));
-			write(s, time'image(now), right, 18); writeline(file_xx,s);
-		end if;
-	end process;
---pragma translate_on
-
 ALU: TG68K_ALU
 	generic map(
 		MUL_Mode => MUL_Mode,				--0=>16Bit,	1=>32Bit,	2=>switchable with CPU(1),		3=>no MUL,
