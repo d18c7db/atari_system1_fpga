@@ -9,7 +9,7 @@
 --	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 --
 -- For full details, see the GNU General Public License at www.gnu.org/licenses
---
+-- Based on SP-286 schematic
 
 library ieee;
 	use ieee.std_logic_1164.all;
@@ -32,8 +32,8 @@ entity MAIN is
 		I_VBKINTn   : in  std_logic;
 		I_VRAC2     : in  std_logic;
 
-		I_USB_RXD   : in  std_logic;
-		O_USB_TXD   : out std_logic;
+--		I_USB_RXD   : in  std_logic;
+--		O_USB_TXD   : out std_logic;
 
 		O_BW_Rn     : out std_logic;
 		O_MA18n     : out std_logic;
@@ -120,8 +120,8 @@ architecture RTL of MAIN is
 		sl_RAJS,
 		sl_RAJSn,
 		sl_RAJSn_last,
-		sl_RAM0n,
-		sl_RAM1n,
+		sl_RAM0,
+		sl_RAM1,
 		sl_RCO,
 		sl_RESETn,
 		sl_RLETAn,
@@ -266,8 +266,8 @@ begin
 
 	-- CPU input data bus mux
 	slv_cpu_di <=
-		slv_12K_data & slv_12L_data when sl_R_Wn = '1' and sl_RAM0n = '0' else
-		slv_13K_data & slv_13L_data when sl_R_Wn = '1' and sl_RAM1n = '0' else
+		slv_12K_data & slv_12L_data when sl_R_Wn = '1' and sl_RAM0 = '1' else
+		slv_13K_data & slv_13L_data when sl_R_Wn = '1' and sl_RAM1 = '1' else
 		slv_11J_data & slv_10J_data when sl_R_Wn = '1' and slv_ROMn(0) = '0' else
 								slv_VBUSD when sl_R_Wn = '1' and sl_VBUSn = '0' else
 								slv_MEXTD when sl_R_Wn = '1' and (slv_ROMn /= "1111" or sl_SLAPn = '0') else
@@ -362,8 +362,8 @@ begin
 		ADDR       => slv_cpu_ad,    -- ADDR
 		DO         => slv_cpu_do,    -- DATA out
 
-		I_USB_RXD  => I_USB_RXD,
-		O_USB_TXD  => O_USB_TXD,
+--		I_USB_RXD  => I_USB_RXD,
+--		O_USB_TXD  => O_USB_TXD,
 		--
 		cpusel     => "01",          -- CPU type selector 00->68000  01->68010  11->68020
 		nRSTout    => open           -- reset out (not used);
@@ -434,8 +434,8 @@ begin
 	sl_12F_En    <= slv_cpu_ad(23) or slv_cpu_ad(22) or slv_cpu_ad(21);
 
 	-- gates 9H, 10K
-	sl_RAM1n     <= slv_7Ka_Y(1) or (     slv_cpu_ad(12) );
-	sl_RAM0n     <= slv_7Ka_Y(1) or ( not slv_cpu_ad(12) );
+	sl_RAM1      <= not (slv_7Ka_Y(1) or (     slv_cpu_ad(12) ));
+	sl_RAM0      <= not (slv_7Ka_Y(1) or ( not slv_cpu_ad(12) ));
 	sl_MEXTn     <= slv_7Ka_Y(0) or ( not slv_cpu_ad(21) );
 
 	sl_CRAMn     <= slv_7Kb_Y(3);
@@ -492,11 +492,10 @@ begin
 	-- RAM at address 400000-401FFF
 	sl_WRH <= not sl_WHn;
 	sl_WRL <= not sl_WLn;
-	p_RAM_12K : entity work.RAM_2K8 port map (I_MCKR => I_XCKR, I_EN => sl_RAM0n, I_WR => sl_WHn, I_ADDR => slv_cpu_ad(11 downto 1), I_DATA => slv_cpu_do(15 downto 8), O_DATA => slv_12K_data );
-	p_RAM_13K : entity work.RAM_2K8 port map (I_MCKR => I_XCKR, I_EN => sl_RAM1n, I_WR => sl_WHn, I_ADDR => slv_cpu_ad(11 downto 1), I_DATA => slv_cpu_do(15 downto 8), O_DATA => slv_13K_data );
-
-	p_RAM_12L : entity work.RAM_2K8 port map (I_MCKR => I_XCKR, I_EN => sl_RAM0n, I_WR => sl_WLn, I_ADDR => slv_cpu_ad(11 downto 1), I_DATA => slv_cpu_do( 7 downto 0), O_DATA => slv_12L_data );
-	p_RAM_13L : entity work.RAM_2K8 port map (I_MCKR => I_XCKR, I_EN => sl_RAM1n, I_WR => sl_WLn, I_ADDR => slv_cpu_ad(11 downto 1), I_DATA => slv_cpu_do( 7 downto 0), O_DATA => slv_13L_data );
+	p_RAM_12K : entity work.RAM_2K8 port map (I_MCKR => I_XCKR, I_EN => sl_RAM0, I_WR => sl_WRH, I_ADDR => slv_cpu_ad(11 downto 1), I_DATA => slv_cpu_do(15 downto 8), O_DATA => slv_12K_data );
+	p_RAM_12L : entity work.RAM_2K8 port map (I_MCKR => I_XCKR, I_EN => sl_RAM0, I_WR => sl_WRL, I_ADDR => slv_cpu_ad(11 downto 1), I_DATA => slv_cpu_do( 7 downto 0), O_DATA => slv_12L_data );
+	p_RAM_13K : entity work.RAM_2K8 port map (I_MCKR => I_XCKR, I_EN => sl_RAM1, I_WR => sl_WRH, I_ADDR => slv_cpu_ad(11 downto 1), I_DATA => slv_cpu_do(15 downto 8), O_DATA => slv_13K_data );
+	p_RAM_13L : entity work.RAM_2K8 port map (I_MCKR => I_XCKR, I_EN => sl_RAM1, I_WR => sl_WRL, I_ADDR => slv_cpu_ad(11 downto 1), I_DATA => slv_cpu_do( 7 downto 0), O_DATA => slv_13L_data );
 
 	ROM_10J   : entity work.ROM_10J port map (CLK=>I_XCKR, DATA=>slv_10J_data, ADDR=>slv_cpu_ad(14 downto 1) );
 	ROM_11J   : entity work.ROM_11J port map (CLK=>I_XCKR, DATA=>slv_11J_data, ADDR=>slv_cpu_ad(14 downto 1) );

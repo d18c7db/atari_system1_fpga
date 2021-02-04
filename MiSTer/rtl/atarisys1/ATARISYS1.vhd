@@ -19,6 +19,7 @@
 
 library ieee;
 	use ieee.std_logic_1164.all;
+	use ieee.numeric_std.all;
 
 --pragma translate_off
 	use ieee.std_logic_textio.all;
@@ -47,8 +48,8 @@ entity FPGA_ATARISYS1 is
 		O_LEDS     : out std_logic_vector(2 downto 1);
 
 		-- Audio out
-		O_AUDIO_L  : out std_logic_vector( 7 downto 0) := (others=>'0');
-		O_AUDIO_R  : out std_logic_vector( 7 downto 0) := (others=>'0');
+		O_AUDIO_L  : out std_logic_vector(15 downto 0) := (others=>'0');
+		O_AUDIO_R  : out std_logic_vector(15 downto 0) := (others=>'0');
 
 		-- Monitor output
 		O_VIDEO_I  : out std_logic_vector(3 downto 0);
@@ -59,10 +60,17 @@ entity FPGA_ATARISYS1 is
 		O_VSYNC    : out std_logic;
 		O_CSYNC    : out std_logic;
 
-		I_USB_RXD  : in  std_logic;
-		O_USB_TXD  : out std_logic := '1';
+--		I_USB_RXD  : in  std_logic;
+--		O_USB_TXD  : out std_logic := '1';
 		O_HBLANK   : out	std_logic;
-		O_VBLANK   : out	std_logic
+		O_VBLANK   : out	std_logic;
+
+		-- video ROMs addr/data bus
+		O_VADDR    : out std_logic_vector(16 downto 0);
+		I_5C_DB    : in  std_logic_vector( 7 downto 0);
+		I_5C_DA    : in  std_logic_vector( 7 downto 0);
+		I_5B_DB    : in  std_logic_vector( 7 downto 0);
+		I_5B_DA    : in  std_logic_vector( 7 downto 0)
 	);
 end FPGA_ATARISYS1;
 
@@ -91,6 +99,7 @@ architecture RTL of FPGA_ATARISYS1 is
 		sl_RD68Kn,
 		sl_SNDNMIn,
 		sl_SNDRESn,
+		sl_SNDEXTn,
 		sl_SNDINTn,
 		sl_MO_PFn,
 		sl_MATCHn,
@@ -106,8 +115,8 @@ architecture RTL of FPGA_ATARISYS1 is
 		sl_VRAMn,
 		sl_MBUSn,
 		sl_VRDTACK,
-		sl_VBLANKn,
 		sl_HBLANKn,
+		sl_VBLANKn,
 		sl_VBKACKn,
 		sl_VBKINTn,
 		sl_MISCn,
@@ -122,14 +131,21 @@ architecture RTL of FPGA_ATARISYS1 is
 		slv_ROMn
 								: std_logic_vector( 3 downto 0) := (others=>'0');
 	signal
+		s_POK_out
+								: signed( 5 downto 0) := (others => '0');
+	signal
 		slv_MOSR
 								: std_logic_vector( 6 downto 0) := (others=>'0');
 	signal
 		slv_PFSR,
-		slv_SMD,
+		slv_SMDI,
+--		slv_SMDO,
 		slv_SBDI,
 		slv_SBDO
 								: std_logic_vector( 7 downto 0) := (others=>'0');
+	signal
+		s_TMS_out
+								: signed(13 downto 0) := (others => '0');
 	signal
 		slv_SBA
 								: std_logic_vector(13 downto 0) := (others=>'0');
@@ -142,6 +158,12 @@ architecture RTL of FPGA_ATARISYS1 is
 		slv_MA
 								: std_logic_vector(15 downto 1) := (others=>'0');
 	signal
+		s_chan_l,
+		s_chan_r,
+		s_audio_YML,
+		s_audio_YMR
+								: signed(15 downto 0) := (others => '0');
+	signal
 		slv_MGRA
 								: std_logic_vector(19 downto 1) := (others=>'0');
 begin
@@ -149,47 +171,56 @@ begin
 -- horizontal/vertical scroll offsets and plane selection for testing
 --	stim : process
 --	begin
---		sl_MISCn   <= '1';
---		sl_PFSPCn  <= '1';
---		sl_VSCRLDn <= '1';
---		sl_HSCRLDn <= '1';
+--		wait until rising_edge(sl_VSYNC);
+--		slv_MDO  <= x"0000";
+--		sl_W_Rn  <= '0';
+--		sl_HSCRLDn <= '1'; -- 800000 Play Field Horizontal Scroll
+--		sl_VSCRLDn <= '1'; -- 820000 PFV
+--		sl_PFSPCn  <= '1'; -- 840000 Play Field H scroll
+--		sl_MISCn   <= '1'; -- 860000 Bank Select "..MMMP.A"
 --		sl_VBUSn   <= '0';
---		slv_MDO <= x"0000";
---		wait for 33.63us;
+--		wait for 2*140 ns;
 --
 --		slv_MDO <= x"0040";
---		sl_R_Wn    <= '0';
---		wait for 2.84ns;
---		sl_VSCRLDn <= '0';
+--		sl_W_Rn <= '1';
+--		wait for 8*140 ns;
 --		sl_HSCRLDn <= '0';
---		wait for 140ns;
---		sl_R_Wn    <= '1';
---		sl_VSCRLDn <= '1';
+--		wait for 8*140 ns;
 --		sl_HSCRLDn <= '1';
---		wait for 428.52ns;
+--		sl_W_Rn <= '0';
+--		wait for 8*140 ns;
 --
---		slv_MDO <= x"00B0";
---		sl_R_Wn    <= '0';
---		wait for 2.84ns;
---		sl_MISCn   <= '0';
---		wait for 140ns;
---		sl_R_Wn    <= '1';
---		sl_MISCn   <= '1';
---		wait for 428.52ns;
+--		slv_MDO <= x"0040";
+--		sl_W_Rn <= '1';
+--		wait for 8*140 ns;
+--		sl_VSCRLDn <= '0';
+--		wait for 8*140 ns;
+--		sl_VSCRLDn <= '1';
+--		sl_W_Rn <= '0';
+--		wait for 8*140 ns;
 --
 --		slv_MDO <= x"0000";
---		sl_R_Wn    <= '0';
---		wait for 2.84ns;
---		sl_PFSPCn  <= '0';
---		wait for 140ns;
---		sl_R_Wn    <= '1';
---		sl_PFSPCn  <= '1';
---		wait for 428.52ns;
+--		sl_W_Rn <= '1';
+--		wait for 8*140 ns;
+--		sl_PFSPCn <= '0';
+--		wait for 8*140 ns;
+--		sl_PFSPCn <= '1';
+--		sl_W_Rn <= '0';
+--		wait for 8*140 ns;
 --
+--		slv_MDO <= x"0090";
+--		sl_W_Rn <= '1';
+--		wait for 8*140 ns;
+--		sl_MISCn <= '0';
+--		wait for 8*140 ns;
+--		sl_MISCn <= '1';
+--		sl_W_Rn <= '0';
+--		wait for 8*140 ns;
+--
+--		slv_MDO <= x"0000";
 --		sl_VBUSn   <= '1';
---		wait;
 --	end process;
--- pragma translate_on
+--pragma translate_on
 
 	O_HBLANK <= sl_HBLANKn;
 	O_VBLANK <= sl_VBLANKn;
@@ -212,8 +243,8 @@ begin
 
 		I_SNDRESn   => sl_SNDRESn,
 
-		I_USB_RXD   => I_USB_RXD,
-		O_USB_TXD   => O_USB_TXD,
+--		I_USB_RXD   => I_USB_RXD,
+--		O_USB_TXD   => O_USB_TXD,
 
 		O_BW_Rn     => sl_W_Rn,
 		O_CRAMn     => sl_CRAMn,
@@ -311,7 +342,9 @@ begin
 
 	u_cart : entity work.INDY_CART
 	port map (
+		I_SLAP_TYPE => I_SLAP_TYPE,
 		I_MCKR      => I_CLK_7M,
+		I_XCKR      => I_CLK_14M,
 
 		I_SLAPn     => sl_SLAP,
 		I_MEXTn     => sl_MEXTn,
@@ -328,7 +361,8 @@ begin
 		O_MD        => slv_MEXTD,
 
 		I_SROMn     => slv_SROMn,
-		O_SMD       => slv_SMD,
+		I_SMD       => slv_SBDO, --slv_SMDO, -- from Audio
+		O_SMD       => slv_SMDI, -- to Audio
 		I_SBA       => slv_SBA,
 
 		I_MGRA      => slv_MGRA,
@@ -336,6 +370,7 @@ begin
 		I_MGHF      => sl_MGHF,
 		I_GLDn      => sl_GLDn,
 		I_MO_PFn    => sl_MO_PFn,
+		I_SNDEXTn   => sl_SNDEXTn,
 		I_SNDRSTn   => sl_SNDRESn,
 		I_SNDBW_Rn  => sl_SNDBW_Rn,
 		I_B02       => sl_B02,
@@ -344,9 +379,13 @@ begin
 		O_MOSR      => slv_MOSR,
 		O_PFSR      => slv_PFSR,
 
-		-- sound
-		O_SNDL      => open,
-		O_SNDR      => open
+		-- sound L and R are the same
+		O_SND       => s_TMS_out,
+		O_VADDR     => O_VADDR,
+		I_5C_DB     => I_5C_DB,
+		I_5C_DA     => I_5C_DA,
+		I_5B_DB     => I_5B_DB,
+		I_5B_DA     => I_5B_DA
 	);
 
 	u_audio : entity work.AUDIO
@@ -355,27 +394,44 @@ begin
 		I_1H        => sl_1H,
 		I_2H        => sl_2H,
 		O_B02       => sl_B02,
+
 		I_SNDNMIn   => sl_SNDNMIn,
 		I_SNDRSTn   => sl_SNDRESn,
 		I_SNDINTn   => sl_SNDINTn,
 		O_SNDBW_Rn  => sl_SNDBW_Rn,
+		O_WR68Kn    => sl_WR68Kn,
+		O_RD68Kn    => sl_RD68Kn,
 
 		I_SELFTESTn => '1', -- FIXME connect inputs
 		I_COIN_AUX  => '1', -- FIXME connect inputs
 		I_COIN_L    => '1', -- FIXME connect inputs
 		I_COIN_R    => '1', -- FIXME connect inputs
 
-		I_SMD       => slv_SMD,
-		I_SBD       => slv_SBDI,
-		O_SBD       => slv_SBDO,
-		O_SBA       => slv_SBA,
-		O_SROMn     => slv_SROMn,
-		O_WR68Kn    => sl_WR68Kn,
-		O_RD68Kn    => sl_RD68Kn,
-
 		O_LED       => open,	-- LED indicators
 		O_CCTRn     => open,	-- coin counters open collector active low
-		O_AUDIO_L   => O_AUDIO_L,
-		O_AUDIO_R   => O_AUDIO_R
+		O_YM_L      => s_audio_YML,
+		O_YM_R      => s_audio_YMR,
+		O_PKS       => s_POK_out,
+
+		O_SROMn     => slv_SROMn,
+		O_SNDEXTn   => sl_SNDEXTn,
+		O_SBA       => slv_SBA,
+		O_SBD       => slv_SBDO,
+		I_SMD       => slv_SMDI,
+--		O_SMD       => slv_SMDO,
+		I_SBD       => slv_SBDI
 	);
+
+	p_volmux : process
+	begin
+		wait until rising_edge(I_CLK_7M);
+		-- add signed outputs together, already have extra spare bits for overflow
+		s_chan_l <= ( ((s_TMS_out & "00") + s_audio_YML) + (s_POK_out(s_POK_out'left) & s_POK_out & "000000000") );
+		s_chan_r <= ( ((s_TMS_out & "00") + s_audio_YMR) + (s_POK_out(s_POK_out'left) & s_POK_out & "000000000") );
+
+		-- convert to unsigned slv for DAC usage
+		O_AUDIO_L <= std_logic_vector(s_chan_l + 16383);
+		O_AUDIO_R <= std_logic_vector(s_chan_r + 16383);
+	end process;
+
 end RTL;

@@ -17,8 +17,8 @@ library ieee;
 	use ieee.numeric_std.all;
 
 --pragma translate_off
-	use ieee.std_logic_textio.all;
-	use std.textio.all;
+--	use ieee.std_logic_textio.all;
+--	use std.textio.all;
 --pragma translate_on
 
 entity VIDEO is
@@ -50,8 +50,8 @@ entity VIDEO is
 		O_MO_PFn   : out std_logic;
 		O_MATCHn   : out std_logic;
 		O_VBKINTn  : out std_logic;
-		O_VBLANKn  : out std_logic;
 		O_HBLANKn  : out std_logic;
+		O_VBLANKn  : out std_logic;
 		O_VRAC2    : out std_logic;
 		O_1H       : out std_logic;
 		O_2H       : out std_logic;
@@ -70,6 +70,14 @@ end VIDEO;
 
 architecture RTL of VIDEO is
 	signal
+		sl_2HDLn_last,
+		sl_4HDDn_last,
+		sl_4HDLn_last,
+		sl_4Hn_last,
+		sl_MISCn_last,
+		sl_VBLANKn_last,
+		sl_VSCRCLK_last,
+
 		sl_2HDLn,
 		sl_4C_Y,
 		sl_4H,
@@ -92,7 +100,6 @@ architecture RTL of VIDEO is
 		sl_MATCHn,
 		sl_MGHF,
 		sl_MISCn,
-		sl_MISCn_last,
 		sl_MM19,
 		sl_MM18,
 		sl_MM8,
@@ -112,11 +119,10 @@ architecture RTL of VIDEO is
 		sl_TBTEST,
 		sl_VBKACKn,
 		sl_VBKINTn,
-		sl_VBLANKn,
 		sl_HBLANKn,
+		sl_VBLANKn,
 		sl_VBUSn,
 		sl_VIDBLANKn,
-		sl_VRAMRDn,
 		sl_VRAMWEn,
 		sl_VRAMWR,
 		sl_VRD13,
@@ -371,8 +377,8 @@ begin
 	O_VSYNC    <= sl_VSYNCn;
 	O_HSYNC    <= sl_HSYNCn;
 	O_CSYNC    <= sl_COMPSYNCn;
-	O_VBLANKn <= sl_VBLANKn;
-	O_HBLANKn <= sl_HBLANKn;
+	O_VBLANKn  <= sl_VBLANKn;
+	O_HBLANKn  <= sl_HBLANKn;
 
 	O_TBTEST   <= sl_TBTEST;
 	O_TBRESn   <= sl_TBRESn;
@@ -389,6 +395,8 @@ begin
 	O_4H       <= slv_H(2);
 	O_CPU_D    <= slv_MDO;
 
+	sl_CRAMWRn <= I_CRAMWRn;
+	sl_VRAMWR  <= I_VRAMWR;
 	slv_MDI    <= I_CPU_D;
 	slv_MA     <= I_CPU_A;
 	sl_VBUSn   <= I_VBUSn;
@@ -401,8 +409,19 @@ begin
 	sl_PFSPCn  <= I_PFSPCn;
 	sl_VSCRLDn <= I_VSCRLDn;
 	sl_HSCRLDn <= I_HSCRLDn;
-	sl_CRAMWRn <= I_CRAMWRn;
-	sl_VRAMWR  <= I_VRAMWR;
+
+	-- for detecting edges
+	p_edges : process
+	begin
+		wait until rising_edge(I_XCKR);
+		sl_VBLANKn_last <= sl_VBLANKn;
+		sl_VSCRCLK_last <= sl_VSCRCLK;
+		sl_MISCn_last   <= sl_MISCn;
+		sl_2HDLn_last   <= sl_2HDLn;
+		sl_4Hn_last     <= sl_4Hn;
+		sl_4HDLn_last   <= sl_4HDLn;
+		sl_4HDDn_last   <= sl_4HDDn;
+	end process;
 
 	-------------
 	-- sheet 7 --
@@ -424,7 +443,7 @@ begin
 		O_PFHSTn  => sl_PFHSTn,
 		O_BUFCLRn => open,
 
-		O_HBLKn   => open,
+		O_HBLKn   => sl_HBLANKn,
 		O_VBLKn   => sl_VBLANKn,
 		O_VSCK    => sl_VSCRCLK,
 		O_CK0n    => open, -- same as MCKF
@@ -449,21 +468,23 @@ begin
 	sl_4HDL   <= not sl_4HDLn;
 
 	-- 9Da latch
-	p_9Da : process(sl_VBLANKn,sl_VBKACKn)
+	p_9Da : process
 	begin
+		wait until rising_edge(I_XCKR);
 		if sl_VBKACKn = '0' then
 			sl_VBKINTn <= '1'; -- preset
-		elsif falling_edge(sl_VBLANKn) then
+		elsif sl_VBLANKn_last = '1' and sl_VBLANKn = '0' then
 			sl_VBKINTn <= '0'; -- set
 		end if;
 	end process;
 
 	-- 9Db latch
-	p_9Db : process(sl_4H,sl_NXLn)
+	p_9Db : process
 	begin
+		wait until rising_edge(I_XCKR);
 		if sl_NXLn = '0' then
 			sl_NXLn_star <= '0'; -- preset
-		elsif rising_edge(sl_4H) then
+		elsif sl_4Hn_last = '1' and sl_4Hn = '0' then
 			sl_NXLn_star <= '1'; -- set
 		end if;
 	end process;
@@ -529,6 +550,7 @@ begin
 --			slv_7F_7H <= slv_VRAM;
 --		end if;
 --	end process;
+-- FIXME
 	slv_7F_7H <= slv_VRAM when slv_VRAC(2) = '1';
 
 	slv_VBD <= slv_MDI when sl_VBUSn = '0' and sl_BR_Wn = '0' else slv_7F_7H;
@@ -536,8 +558,7 @@ begin
 	-- 9C latch
 	p_9C : process
 	begin
-		wait until rising_edge(I_MCKR);
-		sl_MISCn_last <= sl_MISCn;
+		wait until rising_edge(I_XCKR);
 		if sl_SYSRESn = '0' then
 			sl_SNDRSTn  <= '0';
 			sl_TBTEST   <= '0';
@@ -547,7 +568,7 @@ begin
 			sl_PP19     <= '0';
 			sl_TBRESn   <= '0';
 			sl_ALBNK    <= '0';
-		elsif (sl_MISCn_last='1' and sl_MISCn='0' ) then
+		elsif (sl_MISCn_last = '1' and sl_MISCn = '0') then
 			sl_SNDRSTn  <= slv_VBD(7); -- Sound CPU reset
 			sl_TBTEST   <= slv_VBD(6); -- Trackball test
 			slv_MPBS(2) <= slv_VBD(5); -- MO RAM bank select
@@ -560,19 +581,21 @@ begin
 	end process;
 
 	-- 2C latch
-	p_2C : process(sl_4Hn,sl_NXLn_star)
+	p_2C : process
 	begin
+		wait until rising_edge(I_XCKR);
 		if sl_NXLn_star = '0' then
 			slv_MN <= (others=>'0');
-		elsif rising_edge(sl_4Hn) then
+		elsif sl_4Hn_last = '0' and sl_4Hn = '1' then
 			slv_MN <= slv_VRD(5 downto 0);
 		end if;
 	end process;
 
 	-- 5F latch
-	p_5F : process(sl_4HDLn)
+	p_5F : process
 	begin
-		if rising_edge(sl_4HDLn) then
+		wait until rising_edge(I_XCKR);
+		if sl_4HDLn_last = '0' and sl_4HDLn = '1' then
 			sl_PFHFLIP         <= slv_VRD(15); -- PF H flip
 			sl_PP18            <= slv_VRD(14); -- PF tile+palette select
 			slv_PP(9 downto 4) <= slv_VRD( 5 downto 0);
@@ -580,11 +603,12 @@ begin
 	end process;
 
 	-- 6C, 7C, 8C counters
-	p_6C_7C_8C : process(sl_VSCRCLK,sl_VSCRLDn)
+	p_6C_7C_8C : process
 	begin
+		wait until rising_edge(I_XCKR);
 		if sl_VSCRLDn = '0' then
 			slv_PFV <= slv_VBD( 8 downto 0);
-		elsif rising_edge(sl_VSCRCLK) then
+		elsif sl_VSCRCLK_last = '0' and sl_VSCRCLK = '1' then
 			slv_PFV <= slv_PFV + 1;
 		end if;
 	end process;
@@ -597,24 +621,27 @@ begin
 
 	p_7L : process(sl_2HDLn)
 	begin
+		-- FIXME timing on /2HDL may cause sdram setup/hold errors
+--		wait until rising_edge(I_XCKR);
+--		if sl_2HDLn_last = '0' and sl_2HDLn = '1' then
 		if rising_edge(sl_2HDLn) then
 			slv_MGRA(17 downto 10) <= slv_VRD(13 downto 6);
 		end if;
 	end process;
 
 	-- muxes 6J, 6K, 6L
-	sl_MGHF <=
-		sl_MOHFLIP                                  when sl_4HDLn = '0' else sl_PFHFLIP;
-		slv_MGRA(19 downto 18) <= sl_MM19 & sl_MM18 when sl_4HDLn = '0' else sl_PP19 & sl_PP18;
-		slv_MGRA( 9 downto  1) <= slv_MM            when sl_4HDLn = '0' else slv_PP;
+	sl_MGHF                <= sl_MOHFLIP        when sl_4HDLn = '0' else sl_PFHFLIP;
+	slv_MGRA(19 downto 18) <= sl_MM19 & sl_MM18 when sl_4HDLn = '0' else sl_PP19 & sl_PP18;
+	slv_MGRA( 9 downto  1) <= slv_MM            when sl_4HDLn = '0' else slv_PP;
 
 	-- gates 1F, 4L, 5L
 	sl_MATCHn <= (not (((sl_VRD13 xor sl_VRESETn) xor slv_1H_S(4)) and slv_1H_S(3) and slv_3H_S(4)) ) and sl_4HDL;
 
 	-- latches 2F, 3F
-	p_2F_3F : process(sl_4HDDn)
+	p_2F_3F : process
 	begin
-		if rising_edge(sl_4HDDn) then
+		wait until rising_edge(I_XCKR);
+		if sl_4HDDn_last = '0' and sl_4HDDn = '1' then
 			sl_MOHFLIP <= slv_VRD(15);          -- MO X flip
 			sl_VRD13   <= slv_VRD(13);          -- MO Y pos 8
 			slv_1H_B   <= slv_VRD(12 downto 9); -- MO Y pos 7..4
@@ -635,9 +662,10 @@ begin
 	slv_4H_S <= ('0' & slv_4H_A + slv_4H_B);
 
 	-- latch 4F
-	p_4F : process(sl_4HDL)
+	p_4F : process
 	begin
-		if rising_edge(sl_4HDL) then
+		wait until rising_edge(I_XCKR);
+		if sl_4HDLn_last = '1' and sl_4HDLn = '0' then
 			sl_MM19   <= slv_VRD(15);
 			sl_MM18   <= slv_VRD(14);
 			slv_MM(9) <= slv_VRD( 5);
@@ -649,9 +677,10 @@ begin
 	slv_MM(7 downto 4) <= slv_4H_S(3 downto 0);
 	slv_MM(3 downto 1) <= slv_2H_S(2 downto 0);
 
-	p_3C : process(sl_4H)
+	p_3C : process
 	begin
-		if rising_edge(sl_4H) then
+		wait until rising_edge(I_XCKR);
+		if sl_4Hn_last = '1' and sl_4Hn = '0' then
 			-- 1A, 3C latch
 			slv_ROM_2B_addr(12 downto 4) <= slv_VRD( 8 downto 0);
 		end if;

@@ -39,8 +39,8 @@ begin
 	p_RAM : process
 	begin
 		wait until rising_edge(I_MCKR);
-		if I_EN ='0' then
-			if I_WR = '0' then
+		if I_EN ='1' then
+			if I_WR = '1' then
 				RAM(to_integer(unsigned(I_ADDR))) <= I_DATA;
 			else
 				O_DATA <= RAM(to_integer(unsigned(I_ADDR)));

@@ -18,8 +18,8 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 
 --pragma translate_off
-	use ieee.std_logic_textio.all;
-	use std.textio.all;
+--	use ieee.std_logic_textio.all;
+--	use std.textio.all;
 --pragma translate_on
 
 entity TG68K is
@@ -32,8 +32,6 @@ port(
 	IPL           : in  std_logic_vector( 2 downto 0);
 	DI            : in  std_logic_vector(15 downto 0);
 
-	I_USB_RXD     : in  std_logic;
-	O_USB_TXD     : out std_logic := '1';
 	AS            : out std_logic;
 	UDS           : out std_logic;
 	LDS           : out std_logic;
@@ -62,82 +60,82 @@ architecture logic of TG68K is
 	signal data_out    : std_logic_vector(15 downto 0):=(others=>'0');
 
 begin
---pragma translate_off
-	debug_writemem : process
-		file		file_xx		: TEXT open WRITE_MODE is "RAM.log";
-		variable	s				: line;
-	begin
-		wait until falling_edge(CLK);
-		if phase="11" and busstate="10" then -- mem read
-			if addr_out(23 downto 8) = x"0000" then
-				-- reading vector table
-				write(s, string'(" R VECT ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-			elsif addr_out(23 downto 12) = x"038" then
-				-- Slapstic
-				write(s, string'(" R SLAP ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-			end if;
-		end if;
-		if phase="11" and busstate="11" then -- mem write
-			case addr_out(23 downto 12) is
-				when x"038" =>
-					-- Slapstic
-					write(s, string'(" W SLAP ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-				when x"800" | x"801" =>
-					-- Program RAM
-					write(s, string'(" W PROG ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-				when x"802" =>
-					-- EEPROM
-					write(s, string'(" W EROM ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-				-- special
-				when x"803" =>
-					if addr_out(11 downto 0) = x"100" then
-						--    803100   Watchdog reset
-						write(s, string'(" W WDOG ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-					elsif addr_out(11 downto 0) = x"12E" then
-						--    80312E   Sound CPU reset
-						write(s, string'(" W SRST ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-					elsif addr_out(11 downto 0) = x"140" then
-						--    803140   VBLANK IRQ acknowledge
-						write(s, string'(" W VBLK ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-					elsif addr_out(11 downto 0) = x"150" then
-						--    803150   EEPROM enable
-						write(s, string'(" W EENA ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-					elsif addr_out(11 downto 0) = x"170" then
-						--    803170   Sound command write
-						write(s, string'(" W WSND ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-					else
-						write(s, string'(" W XXXX ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-					end if;
-				when x"900" | x"901" =>
-					-- PF RAM
-					write(s, string'(" W PF   ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-				when x"902" | x"903" =>
-					-- MO RAM
-					write(s, string'(" W MO   ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-				when x"904" =>
-					-- Spare RAM
-					write(s, string'("W SPAR "), right, 34); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- ")); write(s, time'image(now), right, 18); writeline(file_xx,s);
-				when x"905" =>
-					-- PF Y scroll
-					if addr_out(11 downto 0) = x"F6E" then
-						write(s, string'(" W YSCR ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-					else
-					-- AL RAM
-						write(s, string'(" W AL   ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-					end if;
-				when x"910" =>
-					-- Palette RAM
-					write(s, string'(" W PAL  ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-				when x"930" =>
-					--    930000   Playfield X scroll
-					write(s, string'(" W XSCR ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-				when others => null;
-					-- dump any other writes also
-					write(s, string'(" W XXXX ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
-			end case;
-		end if;
-	end process;
---pragma translate_on
+----pragma translate_off
+--	debug_writemem : process
+--		file		file_xx		: TEXT open WRITE_MODE is "RAM.log";
+--		variable	s				: line;
+--	begin
+--		wait until falling_edge(CLK);
+--		if clkena_ext = '1' and phase="11" and busstate="10" then -- mem read
+--			if addr_out(23 downto 8) = x"0000" then
+--				-- reading vector table
+--				write(s, string'(" R VECT ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--			elsif addr_out(23 downto 12) = x"038" then
+--				-- Slapstic
+--				write(s, string'(" R SLAP ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--			end if;
+--		end if;
+--		if clkena_ext = '1' and phase="11" and busstate="11" then -- mem write
+--			case addr_out(23 downto 12) is
+--				when x"038" =>
+--					-- Slapstic
+--					write(s, string'(" W SLAP ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"800" | x"801" =>
+--					-- Program RAM
+--					write(s, string'(" W PROG ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"802" =>
+--					-- EEPROM
+--					write(s, string'(" W EROM ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				-- special
+--				when x"803" =>
+--					if addr_out(11 downto 0) = x"100" then
+--						--    803100   Watchdog reset
+--						write(s, string'(" W WDOG ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--					elsif addr_out(11 downto 0) = x"12E" then
+--						--    80312E   Sound CPU reset
+--						write(s, string'(" W SRST ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--					elsif addr_out(11 downto 0) = x"140" then
+--						--    803140   VBLANK IRQ acknowledge
+--						write(s, string'(" W VBLK ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--					elsif addr_out(11 downto 0) = x"150" then
+--						--    803150   EEPROM enable
+--						write(s, string'(" W EENA ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--					elsif addr_out(11 downto 0) = x"170" then
+--						--    803170   Sound command write
+--						write(s, string'(" W WSND ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--					else
+--						write(s, string'(" W XXXX ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--					end if;
+--				when x"900" | x"901" =>
+--					-- PF RAM
+--					write(s, string'(" W PF   ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"902" | x"903" =>
+--					-- MO RAM
+--					write(s, string'(" W MO   ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"904" =>
+--					-- Spare RAM
+--					write(s, string'("W SPAR "), right, 34); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- ")); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"905" =>
+--					-- PF Y scroll
+--					if addr_out(11 downto 0) = x"F6E" then
+--						write(s, string'(" W YSCR ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--					else
+--					-- AL RAM
+--						write(s, string'(" W AL   ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--					end if;
+--				when x"910" =>
+--					-- Palette RAM
+--					write(s, string'(" W PAL  ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"930" =>
+--					--    930000   Playfield X scroll
+--					write(s, string'(" W XSCR ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when others => null;
+--					-- dump any other writes also
+--					write(s, string'(" W XXXX ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--			end case;
+--		end if;
+--	end process;
+----pragma translate_on
 
 	ADDR <= addr_out(23 downto 0);
 	DO<=data_out;
@@ -153,7 +151,7 @@ begin
 	port map(
 		clk            => CLK,
 		nReset         => RST,
-		clkena         => clkena_in,
+		clkena_in      => clkena_in,
 		data_in        => data_latch,
 		IPL            => IPL,
 		IPL_autovector => '1',
@@ -164,8 +162,6 @@ begin
 		nLDS           => nLDS,
 		nResetOut      => nRSTout,
 		FC             => FC,
-		I_USB_RXD      => I_USB_RXD,
-		O_USB_TXD      => O_USB_TXD,
 
 		CPU            => cpusel,
 		busstate       => busstate,
@@ -175,7 +171,7 @@ begin
 
 	clkena_in <= '1' when clkena_ext='1' and (busstate="01" or clk_ena='1') else '0';
 
-	AS  <= '1' when busstate="01" else as_ena;
+	AS  <= '1' when busstate="01" else as_ena or skipFetch;
 	WR  <= '1' when busstate="01" else as_ena or nWR;
 	UDS <= '1' when busstate="01" else as_ena or nUDS;
 	LDS <= '1' when busstate="01" else as_ena or nLDS;
@@ -188,29 +184,31 @@ begin
 			clk_ena <= '0';
 			as_ena  <= '1';
 		else
-			clk_ena <= '0';
-			as_ena  <= '1';
-			case phase is
-				when "00" =>
-					if busstate/="01" then
-						phase <= "01";
+			if clkena_ext = '1' then
+				clk_ena <= '0';
+				as_ena  <= '1';
+				case phase is
+					when "00" =>
+						if busstate/="01" then
+							phase <= "01";
+							as_ena <= '0';
+						end if;
+					when "01" =>
+						phase <= "10";
 						as_ena <= '0';
-					end if;
-				when "01" =>
-					phase <= "10";
-					as_ena <= '0';
-				when "10" =>
-					if DTACK='0' or VPA='0' then
-						phase <= "11";
-						data_latch <= DI;
-					else
-						as_ena  <= '0';
-					end if;
-				when "11" =>
-					phase <= "00";
-					clk_ena <= '1';
-				when others => null;
-			end case;
+					when "10" =>
+						if DTACK='0' or VPA='0' or skipFetch = '1' then
+							phase <= "11";
+							data_latch <= DI;
+						else
+							as_ena  <= '0';
+						end if;
+					when "11" =>
+						phase <= "00";
+						clk_ena <= '1';
+					when others => null;
+				end case;
+			end if;
 		end if;
 	end process;
 end;

@@ -10,11 +10,10 @@
 --
 -- For full details, see the GNU General Public License at www.gnu.org/licenses
 --
+-- Motion Object Horizontal Line Buffer
 
 library ieee;
 	use ieee.std_logic_1164.all;
-	use ieee.std_logic_unsigned.all;
-	use ieee.numeric_std.all;
 
 entity MOHLB_TTL is
 	port(

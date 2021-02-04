@@ -34,7 +34,7 @@ architecture RTL of VRAMS is
 begin
 	p_VRAM : process
 	begin
-		wait until falling_edge(I_MCKR);
+		wait until rising_edge(I_MCKR);
 		if I_WEn = '0' then
 			VRAM(to_integer(unsigned(I_VRA))) <= I_VRD;
 		else

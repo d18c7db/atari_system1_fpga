@@ -83,7 +83,7 @@ begin
 	begin
 		wait until rising_edge(I_MCKR);
 		if sl_LDPFn = '0' then
-			sl_PFFLP		<= I_FLP and I_HLDAn; -- FIXME see note above
+			sl_PFFLP		<= I_FLP and I_HLDAn; -- see note above
 			sl_PF_HLDAn	<= I_HLDAn;
 			sl_PF_HLDBn	<= I_HLDBn;
 		end if;
@@ -94,7 +94,7 @@ begin
 	begin
 		wait until rising_edge(I_MCKR);
 		if sl_LDMOn = '0' then
-			sl_MOFLP		<= I_FLP and I_HLDBn; -- FIXME see note above
+			sl_MOFLP		<= I_FLP and I_HLDBn; -- see note above
 			sl_MO_HLDAn	<= I_HLDAn;
 			sl_MO_HLDBn	<= I_HLDBn;
 		end if;
@@ -123,7 +123,7 @@ begin
 	-- selects left or right shifter outputs based on FLP
 	slv_1B_4B <= sl_PFFDB & sl_PFFDA when sl_PFFLP = '1' else sl_PFSDB & sl_PFSDA;
 	slv_1A_5B <= sl_MOFDB & sl_MOFDA when sl_MOFLP = '1' else sl_MOSDB & sl_MOSDA;
---               ^^^^^^^^  FIXME sprite color issue due to MOSR4 line
+
 	-- latches 2A, 2B, 3A, 3B
 	-- 2 clock cycle delay line
 	p_2A_2B_3A_3B : process
