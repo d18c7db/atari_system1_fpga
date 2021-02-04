@@ -152,17 +152,17 @@ architecture RTL of ATARISYS1_TOP is
 	signal
 		slv_audio_l,
 		slv_audio_r
-								: std_logic_vector( 7 downto 0) := (others => '0');
+								: std_logic_vector(15 downto 0) := (others => '0');
 
-	signal slv_GP_DATA		: std_logic_vector(31 downto 0) := (others => '0');
-	signal slv_MP_DATA		: std_logic_vector(15 downto 0) := (others => '0');
-	signal slv_AP_DATA		: std_logic_vector( 7 downto 0) := (others => '0');
-	signal slv_CP_DATA		: std_logic_vector( 7 downto 0) := (others => '0');
+	signal slv_GP_DATA	: std_logic_vector(31 downto 0) := (others => '0');
+	signal slv_MP_DATA	: std_logic_vector(15 downto 0) := (others => '0');
+	signal slv_AP_DATA	: std_logic_vector( 7 downto 0) := (others => '0');
+	signal slv_CP_DATA	: std_logic_vector( 7 downto 0) := (others => '0');
 
-	signal slv_GP_ADDR		: std_logic_vector(17 downto 0) := (others => '0');
-	signal slv_MP_ADDR		: std_logic_vector(18 downto 0) := (others => '0');
-	signal slv_AP_ADDR		: std_logic_vector(15 downto 0) := (others => '0');
-	signal slv_CP_ADDR		: std_logic_vector(13 downto 0) := (others => '0');
+	signal slv_GP_ADDR	: std_logic_vector(16 downto 0) := (others => '0');
+	signal slv_MP_ADDR	: std_logic_vector(18 downto 0) := (others => '0');
+	signal slv_AP_ADDR	: std_logic_vector(15 downto 0) := (others => '0');
+	signal slv_CP_ADDR	: std_logic_vector(13 downto 0) := (others => '0');
 
 	signal user_AD			: std_logic_vector(20 downto 0) := (others => '0');
 	signal user_DI			: std_logic_vector(15 downto 0) := (others => '0');
@@ -314,8 +314,14 @@ begin
 		O_HBLANK		=> open,
 		O_VBLANK		=> open,
 
-		I_USB_RXD	=> I_USB_RXD,
-		O_USB_TXD	=> O_USB_TXD
+		O_VADDR		=> slv_GP_ADDR,
+		I_5C_DB		=> slv_GP_DATA(31 downto 24), -- 1234C
+		I_5C_DA		=> slv_GP_DATA(23 downto 16), -- 6789C
+		I_5B_DB		=> slv_GP_DATA(15 downto  8), -- 1234B
+		I_5B_DA		=> slv_GP_DATA( 7 downto  0)  -- 6789B
+
+--		I_USB_RXD	=> I_USB_RXD,
+--		O_USB_TXD	=> O_USB_TXD
 	);
 
 -- Status indicators for debugging
@@ -440,7 +446,7 @@ begin
 	-- 1 bit D/A converters
 	-----------------------
 	u_dacl : entity work.DAC
-	generic map (msbi_g => 7)
+	generic map (msbi_g => 15)
 	port map (
 		clk_i	=> gclk_28M,
 		res_i	=> int_reset,
@@ -449,7 +455,7 @@ begin
 	);
 
 	u_dacr : entity work.DAC
-	generic map (msbi_g => 7)
+	generic map (msbi_g => 15)
 	port map (
 		clk_i	=> gclk_28M,
 		res_i	=> int_reset,
@@ -510,10 +516,10 @@ begin
 			when 3 =>
 				user_AD <= "01" & slv_MP_ADDR;		-- set 68K program ROM address
 			when 0 =>
-				user_AD <= "000" & slv_GP_ADDR;		-- set graphics ROM address for lower data word
+				user_AD <= "0000" & slv_GP_ADDR;		-- set graphics ROM address for lower data word
 				slv_MP_DATA <= MEM_D; 					-- get 68K program data word
 			when 1 =>
-				user_AD <= "001" & slv_GP_ADDR;		-- set graphics ROM address for upper data word
+				user_AD <= "0001" & slv_GP_ADDR;		-- set graphics ROM address for upper data word
 				slv_GP_DATA(15 downto  0) <= MEM_D;	-- get graphics ROM lower data word
 			when 2 =>
 				slv_GP_DATA(31 downto 16) <= MEM_D;	-- get graphics ROM upper data word

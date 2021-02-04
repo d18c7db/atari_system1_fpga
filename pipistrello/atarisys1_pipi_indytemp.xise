@@ -28,31 +28,31 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/bootstrap.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/bootstrap.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/dac.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/dac.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/dvid.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/dvid.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/POKEY.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/POKEY.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/scan_converter.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/scan_converter.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/spi_flash.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/spi_flash.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/tmds_encoder.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/tmds_encoder.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
@@ -60,195 +60,195 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/atarisy1/PROM_5E.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/atarisy1/PROM_5E.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/atarisy1/ROM_2B.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/atarisy1/ROM_2B.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/atarisy1/ROM_5F.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/atarisy1/ROM_5F.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/atarisy1/ROM_10J.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/atarisy1/ROM_10J.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/atarisy1/ROM_11J.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/atarisy1/ROM_11J.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_135.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_135.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_136.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_136.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_137.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_137.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_138.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_138.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_139.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_139.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_140.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_140.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_141.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_141.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_142.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_142.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_143.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_143.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_144.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_144.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_145.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_145.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_146.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_146.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_147.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_147.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_148.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_148.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_149.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_149.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_150.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_150.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_151.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_151.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_152.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_152.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_153.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_153.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_154.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_154.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_155.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_155.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_358.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_358.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_359.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_359.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_431.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_431.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_432.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_432.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_433.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_433.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_434.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_434.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_456.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_456.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/ROM_457.VHD" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="roms/indytemp/ROM_457.VHD" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/AUDIO.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/AUDIO.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/CRAMS.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/CRAMS.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/ATARISYS1.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/ATARISYS1.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/GPC.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/GPC.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/LINEBUF.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/LINEBUF.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/LINECTR.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/LINECTR.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/LS299.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/LS299.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/PFHS.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/PFHS.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/RAM_2K8.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/RAM_2K8.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/RGBI.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/RGBI.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/SLAGS.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/SLAGS.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/SLAPSTIC.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/SLAPSTIC.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/SYNGEN.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/SYNGEN.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/TG68K.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/TG68K.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
@@ -256,183 +256,187 @@
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/TMS5220.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/TMS5220.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/VIDEO.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/VIDEO.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/VRAMS.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/VRAMS.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/MAIN.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/MAIN.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/TG68K/TG68K_ALU.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/m6522.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/TG68K/TG68K_Pack.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/TG68K/TG68K_ALU.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/TG68K/TG68KdotC_Kernel.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/TG68K/TG68K_Pack.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/T65/T65.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/TG68K/TG68KdotC_Kernel.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/T65/T65_ALU.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/T65/T65.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/T65/T65_MCode.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/T65/T65_ALU.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/T65/T65_Pack.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/T65/T65_MCode.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/T65/T65_Pack.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_acc.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_csr_ch.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_acc.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_csr_op.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_csr_ch.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_eg.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_csr_op.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_exp2lin.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_eg.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_exprom.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_exp2lin.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_kon.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_exprom.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_lfo.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_kon.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_lfo_lfsr.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_lfo.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_lin2exp.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_lfo_lfsr.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_mmr.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_lin2exp.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_mod.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_mmr.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_noise.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_mod.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_noise_lfsr.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_noise.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_op.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_noise_lfsr.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_pg.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_op.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_phinc_rom.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_pg.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_phrom.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_phinc_rom.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_pm.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_phrom.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_reg.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_pm.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_sh.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_reg.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/jt51/jt51_timers.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_sh.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/debug/debug.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/jt51/jt51_timers.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/debug/async_receiver.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/debug/debug.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/debug/async_transmitter.v" xil_pn:type="FILE_VERILOG">
+    <file xil_pn:name="../MiSTer/rtl/lib/debug/async_receiver.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../roms/indytemp/EEPROM.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/debug/async_transmitter.v" xil_pn:type="FILE_VERILOG">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/LETA_REP.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/EEPROM.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/CART-INDY.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/LETA_REP.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/MOHLB_TTL.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/CART-INDY.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../atarisys1/MOHLB_LSI.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/MOHLB_TTL.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/gamecube/gamecube.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/atarisys1/MOHLB_LSI.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/bitmap/bmp_out.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/gamecube/gamecube.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
-    <file xil_pn:name="../../lib/bitmap/bmp_pkg.vhd" xil_pn:type="FILE_VHDL">
+    <file xil_pn:name="../MiSTer/rtl/lib/bitmap/bmp_out.vhd" xil_pn:type="FILE_VHDL">
+      <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
+      <association xil_pn:name="Implementation" xil_pn:seqID=""/>
+    </file>
+    <file xil_pn:name="../MiSTer/rtl/lib/bitmap/bmp_pkg.vhd" xil_pn:type="FILE_VHDL">
       <association xil_pn:name="BehavioralSimulation" xil_pn:seqID=""/>
       <association xil_pn:name="Implementation" xil_pn:seqID=""/>
     </file>
@@ -460,7 +464,7 @@
     <!-- The following properties are for internal use only. These should not be modified.-->
     <!--                                                                                  -->
     <property xil_pn:name="PROP_BehavioralSimTop" xil_pn:value="Architecture|TB_ATARISYS1|RTL" xil_pn:valueState="non-default"/>
-    <property xil_pn:name="PROP_DesignName" xil_pn:value="gauntlet_pipi" xil_pn:valueState="non-default"/>
+    <property xil_pn:name="PROP_DesignName" xil_pn:value="atarisys1_pipi" xil_pn:valueState="non-default"/>
     <property xil_pn:name="PROP_DevFamilyPMName" xil_pn:value="spartan6" xil_pn:valueState="default"/>
     <property xil_pn:name="PROP_intProjectCreationTimestamp" xil_pn:value="2020-04-20T20:20:20" xil_pn:valueState="non-default"/>
     <property xil_pn:name="PROP_intWbtProjectID" xil_pn:value="DEFACEDFACADEDECAFC0FFEEBABEF00D" xil_pn:valueState="non-default"/>
