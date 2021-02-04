@@ -7,7 +7,7 @@ Audio section 6502 executes code correctly, audio chip output currently unconnec
 Everything so far has been run in ISIM simulation but not on FPGA hardware yet.  
 
 ## About  
-FPGA implementation of Atari's System 1 (LSI version) arcade platform from 1984.  
+FPGA implementation of Atari's System 1 (LSI version) arcade platform from 1984 for the MiSTer (DE-10 nano) FPGA board  
 Based primarily on the SP-280, SP-286 schematics with additional support from SP-277, SP-298  
 
 Supported game cartridges  
