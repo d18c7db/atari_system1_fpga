@@ -99,7 +99,6 @@ architecture RTL of AUDIO is
 		sl_COIN_L,
 		sl_COIN_R,
 		sl_MCKF,
-		sl_CPU_ena,
 		sl_B02,
 		sl_SNDBUF,
 		sl_68KBUF,
@@ -164,7 +163,7 @@ begin
 	u_16JK : entity work.T65
 	port map (
 		MODE    => "00",        -- "00" => 6502, "01" => 65C02, "10" => 65C816
-		Enable  => sl_B02,  -- clock enable to run at 1.7MHz
+		Enable  => sl_B02,      -- clock enable to run at 1.7MHz
 
 		CLK     => I_MCKR,      -- in, system clock 7MHz
 		IRQ_n   => sl_6502IRQn, -- in, active low irq
@@ -200,13 +199,12 @@ begin
 		slv_YM_data      when sl_RD02n = '0' and sl_YMHCSn  = '0' else
 		(others=>'0');
 
--- Delay CPU enable to create an artificial PHI2 clock enable, PHI1 is not used
+-- Create a PHI2 clock enable, PHI1 is not used
 	p_cpuena : process
 	begin
 		wait until rising_edge(I_MCKR);
 		-- use 1H and 2H to create a short clock enable for the 7MHz master clock
-		sl_CPU_ena <= I_1H and (not I_2H);
-		sl_B02 <= sl_CPU_ena;
+		sl_B02 <= I_1H and I_2H;
 	end process;
 
 	-- 14Ja 2:4 decoder

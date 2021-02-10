@@ -11,6 +11,8 @@
 -- For full details, see the GNU General Public License at www.gnu.org/licenses
 --
 -- Ïndiana Jones and the Temple of Doom cartridge for Atari System 1
+-- From SP-282 schematic (identical to SP-280 just different page order)
+--
 -- controls
 -- UP1 up
 -- DN1 down
@@ -88,6 +90,7 @@ end INDY_CART;
 
 architecture logic of INDY_CART is
 	signal
+		sl_MCKF,
 		sl_GCS4n,
 		sl_GCS3n,
 		sl_GCS2n,
@@ -140,9 +143,9 @@ architecture logic of INDY_CART is
 		slv_TMS_DI,
 		slv_TMS_DO,
 		slv_PFSR,
-		slv_SMDI,
+		slv_VIA_DI,
 		slv_SMDO,
-		slv_PIA_DO,
+		slv_VIA_DO,
 		slv_5B_DB,
 		slv_5B_DA,
 		slv_5C_DB,
@@ -223,7 +226,7 @@ begin
 	O_MD        <= slv_MD;
 
 	O_SMD       <= slv_SMDO;
-	slv_SMDI    <= I_SMD;
+	slv_VIA_DI  <= I_SMD;
 
 	slv_ROMn    <= I_ROMn;
 	slv_SROMn   <= I_SROMn;
@@ -281,12 +284,12 @@ begin
 	-- sheet 4 SP-282 -- (sheet 2 SP-280) --
 	----------------------------------------
 
-	-- 14D 6522 PIA
+	-- 14D 6522 VIA
 	u_14D : entity work.M6522
 	port map (
 		I_RS        => slv_SBA(3 downto 0),
-		I_DATA      => slv_SMDI,
-		O_DATA      => slv_PIA_DO,
+		I_DATA      => slv_VIA_DI,
+		O_DATA      => slv_VIA_DO,
 		O_DATA_OE_L => open,
 
 		I_RW_L      => sl_SNDBR_Wn,
@@ -314,14 +317,14 @@ begin
 		O_CB2       => open,
 		O_CB2_OE_L  => open,
 
-		I_PB(7)     => '1',
-		I_PB(6)     => '1',
-		I_PB(5)     => '1',
-		I_PB(4)     => '1',
+		I_PB(7)     => slv_PBO(7),
+		I_PB(6)     => slv_PBO(6),
+		I_PB(5)     => slv_PBO(5),
+		I_PB(4)     => slv_PBO(4),
 		I_PB(3)     => sl_TMS_INTn,
 		I_PB(2)     => sl_TMS_RDYn,
-		I_PB(1)     => '1',
-		I_PB(0)     => '1',
+		I_PB(1)     => slv_PBO(1),
+		I_PB(0)     => slv_PBO(0),
 
 		O_PB        => slv_PBO,
 		O_PB_OE_L   => open,
@@ -329,8 +332,11 @@ begin
 		I_P2_H      => sl_B02, -- FIXME
 		RESET_L     => sl_SNDRSTn,
 		ENA_4       => '1',-- FIXME
-		CLK         => I_MCKR
+		CLK         => sl_MCKF
 	);
+	-- running 6522 off inverted clk gives it a chance to place data on the
+	-- data bus in time for 6502 to read it else the CPU misses it
+	sl_MCKF <= not I_MCKR;
 
 	-- 12E counter is clocked by 7.159MHz and provides TMS5220 clock
 	-- when PB4 is 0 counter is preset with 5, else 7 then counts up to F before being preset again
@@ -338,7 +344,7 @@ begin
 	p_14S : process
 	begin
 		wait until rising_edge(I_MCKR);
-		if slv_14S = "1111" then
+		if slv_14S = "1111" or sl_SNDRSTn = '0' then
 			slv_14S <= "01" & slv_PBO(4) & '1';
 		else
 			slv_14S <= slv_14S + 1;
@@ -378,7 +384,7 @@ begin
 	);
 
 	slv_SMDO <=
-		slv_PIA_DO  when sl_SNDBR_Wn = '1' and sl_SNDEXTn   = '0' else
+		slv_VIA_DO  when sl_SNDBR_Wn = '1' and sl_SNDEXTn   = '0' else
 		slv_ROM_13D when sl_SNDBR_Wn = '1' and slv_SROMn(0) = '0' else
 		slv_ROM_14D when sl_SNDBR_Wn = '1' and slv_SROMn(1) = '0' else
 		slv_ROM_16D when sl_SNDBR_Wn = '1' and slv_SROMn(2) = '0' else

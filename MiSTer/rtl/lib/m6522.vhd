@@ -331,14 +331,14 @@ begin
   p_read : process
   begin
 	wait until rising_edge(CLK);
-	
+
 	if ENA_4 = '1' then
 		t1_r_reset_int <= false;
 		t2_r_reset_int <= false;
 		sr_read_ena <= false;
 		r_irb_hs <= '0';
 		r_ira_hs <= '0';
-		
+
 		if (cs = '1') and (I_RW_L = '1') then
 		  case I_RS is
 			--when x"0" => O_DATA <= r_irb; r_irb_hs <= '1';

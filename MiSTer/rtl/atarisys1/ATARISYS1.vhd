@@ -167,61 +167,6 @@ architecture RTL of FPGA_ATARISYS1 is
 		slv_MGRA
 								: std_logic_vector(19 downto 1) := (others=>'0');
 begin
--- pragma translate_off
--- horizontal/vertical scroll offsets and plane selection for testing
---	stim : process
---	begin
---		wait until rising_edge(sl_VSYNC);
---		slv_MDO  <= x"0000";
---		sl_W_Rn  <= '0';
---		sl_HSCRLDn <= '1'; -- 800000 Play Field Horizontal Scroll
---		sl_VSCRLDn <= '1'; -- 820000 PFV
---		sl_PFSPCn  <= '1'; -- 840000 Play Field H scroll
---		sl_MISCn   <= '1'; -- 860000 Bank Select "..MMMP.A"
---		sl_VBUSn   <= '0';
---		wait for 2*140 ns;
---
---		slv_MDO <= x"0040";
---		sl_W_Rn <= '1';
---		wait for 8*140 ns;
---		sl_HSCRLDn <= '0';
---		wait for 8*140 ns;
---		sl_HSCRLDn <= '1';
---		sl_W_Rn <= '0';
---		wait for 8*140 ns;
---
---		slv_MDO <= x"0040";
---		sl_W_Rn <= '1';
---		wait for 8*140 ns;
---		sl_VSCRLDn <= '0';
---		wait for 8*140 ns;
---		sl_VSCRLDn <= '1';
---		sl_W_Rn <= '0';
---		wait for 8*140 ns;
---
---		slv_MDO <= x"0000";
---		sl_W_Rn <= '1';
---		wait for 8*140 ns;
---		sl_PFSPCn <= '0';
---		wait for 8*140 ns;
---		sl_PFSPCn <= '1';
---		sl_W_Rn <= '0';
---		wait for 8*140 ns;
---
---		slv_MDO <= x"0090";
---		sl_W_Rn <= '1';
---		wait for 8*140 ns;
---		sl_MISCn <= '0';
---		wait for 8*140 ns;
---		sl_MISCn <= '1';
---		sl_W_Rn <= '0';
---		wait for 8*140 ns;
---
---		slv_MDO <= x"0000";
---		sl_VBUSn   <= '1';
---	end process;
---pragma translate_on
-
 	O_HBLANK <= sl_HBLANKn;
 	O_VBLANK <= sl_VBLANKn;
 
