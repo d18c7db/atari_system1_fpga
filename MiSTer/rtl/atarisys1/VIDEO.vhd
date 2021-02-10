@@ -9,7 +9,7 @@
 --	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 --
 -- For full details, see the GNU General Public License at www.gnu.org/licenses
---
+-- From SP-286 schematic
 
 library ieee;
 	use ieee.std_logic_1164.all;
@@ -70,10 +70,6 @@ end VIDEO;
 
 architecture RTL of VIDEO is
 	signal
-		sl_2HDLn_last,
-		sl_4HDDn_last,
-		sl_4HDLn_last,
-		sl_4Hn_last,
 		sl_MISCn_last,
 		sl_VBLANKn_last,
 		sl_VSCRCLK_last,
@@ -410,19 +406,6 @@ begin
 	sl_VSCRLDn <= I_VSCRLDn;
 	sl_HSCRLDn <= I_HSCRLDn;
 
-	-- for detecting edges
-	p_edges : process
-	begin
-		wait until rising_edge(I_XCKR);
-		sl_VBLANKn_last <= sl_VBLANKn;
-		sl_VSCRCLK_last <= sl_VSCRCLK;
-		sl_MISCn_last   <= sl_MISCn;
-		sl_2HDLn_last   <= sl_2HDLn;
-		sl_4Hn_last     <= sl_4Hn;
-		sl_4HDLn_last   <= sl_4HDLn;
-		sl_4HDDn_last   <= sl_4HDDn;
-	end process;
-
 	-------------
 	-- sheet 7 --
 	-------------
@@ -471,6 +454,7 @@ begin
 	p_9Da : process
 	begin
 		wait until rising_edge(I_XCKR);
+		sl_VBLANKn_last <= sl_VBLANKn;
 		if sl_VBKACKn = '0' then
 			sl_VBKINTn <= '1'; -- preset
 		elsif sl_VBLANKn_last = '1' and sl_VBLANKn = '0' then
@@ -481,10 +465,10 @@ begin
 	-- 9Db latch
 	p_9Db : process
 	begin
-		wait until rising_edge(I_XCKR);
+		wait until rising_edge(I_MCKR);
 		if sl_NXLn = '0' then
 			sl_NXLn_star <= '0'; -- preset
-		elsif sl_4Hn_last = '1' and sl_4Hn = '0' then
+		elsif slv_H(2 downto 0) = "011" then -- falling edge /4H
 			sl_NXLn_star <= '1'; -- set
 		end if;
 	end process;
@@ -543,15 +527,13 @@ begin
 
 	-- 7F, 7H / 10F, 11F bus latches
 	-- VRAC(2) 0=latched, 1=transparent
---	p_7F_7H : process
---		begin
---		wait until rising_edge(I_XCKR);
---		if slv_VRAC(2) = '1' then
---			slv_7F_7H <= slv_VRAM;
---		end if;
---	end process;
--- FIXME
-	slv_7F_7H <= slv_VRAM when slv_VRAC(2) = '1';
+	p_7F_7H : process
+		begin
+		wait until rising_edge(I_XCKR);
+		if slv_VRAC(2) = '1' then
+			slv_7F_7H <= slv_VRAM;
+		end if;
+	end process;
 
 	slv_VBD <= slv_MDI when sl_VBUSn = '0' and sl_BR_Wn = '0' else slv_7F_7H;
 
@@ -559,6 +541,7 @@ begin
 	p_9C : process
 	begin
 		wait until rising_edge(I_XCKR);
+		sl_MISCn_last   <= sl_MISCn;
 		if sl_SYSRESn = '0' then
 			sl_SNDRSTn  <= '0';
 			sl_TBTEST   <= '0';
@@ -583,10 +566,10 @@ begin
 	-- 2C latch
 	p_2C : process
 	begin
-		wait until rising_edge(I_XCKR);
+		wait until rising_edge(I_MCKR);
 		if sl_NXLn_star = '0' then
 			slv_MN <= (others=>'0');
-		elsif sl_4Hn_last = '0' and sl_4Hn = '1' then
+		elsif slv_H(2 downto 0) = "111" then -- rising edge /4H
 			slv_MN <= slv_VRD(5 downto 0);
 		end if;
 	end process;
@@ -594,8 +577,8 @@ begin
 	-- 5F latch
 	p_5F : process
 	begin
-		wait until rising_edge(I_XCKR);
-		if sl_4HDLn_last = '0' and sl_4HDLn = '1' then
+		wait until rising_edge(I_MCKR);
+		if slv_H(2 downto 0) = "000" then -- rising edge /4HDL
 			sl_PFHFLIP         <= slv_VRD(15); -- PF H flip
 			sl_PP18            <= slv_VRD(14); -- PF tile+palette select
 			slv_PP(9 downto 4) <= slv_VRD( 5 downto 0);
@@ -606,6 +589,7 @@ begin
 	p_6C_7C_8C : process
 	begin
 		wait until rising_edge(I_XCKR);
+		sl_VSCRCLK_last <= sl_VSCRCLK;
 		if sl_VSCRLDn = '0' then
 			slv_PFV <= slv_VBD( 8 downto 0);
 		elsif sl_VSCRCLK_last = '0' and sl_VSCRCLK = '1' then
@@ -619,12 +603,11 @@ begin
 	-- sheet 9 --
 	-------------
 
-	p_7L : process(sl_2HDLn)
+	p_7L : process
 	begin
 		-- FIXME timing on /2HDL may cause sdram setup/hold errors
---		wait until rising_edge(I_XCKR);
---		if sl_2HDLn_last = '0' and sl_2HDLn = '1' then
-		if rising_edge(sl_2HDLn) then
+		wait until rising_edge(I_MCKR);
+		if slv_H(1 downto 0) = "00" then -- rising edge /2HDL
 			slv_MGRA(17 downto 10) <= slv_VRD(13 downto 6);
 		end if;
 	end process;
@@ -640,8 +623,8 @@ begin
 	-- latches 2F, 3F
 	p_2F_3F : process
 	begin
-		wait until rising_edge(I_XCKR);
-		if sl_4HDDn_last = '0' and sl_4HDDn = '1' then
+		wait until rising_edge(I_MCKR);
+		if slv_H(2 downto 0) = "001" then -- rising edge /4HDD
 			sl_MOHFLIP <= slv_VRD(15);          -- MO X flip
 			sl_VRD13   <= slv_VRD(13);          -- MO Y pos 8
 			slv_1H_B   <= slv_VRD(12 downto 9); -- MO Y pos 7..4
@@ -664,8 +647,8 @@ begin
 	-- latch 4F
 	p_4F : process
 	begin
-		wait until rising_edge(I_XCKR);
-		if sl_4HDLn_last = '1' and sl_4HDLn = '0' then
+		wait until rising_edge(I_MCKR);
+		if slv_H(2 downto 0) = "100" then -- falling edge /4HDL
 			sl_MM19   <= slv_VRD(15);
 			sl_MM18   <= slv_VRD(14);
 			slv_MM(9) <= slv_VRD( 5);
@@ -679,8 +662,8 @@ begin
 
 	p_3C : process
 	begin
-		wait until rising_edge(I_XCKR);
-		if sl_4Hn_last = '1' and sl_4Hn = '0' then
+		wait until rising_edge(I_MCKR);
+		if slv_H(2 downto 0) = "011" then -- falling edge /4H
 			-- 1A, 3C latch
 			slv_ROM_2B_addr(12 downto 4) <= slv_VRD( 8 downto 0);
 		end if;
