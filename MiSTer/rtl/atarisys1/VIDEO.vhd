@@ -42,6 +42,9 @@ entity VIDEO is
 		I_CPU_D    : in  std_logic_vector(15 downto 0);
 		O_CPU_D    : out std_logic_vector(15 downto 0);
 
+		O_ADDR5F   : out std_logic_vector(12 downto 0);
+		I_DATA5F   : in  std_logic_vector( 7 downto 0);
+
 		O_TBTEST   : out std_logic;
 		O_TBRESn   : out std_logic;
 		O_SNDRESn  : out std_logic;
@@ -56,6 +59,7 @@ entity VIDEO is
 		O_1H       : out std_logic;
 		O_2H       : out std_logic;
 		O_4H       : out std_logic;
+		O_8H       : out std_logic;
 		O_MGRA     : out std_logic_vector(19 downto 1);
 
 		O_I        : out std_logic_vector( 3 downto 0);
@@ -74,10 +78,10 @@ architecture RTL of VIDEO is
 		sl_VBLANKn_last,
 		sl_VSCRCLK_last,
 
-		sl_2HDLn,
+--		sl_2HDLn,
 		sl_4C_Y,
 		sl_4H,
-		sl_4HDDn,
+--		sl_4HDDn,
 		sl_4HDL,
 		sl_4HDLn,
 		sl_4Hn,
@@ -389,6 +393,7 @@ begin
 	O_1H       <= slv_H(0);
 	O_2H       <= slv_H(1);
 	O_4H       <= slv_H(2);
+	O_8H       <= slv_H(3);
 	O_CPU_D    <= slv_MDO;
 
 	sl_CRAMWRn <= I_CRAMWRn;
@@ -431,9 +436,9 @@ begin
 		O_VSCK    => sl_VSCRCLK,
 		O_CK0n    => open, -- same as MCKF
 		O_CK0     => open, -- same as MCKR
-		O_2HDLn   => sl_2HDLn,
+--		O_2HDLn   => sl_2HDLn,
 		O_4HDLn   => sl_4HDLn,
-		O_4HDDn   => sl_4HDDn,
+--		O_4HDDn   => sl_4HDDn,
 		O_NXLn    => sl_NXLn,
 		O_V       => slv_V,
 		O_H       => slv_H
@@ -674,12 +679,8 @@ begin
 	slv_ROM_2B_addr(13) <= sl_ALBNK; -- not used because 2B ROM is only 8K
 
 	-- 2/3B ROM (BAD DUMP, use 5F instead)
-	u_2_3B : entity work.ROM_5F
-	port map (
-		CLK  => I_MCKR,
-		ADDR => slv_ROM_2B_addr(12 downto 0),
-		DATA => slv_ROM_2B_data
-	);
+	O_ADDR5F <= slv_ROM_2B_addr(12 downto 0);
+	slv_ROM_2B_data <= I_DATA5F;
 
 	-- 1B, 2B shifters S1 S0 11=load 10=shift left 01=shift right 00=inhibit
 	p_1B_2B : process

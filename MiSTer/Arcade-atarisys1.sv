@@ -194,11 +194,11 @@ reg         ce_pix;
 wire        pll_locked;
 wire        hblank, vblank;
 wire        hs, vs;
-reg  [ 7:0] sw[8];
+//reg  [ 7:0] sw[8];
 wire [ 3:0] r,g,b, gvid_I, gvid_R, gvid_G, gvid_B;
 wire [15:0] aud_l, aud_r;
 wire [31:0] status;
-wire [ 1:0] buttons;
+wire [ 1:0] sl_buttons;
 wire        forced_scandoubler;
 wire        direct_video;
 wire        ioctl_download;
@@ -226,18 +226,15 @@ wire [15:0] joy3;
 wire [10:0] ps2_key;
 
 wire [21:0] gamma_bus;
-wire reset = RESET | status[0] | buttons[1]| ioctl_download;
+wire sl_reset = RESET | status[0] | sl_buttons[1]| ioctl_download;
 
 reg [7:0]   p1 = 8'h0;
 reg [7:0]   p2 = 8'h0;
-reg [7:0]   p3 = 8'h0;
-reg [7:0]   p4 = 8'h0;
 
-reg         m_coin1   = 1'b0;
-reg         m_coin2   = 1'b0;
-reg         m_coin3   = 1'b0;
-reg         m_coin4   = 1'b0;
-wire        m_service = ~status[7];
+reg  m_coin_aux = 1'b0;
+reg  m_coin_l   = 1'b0;
+reg  m_coin_r   = 1'b0;
+wire m_service = status[7];
 
 assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
 
@@ -275,7 +272,7 @@ pll pll
 	.locked(pll_locked)
 );
 
-always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
+//always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
 always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==1)) slap_type <= ioctl_dout;
 
 wire pressed = ps2_key[9];
@@ -284,101 +281,29 @@ always @(posedge clk_sys) begin
 	old_state <= ps2_key[10];
 
 	if(old_state != ps2_key[10]) begin
-		if (slap_type == 118) // select controller mapping
 		casex(ps2_key[8:0])
-			// Vindicators tank controls
-			'h023: p1[7]        <= pressed; // P1 R BACK  (D).
-			'h01B: p1[6]        <= pressed; // P1 L BACK  (S).
-			'h024: p1[5]        <= pressed; // P1 R FORW  (E).
-			'h01D: p1[4]        <= pressed; // P1 L FORW  (W).
-			'h02D: p1[3]        <= pressed; // P1 R THUMB (R)
-			'h015: p1[2]        <= pressed; // P1 L THUMB (Q)
-			'h02B: p1[1]        <= pressed; // P1 R TRIG  (F).
-			'h01C: p1[0]        <= pressed; // P1 L TRIG  (A).
+			// Default MAME Controls Assignment
+			'h175: p1[7]        <= pressed; // up         (up_arrow)
+			'h172: p1[6]        <= pressed; // down       (down_arrow)
+			'h16B: p1[5]        <= pressed; // left       (left_arrow)
+			'h174: p1[4]        <= pressed; // right      (right_arrow)
+			'h014: p1[1]        <= pressed; // start/whip (left ctrl)
+			'h011: p1[0]        <= pressed; // jump       (left alt)
 
-			'h042: p2[7]        <= pressed; // P2 R BACK  (K).
-			'h03B: p2[6]        <= pressed; // P2 L BACK  (J).
-			'h043: p2[5]        <= pressed; // P2 R FORW  (I).
-			'h03C: p2[4]        <= pressed; // P2 L FORW  (U).
-			'h044: p2[3]        <= pressed; // P2 R THUMB (O)
-			'h035: p2[2]        <= pressed; // P2 L THUMB (Y)
-			'h04B: p2[1]        <= pressed; // P2 R TRIG  (L).
-			'h033: p2[0]        <= pressed; // P2 L TRIG  (H).
+			'h02D: p2[7]        <= pressed; // up         (R)
+			'h02B: p2[6]        <= pressed; // down       (F)
+			'h023: p2[5]        <= pressed; // left       (D)
+			'h034: p2[4]        <= pressed; // right      (G)
+			'h01C: p2[1]        <= pressed; // start/whip (A)
+			'h01B: p2[0]        <= pressed; // jump       (S)
 
-			'h016: p3[0]        <= pressed; // P1 START   (1).
-			'h01E: p3[1]        <= pressed; // P2 START   (2)
-
-			'h02E: m_coin1      <= pressed; // P1 COIN    (5)
-			'h036: m_coin2      <= pressed; // P2 COIN    (6)
-//			'h03D: m_coin3      <= pressed; // P3 COIN    (7)
-//			'h03E: m_coin4      <= pressed; // P4 COIN    (8)
-		endcase
-		else
-		casex(ps2_key[8:0])
-			// controls
-			'hX75: p1[7]        <= pressed; // up    (up_arrow)
-			'hX72: p1[6]        <= pressed; // down  (down_arrow)
-			'hX6B: p1[5]        <= pressed; // left  (left_arrow)
-			'hX74: p1[4]        <= pressed; // right (right_arrow)
-			'h014: p1[1]        <= pressed; // fire  (ctrl)
-			'h011: p1[0]        <= pressed; // magic (alt)
-
-			'h02D: p2[7]        <= pressed; // up    (R)
-			'h02B: p2[6]        <= pressed; // down  (F)
-			'h023: p2[5]        <= pressed; // left  (D)
-			'h034: p2[4]        <= pressed; // right (G)
-			'h01C: p2[1]        <= pressed; // fire  (A)
-			'h01B: p2[0]        <= pressed; // magic (S)
-
-			'h02E: m_coin1      <= pressed; // coin1 (5)
-			'h036: m_coin2      <= pressed; // coin2 (6)
-			'h03D: m_coin3      <= pressed; // coin3 (7)
-			'h03E: m_coin4      <= pressed; // coin4 (8)
+			'h02E: m_coin_l     <= pressed; // coin_l     (5)
+			'h036: m_coin_r     <= pressed; // coin_r     (6)
+			'h03D: m_coin_aux   <= pressed; // coin_aux   (7)
+//			'h03E: m_           <= pressed; //            (8)
 		endcase
 	end
 end
-
-/// from ultratank
-
-reg JoyW_Fw,JoyW_Bk,JoyX_Fw,JoyX_Bk;
-reg JoyY_Fw,JoyY_Bk,JoyZ_Fw,JoyZ_Bk;
-always @(posedge clk_sys) begin 
-	case ({joy0[3],joy0[2],joy0[1],joy0[0]}) // Up,Down,Left,Right
-		4'b1010: begin JoyW_Fw=0; JoyW_Bk=0; JoyX_Fw=1; JoyX_Bk=0; end //Up_Left
-		4'b1000: begin JoyW_Fw=1; JoyW_Bk=0; JoyX_Fw=1; JoyX_Bk=0; end //Up
-		4'b1001: begin JoyW_Fw=1; JoyW_Bk=0; JoyX_Fw=0; JoyX_Bk=0; end //Up_Right
-		4'b0001: begin JoyW_Fw=1; JoyW_Bk=0; JoyX_Fw=0; JoyX_Bk=1; end //Right
-		4'b0101: begin JoyW_Fw=0; JoyW_Bk=1; JoyX_Fw=0; JoyX_Bk=0; end //Down_Right
-		4'b0100: begin JoyW_Fw=0; JoyW_Bk=1; JoyX_Fw=0; JoyX_Bk=1; end //Down
-		4'b0110: begin JoyW_Fw=0; JoyW_Bk=0; JoyX_Fw=0; JoyX_Bk=1; end //Down_Left
-		4'b0010: begin JoyW_Fw=0; JoyW_Bk=1; JoyX_Fw=1; JoyX_Bk=0; end //Left
-		default: begin JoyW_Fw=0; JoyW_Bk=0; JoyX_Fw=0; JoyX_Bk=0; end
-	endcase
-	case ({joy1[3],joy1[2],joy1[1],joy1[0]}) // Up,Down,Left,Right
-		4'b1010: begin JoyY_Fw=0; JoyY_Bk=0; JoyZ_Fw=1; JoyZ_Bk=0; end //Up_Left
-		4'b1000: begin JoyY_Fw=1; JoyY_Bk=0; JoyZ_Fw=1; JoyZ_Bk=0; end //Up
-		4'b1001: begin JoyY_Fw=1; JoyY_Bk=0; JoyZ_Fw=0; JoyZ_Bk=0; end //Up_Right
-		4'b0001: begin JoyY_Fw=1; JoyY_Bk=0; JoyZ_Fw=0; JoyZ_Bk=1; end //Right
-		4'b0101: begin JoyY_Fw=0; JoyY_Bk=1; JoyZ_Fw=0; JoyZ_Bk=0; end //Down_Right
-		4'b0100: begin JoyY_Fw=0; JoyY_Bk=1; JoyZ_Fw=0; JoyZ_Bk=1; end //Down
-		4'b0110: begin JoyY_Fw=0; JoyY_Bk=0; JoyZ_Fw=0; JoyZ_Bk=1; end //Down_Left
-		4'b0010: begin JoyY_Fw=0; JoyY_Bk=1; JoyZ_Fw=1; JoyZ_Bk=0; end //Left
-		default: begin JoyY_Fw=0; JoyY_Bk=0; JoyZ_Fw=0; JoyZ_Bk=0; end
-	endcase
-end
-
-wire [7:0] I_P1 = (slap_type == 118) ?
-				  ~(p1 | {JoyX_Bk,JoyW_Bk,JoyX_Fw,JoyW_Fw,joy0[7:4]})
-				: ~(p1 | {joy0[3:0], joy0[7:4]});
-wire [7:0] I_P2 = (slap_type == 118) ? 
-				  ~(p2 | {JoyZ_Bk,JoyY_Bk,JoyZ_Fw,JoyY_Fw,joy1[7:4]})
-				: ~(p2 | {joy1[3:0], joy1[7:4]});
-wire [7:0] I_P3 = (slap_type == 118) ?
-				  ~(p3 | { 6'b0,joy1[9],joy0[9]})
-				: ~(p3 | {joy2[3:0], joy2[7:4]});
-wire [7:0] I_P4 = (slap_type == 118) ?
-				  ~(p4)
-				: ~(p4 | {joy3[3:0], joy3[7:4]});
 
 ///////////////////////////////////////////////////
 always @(posedge clk_vid) begin
@@ -415,9 +340,9 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 	.conf_str(CONF_STR),
 	.forced_scandoubler(forced_scandoubler),
 
-	.buttons(buttons),
+	.buttons(sl_buttons),
 	.status(status),
-	.status_menumask({(slap_type == 118),direct_video}),
+	.status_menumask(direct_video),
 	.direct_video(direct_video),
 
 	.ioctl_download(ioctl_download),
@@ -434,140 +359,295 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 	.ps2_key(ps2_key)
 );
 
-	// convert input video from 16bit IRGB to 12 bit RGB
-	RGBI RCONV (.ADDR({gvid_I,gvid_R}), .DATA(r));
-	RGBI GCONV (.ADDR({gvid_I,gvid_G}), .DATA(g));
-	RGBI BCONV (.ADDR({gvid_I,gvid_B}), .DATA(b));
+// convert input video from 16bit IRGB to 12 bit RGB
+RGBI RCONV (.ADDR({gvid_I,gvid_R}), .DATA(r));
+RGBI GCONV (.ADDR({gvid_I,gvid_G}), .DATA(g));
+RGBI BCONV (.ADDR({gvid_I,gvid_B}), .DATA(b));
 
-	// ###################################################
-	// # This section loads the ROM files through HPS_IO #
-	// ###################################################
-
-	wire gp_wr, mp_wr_9A_9B, mp_wr_10A_10B, mp_wr_7A_7B, mp_wr_6A_6B, mp_wr_5A_5B, mp_wr_3A_3B, ap_wr_16R, ap_wr_16S, cp_wr_6P;
-
-	wire [15:0] ap_addr;
-	wire [ 7:0] ap_data, ap_data_16R, ap_data_16S;
-
-	wire [16:0] gp_addr;
-	wire [31:0] gp_data;
-
-	wire [18:0] mp_addr;
-	wire [15:0] mp_data, mp_data_9A_9B, mp_data_10A_10B, mp_data_7A_7B, mp_data_6A_6B, mp_data_5A_5B, mp_data_3A_3B;
-
-	wire [13:0] cp_addr;
-	wire [ 7:0] cp_data;
-
-	// ioctl_addr 000000..01FFFF = video ROMs 2L  2A  1L  1A  (4*32KB)
-	// ioctl_addr 020000..03FFFF = video ROMs 2MN 2B  1MN 1B  (4*32KB)
-	// ioctl_addr 040000..05FFFF = video ROMs 2P  2C  1P  1C  (4*32KB)
-	// ioctl_addr 060000..07FFFF = video ROMs 2R  2D  1R  1D  (4*32KB)
-	// ioctl_addr 080000..09FFFF = video ROMs 2ST 2EF 1ST 1EF (4*32KB)
-	// ioctl_addr 0A0000..0BFFFF = video ROMs 2U  2J  1U  1J  (4*32KB)
-	assign gp_wr         = (ioctl_wr && !ioctl_index && ioctl_addr[24:18] < 7'h03 && ioctl_addr[1:0]==2'b11) ? 1'b1 : 1'b0;
-	// ioctl_addr 0C0000..0CFFFF = CPU ROMS 9A 9B (2*32KB)
-	assign mp_wr_9A_9B   = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h0C && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-	// ioctl_addr 0D0000..0DFFFF = NO ROM (2*32KB filler)
-	// ioctl_addr 0E0000..0EFFFF = NO ROM (2*32KB filler)
-	// ioctl_addr 0F0000..0F7FFF = CPU ROMS 10A 10B (2*16KB)
-	assign mp_wr_10A_10B = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h1E && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-	// ioctl_addr 0F8000..0FFFFF = NO ROMS (2*16K filler)
-	// ioctl_addr 100000..10FFFF = CPU ROMS 7A 7B (2*32KB)
-	assign mp_wr_7A_7B   = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h10 && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-	// ioctl_addr 110000..11FFFF = CPU ROMS 6A 6B (2*32KB)
-	assign mp_wr_6A_6B   = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h11 && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-	// ioctl_addr 120000..12FFFF = CPU ROMS 5A 5B (2*32KB)
-	assign mp_wr_5A_5B   = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h12 && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-	// ioctl_addr 130000..13FFFF = CPU ROMS 3A 3B (2*32KB)
-	assign mp_wr_3A_3B   = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h13 && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-	// ioctl_addr 140000..147FFF = AUDIO ROM 16S (32KB)
-	assign ap_wr_16S     = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h28 ) ? 1'b1 : 1'b0;
-	// ioctl_addr 148000..14BFFF = AUDIO ROM 16R (16KB)
-	assign ap_wr_16R     = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h52 ) ? 1'b1 : 1'b0;
-	// ioctl_addr 14C000..14FFFF = CHAR ROM 6P (16KB)
-	assign cp_wr_6P      = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h53 ) ? 1'b1 : 1'b0;
-
-	assign mp_data =
-		mp_addr[18:15] == 4'b0000  ? mp_data_9A_9B :
-		mp_addr[18:14] == 5'b00110 ? mp_data_10A_10B :
-		mp_addr[18:15] == 4'b0100  ? mp_data_7A_7B :
-		mp_addr[18:15] == 4'b0101  ? mp_data_6A_6B :
-		mp_addr[18:15] == 4'b0110  ? mp_data_5A_5B :
-		mp_addr[18:15] == 4'b0111  ? mp_data_3A_3B :
-		{ 16'h0 };
-
-	assign ap_data = ap_addr[15] ? ap_data_16S : ap_data_16R;
+// ###################################################
+// # This section loads the ROM files through HPS_IO #
+// ###################################################
 
 /*************************************************************/
-	wire [22:0] sdram_addr;
-	reg  [31:0] sdram_data=0;
-	reg         sdram_we=0;
-	wire        sdram_ready;
-	wire        ap_en;
-	wire        gp_en;
-	wire        mp_en;
+wire [22:0] sdram_addr;
+reg  [31:0] sdram_data=0;
+reg         sdram_we=0;
+wire        sdram_ready;
 
-	// the order in which the files are listed in the .mra file determines the order in which they appear here on the HPS bus
-	// some files are interleaved as DWORD, some are interleaved as WORD and some are not interleaved and appear as BYTEs
-	// acc_bytes collects previous bytes so that when a WORD or DWORD is complete it is written to the RAM as appropriate
-	reg [23:0] acc_bytes = 0;
-	always @(posedge clk_sys)
-		if (ioctl_wr && (!ioctl_index) && ioctl_download )
-			acc_bytes<={acc_bytes[15:0],ioctl_dout}; // accumulate previous bytes
+// the order in which the files are listed in the .mra file determines the order in which they appear here on the HPS bus
+// some files are interleaved as DWORD, some are interleaved as WORD and some are not interleaved and appear as BYTEs
+// acc_bytes collects previous bytes so that when a WORD or DWORD is complete it is written to the RAM as appropriate
+reg [23:0] acc_bytes = 0;
+always @(posedge clk_sys)
+	if (ioctl_wr && (!ioctl_index) && ioctl_download )
+		acc_bytes<={acc_bytes[15:0],ioctl_dout}; // accumulate previous bytes
 
-	always @(posedge clk_sys)
+always @(posedge clk_sys)
+begin
+	sdram_we <= 1'b0;
+	if (ioctl_wr && (!ioctl_index) && ioctl_download && ioctl_addr[1] && ioctl_addr[0])
 	begin
-		sdram_we <= 1'b0;
-		if (ioctl_wr && (!ioctl_index) && ioctl_download && ioctl_addr[1] && ioctl_addr[0])
-		begin
-			sdram_data <= {acc_bytes,ioctl_dout};
-			sdram_we <= 1'b1;
-		end
+		sdram_data <= {acc_bytes,ioctl_dout};
+		sdram_we <= 1'b1;
 	end
+end
 
-	assign sdram_addr = ioctl_download?ioctl_addr[24:2]:{6'd0,gp_addr};
-	assign ioctl_wait = ~(pll_locked && sdram_ready);
+assign sdram_addr = ioctl_download?ioctl_addr[24:2]:{6'd0,slv_VADDR};
+assign ioctl_wait = ~(pll_locked && sdram_ready);
 
-	sdram #(.tCK_ns(1000/93.06817)) sdram
-	(
-		.I_RST(~pll_locked),
-		.I_CLK(clk_sys),
+sdram #(.tCK_ns(1000/93.06817)) sdram
+(
+	.I_RST(~pll_locked),
+	.I_CLK(clk_sys),
 
-		// controller interface
-		.I_ADDR(sdram_addr),
-		.I_DATA(sdram_data),
-		.I_WE(sdram_we),
-		.O_RDY(sdram_ready),
-		.O_DATA(gp_data),
+	// controller interface
+	.I_ADDR(sdram_addr),
+	.I_DATA(sdram_data),
+	.I_WE(sdram_we),
+	.O_RDY(sdram_ready),
+	.O_DATA(slv_VDATA),
 
-		// SDRAM interface
-		.SDRAM_DQ(SDRAM_DQ),
-		.SDRAM_A(SDRAM_A),
-		.SDRAM_BA(SDRAM_BA),
-		.SDRAM_DQML(SDRAM_DQML),
-		.SDRAM_DQMH(SDRAM_DQMH),
-		.SDRAM_CLK(),
-		.SDRAM_CKE(SDRAM_CKE),
-		.SDRAM_nCS(SDRAM_nCS),
-		.SDRAM_nRAS(SDRAM_nRAS),
-		.SDRAM_nCAS(SDRAM_nCAS),
-		.SDRAM_nWE(SDRAM_nWE)
-	);
+	// SDRAM interface
+	.SDRAM_DQ(SDRAM_DQ),
+	.SDRAM_A(SDRAM_A),
+	.SDRAM_BA(SDRAM_BA),
+	.SDRAM_DQML(SDRAM_DQML),
+	.SDRAM_DQMH(SDRAM_DQMH),
+	.SDRAM_CLK(),
+	.SDRAM_CKE(SDRAM_CKE),
+	.SDRAM_nCS(SDRAM_nCS),
+	.SDRAM_nRAS(SDRAM_nRAS),
+	.SDRAM_nCAS(SDRAM_nCAS),
+	.SDRAM_nWE(SDRAM_nWE)
+);
+
+// hardcoded ROMs for testing, use SDRAM/DPRAM for release
+//wire gp_wr;
+wire sl_wr_13D, sl_wr_14D, sl_wr_16D;
+wire sl_wr_10B_10A, sl_wr_12B_12A, sl_wr_14B_14A, sl_wr_16B_16A, sl_wr_11J_10J;
+wire sl_wr_23B, sl_wr_4A , sl_wr_7A;
+
+//wire [31:0] slv_ROM_1C_6C_1B_6B, slv_ROM_2C_7C_2B_7B, slv_ROM_3C_8C_3B_8B, slv_ROM_4C_9C_4B_9B;
+wire [31:0] slv_VDATA;
+wire [19:1] slv_MGRA;
+wire [16:0] slv_VADDR;
+wire [15:1] slv_MA;
+wire [15:1] slv_MADDR;
+wire [15:0] slv_MDATA;
+wire [15:0] slv_ROM_10B_10A, slv_ROM_12B_12A, slv_ROM_14B_14A, slv_ROM_16B_16A, slv_ROM_11J_10J;
+wire [13:0] slv_SBA;
+wire [13:0] s_snd;
+wire [12:0] slv_PA5F;
+wire [ 8:0] slv_PADDR;
+wire [ 7:0] slv_ROM_13D, slv_ROM_14D, slv_ROM_16D, slv_ROM_4A, slv_ROM_7A;
+wire [ 7:0] slv_SDATA, slv_PD4A, slv_PD7A, slv_PD5F;
+wire [ 7:0] slv_SMDO, slv_SMDI, slv_PFSR;
+wire [ 6:0] slv_MOSR;
+wire [ 3:0] slv_ROMn;
+wire [ 2:0] slv_SROMn;
+
+wire sl_SLAPn, sl_BLDSn, sl_BASn, sl_BW_Rn, sl_INT1n, sl_INT3n, sl_WAITn, sl_MA18n;
+wire sl_MATCHn, sl_MGHF, sl_GLDn, sl_MO_PFn, sl_SNDEXTn, sl_SNDRSTn, sl_SNDBW_Rn, sl_B02;
+
+// Video ROMs
+//  00000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.143, start=0, len=0, map(4)=0001
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.147, start=0, len=0, map(4)=0010
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.135, start=0, len=0, map(4)=0100
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.139, start=0, len=0, map(4)=1000
+//  20000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.144, start=0, len=0, map(4)=0001
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.148, start=0, len=0, map(4)=0010
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.136, start=0, len=0, map(4)=0100
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.140, start=0, len=0, map(4)=1000
+//  40000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.145, start=0, len=0, map(4)=0001
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.149, start=0, len=0, map(4)=0010
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.137, start=0, len=0, map(4)=0100
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.141, start=0, len=0, map(4)=1000
+//  60000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.146, start=0, len=0, map(4)=0001
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.150, start=0, len=0, map(4)=0010
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.138, start=0, len=0, map(4)=0100
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.142, start=0, len=0, map(4)=1000
+//assign gp_wr         = (ioctl_wr && !ioctl_index && ioctl_addr[24:17] < 8'h03 && ioctl_addr[1:0]==2'b11) ? 1'b1 : 1'b0;
+//  80000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.431, start=0, len=0, map(2)=01
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.432, start=0, len=0, map(2)=10
+assign sl_wr_10B_10A = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h08  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
+//  90000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.433, start=0, len=0, map(2)=01
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.434, start=0, len=0, map(2)=10
+assign sl_wr_12B_12A = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h09  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
+//  A0000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.457, start=0, len=0, map(2)=01
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.456, start=0, len=0, map(2)=10
+assign sl_wr_14B_14A = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h14  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
+//  A8000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.358, start=0, len=0, map(2)=01
+//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.359, start=0, len=0, map(2)=10
+assign sl_wr_16B_16A = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h15  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
+//  B0000: file: /media/fat/_Arcade/mame/atarisy1.zip/136032.115.j10, start=0, len=0, map(2)=01
+//         file: /media/fat/_Arcade/mame/atarisy1.zip/136032.114.j11, start=0, len=0, map(2)=10
+assign sl_wr_11J_10J = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h16  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
+//  B8000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.153, start=0, len=0
+assign sl_wr_13D     = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h2E ) ? 1'b1 : 1'b0;
+//  BC000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.154, start=0, len=0
+assign sl_wr_14D     = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h2F ) ? 1'b1 : 1'b0;
+//  C0000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.155, start=0, len=0
+assign sl_wr_16D     = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h30 ) ? 1'b1 : 1'b0;
+//  C4000: file: /media/fat/_Arcade/mame/atarisy1.zip/136032.104.f5, start=0, len=0
+assign sl_wr_23B     = (ioctl_wr && !ioctl_index && ioctl_addr[24:13]==12'h62 ) ? 1'b1 : 1'b0;
+//  C6000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.151, start=0, len=0
+assign sl_wr_4A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h630) ? 1'b1 : 1'b0;
+//  C6200: file: /media/fat/_Arcade/mame/indytemp.zip/136036.152, start=0, len=0
+assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) ? 1'b1 : 1'b0;
+// 0xC6400 bytes sent to FPGA
+
+//	assign slv_VDATA =
+//	(slv_VADDR[16:15] == 2'b00)?slv_ROM_1C_6C_1B_6B:
+//	(slv_VADDR[16:15] == 2'b01)?slv_ROM_2C_7C_2B_7B:
+//	(slv_VADDR[16:15] == 2'b10)?slv_ROM_3C_8C_3B_8B:
+//	(slv_VADDR[16:15] == 2'b11)?slv_ROM_4C_9C_4B_9B:
+//	32'h0;
+
+//	ROM_143 ROM_1C( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[31:24]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_147 ROM_6C( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[23:16]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_135 ROM_1B( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[15:8 ]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_139 ROM_6B( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[ 7:0 ]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_144 ROM_2C( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[31:24]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_148 ROM_7C( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[23:16]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_136 ROM_2B( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[15:8 ]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_140 ROM_7B( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[ 7:0 ]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_145 ROM_3C( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[31:24]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_149 ROM_8C( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[23:16]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_137 ROM_3B( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[15:8 ]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_141 ROM_8B( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[ 7:0 ]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_146 ROM_4C( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[31:24]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_150 ROM_9C( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[23:16]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_138 ROM_4B( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[15:8 ]), .ADDR(slv_VADDR(14 downto 0)) );
+//	ROM_142 ROM_9B( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[ 7:0 ]), .ADDR(slv_VADDR(14 downto 0)) );
+
+	// 256 M10K blocks
+//	dpram #(16,32) gp_ram
+//	(.clock_a(clk_sys    ), .enable_a(), .wren_a(gp_wr        ), .address_a(ioctl_addr[17:2]), .data_a({acc_bytes[23:0],ioctl_dout}), .q_a(               ),
+//	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_VADDR[15:0]), .data_b(                            ), .q_b(slv_VDATA      ));
+
+assign slv_MDATA =
+	(~slv_ROMn[0])?slv_ROM_11J_10J:
+	(~slv_ROMn[1])?slv_ROM_10B_10A:
+	(~slv_ROMn[2])?slv_ROM_12B_12A:
+	(~slv_ROMn[3])?slv_ROM_14B_14A:
+	(~sl_SLAPn   )?slv_ROM_16B_16A:
+	16'h0;
+
+//// MAIN CPU ROMs
+//ROM_432 ROM_10B( .CLK(clk_14M), .DATA(slv_ROM_10B_10A[15:8]), .ADDR(slv_MADDR[15:1]) ); // /ROM1
+//ROM_431 ROM_10A( .CLK(clk_14M), .DATA(slv_ROM_10B_10A[ 7:0]), .ADDR(slv_MADDR[15:1]) ); // /ROM1
+//ROM_434 ROM_12B( .CLK(clk_14M), .DATA(slv_ROM_12B_12A[15:8]), .ADDR(slv_MADDR[15:1]) ); // /ROM2
+//ROM_433 ROM_12A( .CLK(clk_14M), .DATA(slv_ROM_12B_12A[ 7:0]), .ADDR(slv_MADDR[15:1]) ); // /ROM2
+//ROM_456 ROM_14B( .CLK(clk_14M), .DATA(slv_ROM_14B_14A[15:8]), .ADDR(slv_MADDR[14:1]) ); // /ROM3
+//ROM_457 ROM_14A( .CLK(clk_14M), .DATA(slv_ROM_14B_14A[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /ROM3
+//
+//// SLAPSTIC controlled ROMs
+//ROM_358 ROM_16B( .CLK(clk_14M), .DATA(slv_ROM_16B_16A[15:8]), .ADDR(slv_MADDR[14:1]) ); // /SLAP
+//ROM_359 ROM_16A( .CLK(clk_14M), .DATA(slv_ROM_16B_16A[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /SLAP
+//
+//// System ROM
+//ROM_11J ROM_11J( .CLK(clk_14M), .DATA(slv_ROM_11J_10J[15:8]), .ADDR(slv_MADDR[14:1]) ); // /ROM0
+//ROM_10J ROM_10J( .CLK(clk_14M), .DATA(slv_ROM_11J_10J[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /ROM0
+
+// 32 M10K blocks
+dpram #(15,16) mp_ram_10B_10A
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_10B_10A), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[15:1]), .data_b(                            ), .q_b(slv_ROM_10B_10A));
+
+// 32 M10K blocks
+dpram #(15,16) mp_ram_12B_12A
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_12B_12A), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[15:1]), .data_b(                            ), .q_b(slv_ROM_12B_12A));
+
+// 16 M10K blocks
+dpram #(14,16) mp_ram_14B_14A
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_14B_14A), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM_14B_14A));
+
+// 16 M10K blocks
+dpram #(14,16) mp_ram_16B_16A
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_16B_16A), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM_16B_16A));
+
+// 16 M10K blocks
+dpram #(14,16) mp_ram_11J_10J
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_11J_10J), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM_11J_10J));
+
+assign slv_SDATA =
+	(~slv_SROMn[0])?slv_ROM_13D:
+	(~slv_SROMn[1])?slv_ROM_14D:
+	(~slv_SROMn[2])?slv_ROM_16D:
+	8'h0;
+
+//// AUDIO CPU ROMs
+//ROM_153 ROM_13D ( .CLK(clk_14M), .DATA(slv_ROM_13D), .ADDR(slv_SBA) );
+//ROM_154 ROM_14D ( .CLK(clk_14M), .DATA(slv_ROM_14D), .ADDR(slv_SBA) );
+//ROM_155 ROM_16D ( .CLK(clk_14M), .DATA(slv_ROM_16D), .ADDR(slv_SBA) );
+
+// 16 M10K blocks
+dpram #(14, 8) ap_ram_13D
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_13D    ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_ROM_13D    ));
+
+// 16 M10K blocks
+dpram #(14, 8) ap_ram_14D
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_14D    ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_ROM_14D    ));
+
+// 16 M10K blocks
+dpram #(14, 8) ap_ram_16D
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_16D    ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_ROM_16D    ));
+
+//// PROMs
+//ROM_5F ROM_23B ( .CLK(clk_14M), .DATA(slv_PD5F), .ADDR(slv_PA5F ) );
+//ROM_151 ROM_4A ( .CLK(clk_14M), .DATA(slv_PD4A), .ADDR(slv_PADDR) );
+//ROM_152 ROM_7A ( .CLK(clk_14M), .DATA(slv_PD7A), .ADDR(slv_PADDR) );
+
+	// 8 M10K blocks
+dpram  #(13,8) cp_ram_23B
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_23B    ), .address_a(ioctl_addr[12:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(  slv_PA5F[12:0]), .data_b(                            ), .q_b(slv_PD5F       ));
+
+	// 1 M10K blocks
+dpram  #(9,8) cp_ram_4A
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_4A     ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD4A       ));
+
+	// 1 M10K blocks
+dpram  #(9,8) cp_ram_7A
+(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_7A     ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+ .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD7A       ));
 
 /*************************************************************/
+// J102         J103        P104            P105               J106
+//  1 +5         1 +5        1 +5           1 Self Test         1 +5
+//  2 P2 Up      2 H_CLK2    2 Coin Ctr 1   2 Right Audio GND   2 N/C
+//  3 P2 Down    3 H_DIR2    3 Coin Ctr 2   3 Right Audio       3 LED2
+//  4 P2 Left    4 V_CLK2    4              4 Left  Audio GND   4 LED1
+//  5 P1 Right   5 V_DIR2    5              5 KEY               5 KEY
+//  6 P2 Right   6 H_CLK1    6              6 Left  Audio       6 SW5
+//  7 P1 Left    7 H_DIR1    7                                  7 SW2   P2 Start/Whip
+//  8 P1 Up      8 V_CLK1    8 KEY                              8 SW4
+//  9 P1 Down    9 KEY       9 Left Coin                        9 SW1   P1 Start/Whip
+// 10 KEY       10 V_DIR1   10 Right Coin                      10 SW3
+// 11 GND       11 GND      11 GND                             11 GND
+
 FPGA_ATARISYS1 atarisys1
 (
-	.I_CLK_14M(clk_14M),
-	.I_CLK_7M(clk_7M),
-
-	.I_RESET(reset),
-
-	.I_JOY(8'b1),
-	.I_CLK(4'b1),
-	.I_DIR(4'b1),
-	.I_SYS(5'b1),
-
-//	.I_SYS({m_service, ~(m_coin1 | joy0[8]), ~(m_coin2 | joy1[8]), ~(m_coin3 | joy2[8]), ~(m_coin4 | joy3[8])}),
 	.I_SLAP_TYPE(slap_type),
+	.I_CLK_7M(clk_7M),
+	.I_CLK_14M(clk_14M),
+
+	.I_RESET(sl_reset),
+
+	.I_JOY({(p2[7:4] | joy1[3:0]), (p1[7:4] | joy0[3:0])}), // P2-U,D,L,R P1-U,D,L,R active high
+	.I_CLK(4'b1111), // LETA trackball inputs active low
+	.I_DIR(4'b1111), // LETA trackball inputs active low
+
+	// SELFTEST, COIN_AUX, COIN_L, COIN_R, SW[5:1] active low
+	.I_SYS({~m_service, ~m_coin_aux, ~(m_coin_r | joy1[8]), ~(m_coin_l | joy0[8]), 2'b11, ~(p2[0] | p1[0] | joy1[4] | joy0[4]), ~(p2[1] | joy1[5]), ~(p1[1] | joy0[5])}),
 
 	.O_LEDS(),
 
@@ -584,23 +664,107 @@ FPGA_ATARISYS1 atarisys1
 	.O_HBLANK(hblank),
 	.O_VBLANK(vblank),
 
-//	.I_USB_RXD(1'b1),
-//	.O_USB_TXD(),
+	.O_ADDR5F(slv_PA5F),
+	.I_DATA5F(slv_PD5F),
 
-	.O_VADDR(gp_addr),
-	.I_5C_DB(gp_data[31:24]), // 1234C
-	.I_5C_DA(gp_data[23:16]), // 6789C
-	.I_5B_DB(gp_data[15: 8]), // 1234B
-	.I_5B_DA(gp_data[ 7: 0])  // 6789B
+	// CART interface
+	.O_SLAPn     (sl_SLAPn),
+	.O_MEXTn     (),
+	.O_BLDSn     (sl_BLDSn),
+	.O_BASn      (sl_BASn),
+	.O_BW_Rn     (sl_BW_Rn),
+	.I_INT1n     (sl_INT1n),
+	.I_INT3n     (sl_INT3n),
+	.I_WAITn     (sl_WAITn),
+
+	.O_ROMn      (slv_ROMn), // main ROM selects
+	.O_MA18n     (sl_MA18n),
+	.O_MADDR     (slv_MA), // addr from CPU
+	.I_MDATA     (slv_MDATA),
+
+	.O_SROMn     (slv_SROMn), // sound ROM selects
+	.O_SMD       (slv_SMDO),
+	.I_SMD       (slv_SMDI),
+	.O_SBA       (slv_SBA),
+
+	.O_MGRA      (slv_MGRA),
+	.O_MATCHn    (sl_MATCHn),
+	.O_MGHF      (sl_MGHF),
+	.O_GLDn      (sl_GLDn),
+	.O_MO_PFn    (sl_MO_PFn),
+	.O_SNDEXTn   (sl_SNDEXTn),
+	.O_SNDRSTn   (sl_SNDRSTn),
+	.O_SNDBW_Rn  (sl_SNDBW_Rn),
+	.O_B02       (sl_B02),
+
+	// from video shifters
+	.I_MOSR      (slv_MOSR),
+	.I_PFSR      (slv_PFSR),
+
+	// sound L and R are the same
+	.I_SND       (s_snd)
+);
+
+ATARI_CART u_cart
+(
+	.I_SLAP_TYPE (slap_type),
+	.I_MCKR      (clk_7M),
+	.I_XCKR      (clk_14M),
+
+	.I_BLDSn     (sl_BLDSn),
+	.I_BASn      (sl_BASn),
+	.I_BW_Rn     (sl_BW_Rn),
+	.O_INT1n     (sl_INT1n),
+	.O_INT3n     (sl_INT3n),
+	.O_WAITn     (sl_WAITn),
+
+	.I_SLAPn     (sl_SLAPn),
+	.I_MA18n     (sl_MA18n),
+	.I_MADDR     (slv_MA), // addr from CPU
+
+	.I_SMD       (slv_SMDO),
+	.O_SMD       (slv_SMDI),
+	.I_SBA       (slv_SBA),
+
+	.I_MGRA      (slv_MGRA),
+	.I_MATCHn    (sl_MATCHn),
+	.I_MGHF      (sl_MGHF),
+	.I_GLDn      (sl_GLDn),
+	.I_MO_PFn    (sl_MO_PFn),
+	.I_SNDEXTn   (sl_SNDEXTn),
+	.I_SNDRSTn   (sl_SNDRSTn),
+	.I_SNDBW_Rn  (sl_SNDBW_Rn),
+	.I_B02       (sl_B02),
+
+	// video shifters
+	.O_MOSR      (slv_MOSR),
+	.O_PFSR      (slv_PFSR),
+
+	// sound L and R are the same
+	.O_SND       (s_snd),
+
+	.O_MADDR(slv_MADDR), // addr after slapstic
+
+	// PROMs
+	.O_PADDR(slv_PADDR),
+	.I_PD4A(slv_PD4A),
+	.I_PD7A(slv_PD7A),
+
+	// sound ROMs
+	.I_SDATA(slv_SDATA),
+
+	// video ROMs
+	.O_VADDR(slv_VADDR),
+	.I_VDATA(slv_VDATA)
 );
 
 // pragma translate_off
-	bmp_out #( "BI" ) bmp_out
-	(
-		.clk_i(clk_7M),
-		.dat_i({r,4'b0,g,4'b0,b,4'b0}),
-		.hs_i(hs),
-		.vs_i(vs)
-	);
+bmp_out #( "BI" ) bmp_out
+(
+	.clk_i(clk_7M),
+	.dat_i({r,4'b0,g,4'b0,b,4'b0}),
+	.hs_i(hs),
+	.vs_i(vs)
+);
 // pragma translate_on
 endmodule

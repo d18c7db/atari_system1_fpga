@@ -75,6 +75,103 @@ architecture RTL of TB_ATARISYS1 is
 	end TXBYTE;
 
 begin
+-- pragma translate_off
+--	--horizontal/vertical scroll offsets and plane selection for testing
+--	stim_video : process
+--	begin
+--		wait until rising_edge(sl_VSYNC);
+--		slv_MDO  <= x"0000";
+--		sl_W_Rn  <= '0';
+--		sl_HSCRLDn <= '1'; -- 800000 Play Field Horizontal Scroll
+--		sl_VSCRLDn <= '1'; -- 820000 PFV
+--		sl_PFSPCn  <= '1'; -- 840000 Play Field H scroll
+--		sl_MISCn   <= '1'; -- 860000 Bank Select "..MMMP.A"
+--		sl_VBUSn   <= '0';
+--		wait for 2*140 ns;
+--
+--		slv_MDO <= x"0040";
+--		sl_W_Rn <= '1';
+--		wait for 8*140 ns;
+--		sl_HSCRLDn <= '0';
+--		wait for 8*140 ns;
+--		sl_HSCRLDn <= '1';
+--		sl_W_Rn <= '0';
+--		wait for 8*140 ns;
+--
+--		slv_MDO <= x"0040";
+--		sl_W_Rn <= '1';
+--		wait for 8*140 ns;
+--		sl_VSCRLDn <= '0';
+--		wait for 8*140 ns;
+--		sl_VSCRLDn <= '1';
+--		sl_W_Rn <= '0';
+--		wait for 8*140 ns;
+--
+--		slv_MDO <= x"0000";
+--		sl_W_Rn <= '1';
+--		wait for 8*140 ns;
+--		sl_PFSPCn <= '0';
+--		wait for 8*140 ns;
+--		sl_PFSPCn <= '1';
+--		sl_W_Rn <= '0';
+--		wait for 8*140 ns;
+--
+--		slv_MDO <= x"0090";
+--		sl_W_Rn <= '1';
+--		wait for 8*140 ns;
+--		sl_MISCn <= '0';
+--		wait for 8*140 ns;
+--		sl_MISCn <= '1';
+--		sl_W_Rn <= '0';
+--		wait for 8*140 ns;
+--
+--		slv_MDO <= x"0000";
+--		sl_VBUSn   <= '1';
+--	end process;
+
+--	-- drive audio section speech synth
+--	stim_audio : process
+--	begin
+----		wait until rising_edge(I_CLK_7M);
+--		sl_SNDNMIn <= '1';
+--		sl_SNDINTn <= '1';
+--		slv_SBDI <= x"08"; -- selects sound
+--
+--		sl_W_Rn  <= '0';
+--		sl_VBUSn <= '1';
+--		sl_MISCn <= '1';
+--		slv_MDO <= x"007F";
+--		wait for 1 us;
+--
+--		sl_W_Rn  <= '1';
+--		sl_VBUSn <= '0';
+--		sl_MISCn <= '0';
+--		wait for 1 us;
+--
+--		sl_W_Rn  <= '0';
+--		sl_VBUSn <= '1';
+--		sl_MISCn <= '1';
+--		slv_MDO <= x"00FF";
+--		wait for 1 us;
+--
+--		sl_W_Rn  <= '1';
+--		sl_VBUSn <= '0';
+--		sl_MISCn <= '0';
+--		wait for 1 us;
+--
+--		sl_W_Rn  <= '0';
+--		sl_VBUSn <= '1';
+--		sl_MISCn <= '1';
+--		wait for 123 ms;
+--
+--		sl_SNDNMIn <= '0';
+--		wait for 1 us;
+--		sl_SNDNMIn <= '1';
+--
+--		wait;
+--	end process;
+--pragma translate_on
+
 	u_ROMS_EXT : entity work.ROMS_EXT
 	port map (
 		CLK			=>	CLKS,

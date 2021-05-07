@@ -70,65 +70,77 @@ begin
 --			if addr_out(23 downto 8) = x"0000" then
 --				-- reading vector table
 --				write(s, string'(" R VECT ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---			elsif addr_out(23 downto 12) = x"038" then
+--			elsif addr_out(23 downto 16) = x"08" then
 --				-- Slapstic
 --				write(s, string'(" R SLAP ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--			elsif addr_out(23 downto 12) = x"2E0" then
+--				-- Sprite interrupt state
+--				write(s, string'(" R SIST ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--
+--			elsif addr_out(23 downto 12) = x"F20" then
+--				-- Analog Inputs
+--				write(s, string'(" R ANIN ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--			elsif addr_out(23 downto 12) = x"F40" then
+--				-- Joy IRQ Enable
+--				write(s, string'(" R JENA ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--			elsif addr_out(23 downto 12) = x"F60" then
+--				-- Switch Inputs
+--				write(s, string'(" R SWIN ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--			elsif addr_out(23 downto 12) = x"FC0" then
+--				-- Sound Response Inputs
+--				write(s, string'(" R SNDR ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_latch); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
 --			end if;
 --		end if;
 --		if clkena_ext = '1' and phase="11" and busstate="11" then -- mem write
 --			case addr_out(23 downto 12) is
---				when x"038" =>
---					-- Slapstic
---					write(s, string'(" W SLAP ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---				when x"800" | x"801" =>
+--				when x"400" | x"401" =>
 --					-- Program RAM
 --					write(s, string'(" W PROG ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---				when x"802" =>
---					-- EEPROM
---					write(s, string'(" W EROM ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---				-- special
---				when x"803" =>
---					if addr_out(11 downto 0) = x"100" then
---						--    803100   Watchdog reset
---						write(s, string'(" W WDOG ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---					elsif addr_out(11 downto 0) = x"12E" then
---						--    80312E   Sound CPU reset
---						write(s, string'(" W SRST ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---					elsif addr_out(11 downto 0) = x"140" then
---						--    803140   VBLANK IRQ acknowledge
---						write(s, string'(" W VBLK ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---					elsif addr_out(11 downto 0) = x"150" then
---						--    803150   EEPROM enable
---						write(s, string'(" W EENA ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---					elsif addr_out(11 downto 0) = x"170" then
---						--    803170   Sound command write
---						write(s, string'(" W WSND ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---					else
---						write(s, string'(" W XXXX ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---					end if;
---				when x"900" | x"901" =>
+--				when x"800" =>
+--					-- PF X scroll
+--					write(s, string'(" W XSCR ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"820" =>
+--					-- PF Y scroll
+--					write(s, string'(" W YSCR ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"840" =>
+--					-- PF Priority Color Mask
+--					write(s, string'(" W PPCM ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"860" =>
+--					-- AV control
+--					write(s, string'(" W AVCT ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"880" =>
+--					-- Watchdog reset
+--					write(s, string'(" W WDOG ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"8A0" =>
+--					-- VBLANK IRQ acknowledge
+--					write(s, string'(" W VBLK ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"8C0" =>
+--					-- EEPROM enable
+--					write(s, string'(" W EENA ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				--900-9FF CART RAM/ROM range
+--
+--				when x"A00" | x"A01" =>
 --					-- PF RAM
 --					write(s, string'(" W PF   ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---				when x"902" | x"903" =>
+--				when x"A02" =>
 --					-- MO RAM
 --					write(s, string'(" W MO   ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---				when x"904" =>
---					-- Spare RAM
---					write(s, string'("W SPAR "), right, 34); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- ")); write(s, time'image(now), right, 18); writeline(file_xx,s);
---				when x"905" =>
---					-- PF Y scroll
---					if addr_out(11 downto 0) = x"F6E" then
---						write(s, string'(" W YSCR ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---					else
---					-- AL RAM
---						write(s, string'(" W AL   ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---					end if;
---				when x"910" =>
+--				when x"A03" =>
+--					-- Alpha RAM
+--					write(s, string'(" W AL   ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"B00" =>
 --					-- Palette RAM
 --					write(s, string'(" W PAL  ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
---				when x"930" =>
---					--    930000   Playfield X scroll
---					write(s, string'(" W XSCR ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"F00" =>
+--					-- EEPROM
+--					write(s, string'(" W EROM ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--
+--				when x"F40" =>
+--					-- Joy IRQ Enable
+--					write(s, string'(" W JENA ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
+--				when x"FE0" =>
+--					-- Sound Cmd Write
+--					write(s, string'(" W WSND ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);
 --				when others => null;
 --					-- dump any other writes also
 --					write(s, string'(" W XXXX ")); hwrite(s, addr_out); write(s, string'(": ")); hwrite(s, data_out); write(s, string'(" ")); write(s, nUDS); write(s, nLDS); write(s, string'(" -- "), right, 30); write(s, time'image(now), right, 18); writeline(file_xx,s);

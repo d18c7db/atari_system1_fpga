@@ -21,6 +21,7 @@ entity MAIN is
 		I_MCKR      : in  std_logic; -- 7MHz
 		I_XCKR      : in  std_logic; -- 14MHz
 		I_4H        : in  std_logic;
+		I_8H        : in  std_logic;
 		I_RESET     : in  std_logic; -- active high
 		I_INT1n     : in  std_logic;
 		I_INT3n     : in  std_logic;
@@ -31,9 +32,6 @@ entity MAIN is
 		I_VBLANKn   : in  std_logic;
 		I_VBKINTn   : in  std_logic;
 		I_VRAC2     : in  std_logic;
-
---		I_USB_RXD   : in  std_logic;
---		O_USB_TXD   : out std_logic;
 
 		O_BW_Rn     : out std_logic;
 		O_MA18n     : out std_logic;
@@ -57,18 +55,18 @@ entity MAIN is
 		O_SBD       : out std_logic_vector( 7 downto 0);
 		I_SBD       : in  std_logic_vector( 7 downto 0);
 
-		-- inputs PB5, PB4, PB3, PB2, PB1, SELFTEST
+		-- Push buttons PB5,PB4,PB3,PB2,PB1
 		I_PB        : in  std_logic_vector( 5 downto 1);
 		I_SELFTESTn : in  std_logic;
 
 		-- interface to extenal ADC0809 chip
-		O_ADC_SEL   : out std_logic;                     -- ADC select and start conversion
+		O_ADC_SOC   : out std_logic;                     -- ADC select and start conversion
 		O_ADC_CLK   : out std_logic;                     -- ADC clock
-		O_ADC_ADDR  : out std_logic_vector( 3 downto 1); -- ADC address
+		O_ADC_ADDR  : out std_logic_vector( 2 downto 0); -- ADC address
 		I_ADC_DATA  : in  std_logic_vector( 7 downto 0); -- ADC data
 		I_ADC_EOC   : in  std_logic;                     -- ADC end of conversion
 
-		-- trackball interface
+		-- J103 trackball interface
 		I_LETA_CLK  : in  std_logic_vector( 3 downto 0); -- trackball clks
 		I_LETA_DIR  : in  std_logic_vector( 3 downto 0); -- trackball dirs
 		I_LETA_TST  : in  std_logic;
@@ -77,8 +75,8 @@ entity MAIN is
 		-- to game cartridge
 		O_BASn      : out std_logic;
 		O_MEXTn     : out std_logic;
-		O_MA        : out std_logic_vector(15 downto 1);
-		O_MD        : out std_logic_vector(15 downto 0);
+		O_MADDR     : out std_logic_vector(15 downto 1);
+		O_MDATA     : out std_logic_vector(15 downto 0);
 		I_VBUSD     : in  std_logic_vector(15 downto 0);
 		I_MEXTD     : in  std_logic_vector(15 downto 0)
 	);
@@ -130,12 +128,13 @@ architecture RTL of MAIN is
 		sl_RD68Kn,
 		sl_SELFTESTn,
 		sl_SLAPn,
-		sl_SNDBUFn,
+--		sl_SNDBUFn,
 		sl_SNDINTn,
 		sl_SNDNMIn,
 		sl_SNDRDn,
 		sl_SNDRSTn,
 		sl_SNDWRn,
+		sl_SNDWRn_last,
 		sl_SYSRESn,
 		sl_UDSn,
 		sl_UNLOCKn,
@@ -147,7 +146,7 @@ architecture RTL of MAIN is
 		sl_VPAn,
 		sl_VRAC2,
 		sl_VRAC2_last,
-		sl_VRAMRDn,
+--		sl_VRAMRDn,
 		sl_VRAMWR,
 		sl_VRAMn,
 		sl_VRDTACK,
@@ -156,6 +155,7 @@ architecture RTL of MAIN is
 		sl_WAITn,
 		sl_WDOGn,
 		sl_WR68Kn,
+		sl_WR68Kn_last,
 		sl_WHn,
 		sl_WLn,
 		sl_WLn_last,
@@ -186,8 +186,6 @@ architecture RTL of MAIN is
 		slv_12L_data,
 		slv_13K_data,
 		slv_13L_data,
-		slv_11J_data,
-		slv_10J_data,
 		slv_SBDI,
 		slv_EEPROM,
 		slv_INPUTS,
@@ -222,21 +220,22 @@ begin
 	O_VSCRLDn    <= sl_VSCRLDn;
 	O_HSCRLDn    <= sl_HSCRLDn;
 	O_SNDNMIn    <= sl_SNDNMIn;
-	O_ADC_SEL    <= sl_RAJS;
+	O_ADC_SOC    <= sl_RAJS;
 	O_ADC_CLK    <= sl_4H;
 	O_ADC_ADDR   <= slv_cpu_ad(3 downto 1);
-	O_MA         <= slv_cpu_ad(15 downto 1);
-	O_MD         <= slv_cpu_do;
 	O_CRAMWRn    <= sl_CRAMWRn;
 	O_VRAMWR     <= sl_VRAMWR;
 	O_CRAMn      <= sl_CRAMn;
 	O_CRBUSn     <= sl_CRBUSn;
 	O_SNDINTn    <= sl_SNDINTn;
+	O_MADDR      <= slv_cpu_ad(15 downto 1);
+	O_MDATA      <= slv_cpu_do;
 
 	slv_VBUSD    <= I_VBUSD;
 	slv_ADC_data <= I_ADC_DATA;
 	sl_AJSINTn   <= not (I_ADC_EOC and sl_8H8); --gate 15J
 	sl_4H        <= I_4H;
+	sl_8H        <= I_8H;
 	sl_RESETn    <= not I_RESET;
 	sl_INT1n     <= I_INT1n;
 	sl_INT3n     <= I_INT3n;
@@ -253,24 +252,16 @@ begin
 	sl_LETA_TST  <= I_LETA_TST;
 	sl_LETA_RES  <= I_LETA_RES;
 	sl_68KBUF    <= not sl_SNDNMIn;
-	sl_SNDBUFn   <= not sl_SNDINTn;
+--	sl_SNDBUFn   <= not sl_SNDINTn;
 	sl_VRAC2     <= I_VRAC2;
 	slv_MEXTD    <= I_MEXTD;
-
-	-- generate 8H from 4H
-	p_8H : process
-	begin
-		wait until rising_edge(sl_4H);
-		sl_8H <= not sl_8H;
-	end process;
 
 	-- CPU input data bus mux
 	slv_cpu_di <=
 		slv_12K_data & slv_12L_data when sl_R_Wn = '1' and sl_RAM0 = '1' else
 		slv_13K_data & slv_13L_data when sl_R_Wn = '1' and sl_RAM1 = '1' else
-		slv_11J_data & slv_10J_data when sl_R_Wn = '1' and slv_ROMn(0) = '0' else
-								slv_VBUSD when sl_R_Wn = '1' and sl_VBUSn = '0' else
 								slv_MEXTD when sl_R_Wn = '1' and (slv_ROMn /= "1111" or sl_SLAPn = '0') else
+								slv_VBUSD when sl_R_Wn = '1' and sl_VBUSn = '0' else
 				 x"00" & slv_ADC_DATA when sl_R_Wn = '1' and sl_IBUSn = '0' and sl_RAJS    = '1' else
 				 x"00" & slv_SBDI     when sl_R_Wn = '1' and sl_IBUSn = '0' and sl_SNDRDn  = '0' else
 				 x"00" & slv_LETADB   when sl_R_Wn = '1' and sl_IBUSn = '0' and sl_RLETAn  = '0' else
@@ -282,18 +273,18 @@ begin
 	-- sheet 2 --
 	-------------
 
-	-- 17L interrupt priority
+	-- 17L priority interrupt encoder
 	slv_IPL <=
-		"110" when sl_INT1n   = '0' else -- 1
-		"101" when sl_AJSINTn = '0' else -- 2
-		"100" when sl_INT3n   = '0' else -- 3
-		"011" when sl_VBKINTn = '0' else -- 4
 		"001" when sl_SNDINTn = '0' else -- 6
+		"011" when sl_VBKINTn = '0' else -- 4
+		"100" when sl_INT3n   = '0' else -- 3
+		"101" when sl_AJSINTn = '0' else -- 2
+		"110" when sl_INT1n   = '0' else -- 1
 		"111";
 
 	-- FIXME pick one
---	sl_SYSRESn     <= ctr_10L(3); -- slow reset as per schema
-	sl_SYSRESn     <= sl_RESETn;  -- fast reset for simulation
+	sl_SYSRESn     <= ctr_10L(3); -- slow reset as per schema
+--	sl_SYSRESn     <= sl_RESETn;  -- fast reset for simulation
 
 	-- VRDTACK signal generation
 	p_10Da : process
@@ -362,9 +353,6 @@ begin
 		ADDR       => slv_cpu_ad,    -- ADDR
 		DO         => slv_cpu_do,    -- DATA out
 
---		I_USB_RXD  => I_USB_RXD,
---		O_USB_TXD  => O_USB_TXD,
-		--
 		cpusel     => "01",          -- CPU type selector 00->68000  01->68010  11->68020
 		nRSTout    => open           -- reset out (not used);
 	);
@@ -377,7 +365,7 @@ begin
 		if sl_RESETn = '0' then
 			ctr_10L <= (others=>'0');
 		elsif rising_edge(I_MCKR) then
-			sl_VBLANKn_last<=I_VBLANKn;
+			sl_VBLANKn_last <= I_VBLANKn;
 			if sl_WDOGn = '0' then
 				ctr_10L <= "1000";
 			elsif sl_VBLANKn_last='1' and I_VBLANKn='0' then
@@ -442,7 +430,7 @@ begin
 	sl_VRAMn     <= slv_7Kb_Y(2);
 
 	-- gates 5H
-	sl_VRAMRDn   <= sl_VRAMn or sl_RLn;
+--	sl_VRAMRDn   <= sl_VRAMn or sl_RLn;
 
 	-- gates 8K
 	sl_WHn       <= sl_UDSn or sl_BR_Wn;
@@ -486,9 +474,6 @@ begin
 	-- sheet 3 --
 	-------------
 
-	-- 14C buffer
-	slv_INPUTS <= sl_68KBUF & sl_SELFTESTn & slv_PB(5) & sl_VBLANKn & slv_PB(4 downto 1);
-
 	-- RAM at address 400000-401FFF
 	sl_WRH <= not sl_WHn;
 	sl_WRL <= not sl_WLn;
@@ -497,14 +482,14 @@ begin
 	p_RAM_13K : entity work.RAM_2K8 port map (I_MCKR => I_XCKR, I_EN => sl_RAM1, I_WR => sl_WRH, I_ADDR => slv_cpu_ad(11 downto 1), I_DATA => slv_cpu_do(15 downto 8), O_DATA => slv_13K_data );
 	p_RAM_13L : entity work.RAM_2K8 port map (I_MCKR => I_XCKR, I_EN => sl_RAM1, I_WR => sl_WRL, I_ADDR => slv_cpu_ad(11 downto 1), I_DATA => slv_cpu_do( 7 downto 0), O_DATA => slv_13L_data );
 
-	ROM_10J   : entity work.ROM_10J port map (CLK=>I_XCKR, DATA=>slv_10J_data, ADDR=>slv_cpu_ad(14 downto 1) );
-	ROM_11J   : entity work.ROM_11J port map (CLK=>I_XCKR, DATA=>slv_11J_data, ADDR=>slv_cpu_ad(14 downto 1) );
-
 	-- FIXME check if F/F 8L is necessary for data mux, disconnects CPU data bus from cart port for any address = ROM0 or higher than 800000
 
 	-------------
 	-- sheet 4 --
 	-------------
+
+	-- 14C buffer
+	slv_INPUTS <= sl_68KBUF & sl_SELFTESTn & slv_PB(5) & sl_VBLANKn & slv_PB(4 downto 1);
 
 	p_8Ha : process
 	begin
@@ -513,7 +498,7 @@ begin
 		if sl_SYSRESn = '0' then
 			sl_8H8 <= '0';
 		elsif sl_RAJSn_last = '0' and sl_RAJSn = '1' then
-			sl_8H8 <= slv_cpu_ad(4);
+			sl_8H8 <= not slv_cpu_ad(4);
 		end if;
 	end process;
 
@@ -531,42 +516,46 @@ begin
 		end if;
 	end process;
 
-	p_16Ha : process(I_MCKR, sl_RD68Kn, sl_SNDWRn)
+	p_16Ha : process(I_XCKR, sl_RD68Kn, sl_SNDWRn)
 	begin
 		if sl_RD68Kn = '0' then
 			sl_SNDNMIn <= '1';
-		elsif rising_edge(sl_SNDWRn) then
---			sl_SNDWRn_last <= sl_SNDWRn;
---			if sl_SNDWRn_last = '0' and sl_SNDWRn = '1' then
+		elsif rising_edge(I_XCKR) then
+			if sl_SNDWRn_last = '0' and sl_SNDWRn = '1' then
 				sl_SNDNMIn <= '0';
---			end if;
+			end if;
 		end if;
 	end process;
 
-	p_16Hb : process(I_MCKR, sl_SNDRSTn, sl_SNDRDn, sl_WR68Kn)
+	p_16Hb : process(I_XCKR, sl_SNDRSTn, sl_SNDRDn, sl_WR68Kn)
 	begin
 		if sl_SNDRDn = '0' or sl_SNDRSTn = '0' then
 			sl_SNDINTn <= '1';
-		elsif rising_edge(sl_WR68Kn) then
---			sl_WR68K_last <= sl_WR68Kn;
---			if sl_WR68Kn_last = '0' and sl_WR68Kn = '1' then
+		elsif rising_edge(I_XCKR) then
+			if sl_WR68Kn_last = '0' and sl_WR68Kn = '1' then
 				sl_SNDINTn <= '0';
---			end if;
+			end if;
 		end if;
 	end process;
 
 	-- 14E latch sound data out
 	p_14E : process
 	begin
-		wait until rising_edge(sl_SNDWRn);
-		O_SBD <= slv_cpu_do(7 downto 0);
+		wait until rising_edge(I_XCKR);
+		sl_SNDWRn_last <= sl_SNDWRn;
+		if sl_SNDWRn_last = '0' and sl_SNDWRn = '1' then
+			O_SBD <= slv_cpu_do(7 downto 0);
+		end if;
 	end process;
 
 	-- 15E latch sound data in
 	p_15E : process
 	begin
-		wait until rising_edge(sl_WR68Kn);
-		slv_SBDI <= I_SBD;
+		wait until rising_edge(I_XCKR);
+		sl_WR68Kn_last <= sl_WR68Kn;
+		if sl_WR68Kn_last = '0' and sl_WR68Kn = '1' then
+			slv_SBDI <= I_SBD;
+		end if;
 	end process;
 
 	sl_EEP_OEn <= sl_8H5 and sl_SYSRESn;

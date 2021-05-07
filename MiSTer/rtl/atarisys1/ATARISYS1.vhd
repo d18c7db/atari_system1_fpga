@@ -19,6 +19,7 @@
 
 library ieee;
 	use ieee.std_logic_1164.all;
+	use ieee.std_logic_unsigned.all;
 	use ieee.numeric_std.all;
 
 --pragma translate_off
@@ -28,22 +29,21 @@ library ieee;
 
 entity FPGA_ATARISYS1 is
 	port(
+		I_SLAP_TYPE: in  integer range 0 to 118; -- slapstic type can be changed dynamically
 		-- System Clock
-		I_CLK_14M  : in  std_logic;
 		I_CLK_7M   : in  std_logic;
+		I_CLK_14M  : in  std_logic;
 
 		-- Active high reset
 		I_RESET    : in  std_logic;
 
-		-- Player controls, active low
-		-- joysticks: U2,D2,L2,R2,U1,D1,L1,R1
-		I_JOY      : in  std_logic_vector(7 downto 0);
-		-- trackballs: HCLK2,VCLK2,HCLK1,VCLK1,HDIR2,VDIR2,HCLK1,VDIR1
-		I_CLK      : in  std_logic_vector(3 downto 0);
-		I_DIR      : in  std_logic_vector(3 downto 0);
-		-- System inputs
-		I_SYS      : in  std_logic_vector(4 downto 0);
-		I_SLAP_TYPE: in  integer range 0 to 118; -- slapstic type can be changed dynamically
+		-- Player controls, active high
+		I_JOY      : in  std_logic_vector(7 downto 0); -- U2,D2,L2,R2,U1,D1,L1,R1
+		-- Trackball inputs active low:
+		I_CLK      : in  std_logic_vector(3 downto 0); -- HCLK2,VCLK2,HCLK1,VCLK1
+		I_DIR      : in  std_logic_vector(3 downto 0); -- HDIR2,VDIR2,HDIR1,VDIR1
+		-- System inputs active low
+		I_SYS      : in  std_logic_vector(8 downto 0); -- SELFTEST, COIN_AUX, COIN_R, COIN_L, SW[5:1]
 
 		O_LEDS     : out std_logic_vector(2 downto 1);
 
@@ -60,61 +60,73 @@ entity FPGA_ATARISYS1 is
 		O_VSYNC    : out std_logic;
 		O_CSYNC    : out std_logic;
 
---		I_USB_RXD  : in  std_logic;
---		O_USB_TXD  : out std_logic := '1';
 		O_HBLANK   : out	std_logic;
 		O_VBLANK   : out	std_logic;
 
-		-- video ROMs addr/data bus
-		O_VADDR    : out std_logic_vector(16 downto 0);
-		I_5C_DB    : in  std_logic_vector( 7 downto 0);
-		I_5C_DA    : in  std_logic_vector( 7 downto 0);
-		I_5B_DB    : in  std_logic_vector( 7 downto 0);
-		I_5B_DA    : in  std_logic_vector( 7 downto 0)
+		O_ADDR5F   : out std_logic_vector(12 downto 0);
+		I_DATA5F   : in  std_logic_vector( 7 downto 0);
+
+		-- CART interface
+		O_SLAPn    : out std_logic;
+		O_MEXTn    : out std_logic;
+		O_BLDSn    : out std_logic;
+		O_BASn     : out std_logic;
+		O_BW_Rn    : out std_logic;
+		I_INT1n    : in  std_logic;
+		I_INT3n    : in  std_logic;
+		I_WAITn    : in  std_logic;
+
+		O_ROMn     : out std_logic_vector( 3 downto 0);
+		O_MA18n    : out std_logic;
+		O_MADDR    : out std_logic_vector(15 downto 1);
+		I_MDATA    : in  std_logic_vector(15 downto 0);
+
+		O_SROMn    : out std_logic_vector( 2 downto 0);
+		O_SMD      : out std_logic_vector( 7 downto 0);
+		I_SMD      : in  std_logic_vector( 7 downto 0);
+		O_SBA      : out std_logic_vector(13 downto 0);
+
+		O_MGRA     : out std_logic_vector(19 downto 1);
+		O_MATCHn   : out std_logic;
+		O_MGHF     : out std_logic;
+		O_GLDn     : out std_logic;
+		O_MO_PFn   : out std_logic;
+		O_SNDEXTn  : out std_logic;
+		O_SNDRSTn  : out std_logic;
+		O_SNDBW_Rn : out std_logic;
+		O_B02      : out std_logic;
+
+		I_MOSR     : in std_logic_vector( 6 downto 0);
+		I_PFSR     : in std_logic_vector( 7 downto 0);
+
+		I_SND      : in signed(13 downto 0)
 	);
 end FPGA_ATARISYS1;
 
 architecture RTL of FPGA_ATARISYS1 is
 	signal
+		sl_adc_eoc,
+		sl_adc_soc,
+		sl_adc_soc_last,
 		sl_TBTEST,
 		sl_TBRESn,
-		sl_INT1n,
-		sl_INT3n,
-		sl_WAITn,
-		sl_MA18n,
-		sl_BASn,
 		sl_1H,
 		sl_2H,
 		sl_4H,
-		sl_32V,
+		sl_8H,
 		sl_W_Rn,
-		sl_SNDBW_Rn,
-		sl_LDSn,
-		sl_UDSn,
-		sl_BLDS,
-		sl_B02,
-		sl_MEXTn,
-		sl_VCPU,
 		sl_WR68Kn,
 		sl_RD68Kn,
 		sl_SNDNMIn,
 		sl_SNDRESn,
-		sl_SNDEXTn,
 		sl_SNDINTn,
-		sl_MO_PFn,
-		sl_MATCHn,
-		sl_MGHF,
-		sl_SLAP,
-		sl_GLDn,
+
 		sl_CRAMn,
 		sl_CRBUSn,
 		sl_CRAMWRn,
 		sl_VRAMWR,
 		sl_VBUSn,
 		sl_VRAC2,
-		sl_VRAMn,
-		sl_MBUSn,
-		sl_VRDTACK,
 		sl_HBLANKn,
 		sl_VBLANKn,
 		sl_VBKACKn,
@@ -125,37 +137,25 @@ architecture RTL of FPGA_ATARISYS1 is
 		sl_HSCRLDn
 								: std_logic := '1';
 	signal
-		slv_SROMn
+		slv_adc_addr
 								: std_logic_vector( 2 downto 0) := (others=>'0');
-	signal
-		slv_ROMn
-								: std_logic_vector( 3 downto 0) := (others=>'0');
 	signal
 		s_POK_out
 								: signed( 5 downto 0) := (others => '0');
 	signal
-		slv_MOSR
-								: std_logic_vector( 6 downto 0) := (others=>'0');
-	signal
-		slv_PFSR,
-		slv_SMDI,
---		slv_SMDO,
 		slv_SBDI,
-		slv_SBDO
+		slv_SBDO,
+		slv_adc_data
 								: std_logic_vector( 7 downto 0) := (others=>'0');
 	signal
-		s_TMS_out
-								: signed(13 downto 0) := (others => '0');
-	signal
-		slv_SBA
-								: std_logic_vector(13 downto 0) := (others=>'0');
+		slv_adc_ctr
+								: std_logic_vector( 8 downto 0) := (others=>'0');
 	signal
 		slv_VBUSD,
-		slv_MEXTD,
 		slv_MDO
 								: std_logic_vector(15 downto 0) := (others=>'0');
 	signal
-		slv_MA
+		slv_MADDR
 								: std_logic_vector(15 downto 1) := (others=>'0');
 	signal
 		s_chan_l,
@@ -163,12 +163,41 @@ architecture RTL of FPGA_ATARISYS1 is
 		s_audio_YML,
 		s_audio_YMR
 								: signed(15 downto 0) := (others => '0');
-	signal
-		slv_MGRA
-								: std_logic_vector(19 downto 1) := (others=>'0');
 begin
-	O_HBLANK <= sl_HBLANKn;
-	O_VBLANK <= sl_VBLANKn;
+	-- fake ADC0809 reads inputs for player controls
+	-- J102 1-11 (+5 U2 D2 L2 R1 R2 L1 U1 D1 KEY GND)
+	-- I_JOY 7-0 joystick: U2,D2,L2,R2,U1,D1,L1,R1
+	-- 512 clock cycles ADC conversion delay
+	p_adc0809 : process
+	begin
+		wait until rising_edge(I_CLK_7M);
+		sl_adc_soc_last <= sl_adc_soc;
+		if sl_adc_soc_last = '0' and sl_adc_soc = '1' then
+			slv_adc_ctr <=  (others=>'1');
+			slv_adc_data <= (others=>'1');
+			sl_adc_eoc <= '0';
+			-- when button is pressed ADC value goes full scale, else ADC value is VCC/2
+			-- we present 0xFF for button press and 0x7F for button release
+			-- game reads ADC value and checks if it's above or below 0xF0
+
+			-- for some reason the ADC index is shifted by 1, wtf, schemafail
+			-- confirmed in MAME, indexes are 7=HI, 6=HI, 5=HI, 4=UP 3=DN 2=LT 1=RT 0=RT
+			-- so right key actions both ADC index 0 and 1
+			slv_adc_data(7) <= I_JOY(to_integer(unsigned(slv_adc_addr-1)));
+		elsif slv_adc_ctr = 0 then
+			sl_adc_eoc <= '1';
+		else
+		-- implement a fake "conversion delay", may not be needed but it's more realistic
+			slv_adc_ctr <= slv_adc_ctr - 1;
+		end if;
+	end process;
+
+	O_HBLANK  <= sl_HBLANKn;
+	O_VBLANK  <= sl_VBLANKn;
+	O_SNDRSTn <= sl_SNDRESn;
+	O_SMD     <= slv_SBDO;
+	O_BW_Rn   <= sl_W_Rn;
+	O_MADDR   <= slv_MADDR;
 
 	u_main : entity work.MAIN
 	port map (
@@ -179,17 +208,15 @@ begin
 		I_VBKINTn   => sl_VBKINTn,
 
 		I_4H        => sl_4H,
-		I_INT1n     => sl_INT1n,
-		I_INT3n     => sl_INT3n,
-		I_WAITn     => sl_WAITn,
+		I_8H        => sl_8H,
+		I_INT1n     => I_INT1n,
+		I_INT3n     => I_INT3n,
+		I_WAITn     => I_WAITn,
 		I_VRAC2     => sl_VRAC2,
 		I_WR68Kn    => sl_WR68Kn,
 		I_RD68Kn    => sl_RD68Kn,
 
 		I_SNDRESn   => sl_SNDRESn,
-
---		I_USB_RXD   => I_USB_RXD,
---		O_USB_TXD   => O_USB_TXD,
 
 		O_BW_Rn     => sl_W_Rn,
 		O_CRAMn     => sl_CRAMn,
@@ -208,34 +235,35 @@ begin
 		O_SBD       => slv_SBDI,
 		I_SBD       => slv_SBDO,
 
-		-- inputs PB5, PB4, PB3, PB2, PB1, SELFTEST
-		I_PB        => (others=>'1'),
-		I_SELFTESTn => '1',
+		-- J106 (+5 N/C LED2 LED1 KEY PB5 PB2 PB4 PB1 PB3 GND) push buttons 5-1 and SELFTEST
+		-- PB5=N/C, PB4=N/C, PB3=Jump (not used for Indiana Jones cart), PB2 = Start2/Whip/Throw, PB1=Start1/Whip/Throw
+		I_PB        => I_SYS(4 downto 0),
+		I_SELFTESTn => I_SYS(8),
 
 		-- interface to extenal ADC0809 chip
-		O_ADC_SEL   => open,
+		O_ADC_SOC   => sl_adc_soc, -- active high start of conversion
 		O_ADC_CLK   => open,
-		O_ADC_ADDR  => open,
-		I_ADC_DATA  => (others=>'1'),
-		I_ADC_EOC   => '0', -- active high
+		O_ADC_ADDR  => slv_adc_addr,
+		I_ADC_DATA  => slv_adc_data,
+		I_ADC_EOC   => sl_adc_eoc, -- active high end of conversion
 
 		-- trackball interface
-		I_LETA_CLK  => (others=>'1'),
-		I_LETA_DIR  => (others=>'1'),
+		I_LETA_CLK  => I_CLK,
+		I_LETA_DIR  => I_DIR,
 		I_LETA_TST  => sl_TBTEST,
 		I_LETA_RES  => sl_TBRESn,
 
 		-- to game cartridge
-		O_MA18n     => sl_MA18n,
-		O_BLDS      => sl_BLDS,
-		O_SLAP      => sl_SLAP,
-		O_ROMn      => slv_ROMn,
-		O_BASn      => sl_BASn,
-		O_MEXTn     => sl_MEXTn,
-		O_MA        => slv_MA,
-		O_MD        => slv_MDO,
+		O_MA18n     => O_MA18n,
+		O_BLDS      => O_BLDSn,
+		O_SLAP      => O_SLAPn,
+		O_ROMn      => O_ROMn,
+		O_BASn      => O_BASn,
+		O_MEXTn     => O_MEXTn,
+		O_MADDR     => slv_MADDR,
+		O_MDATA     => slv_MDO,
 		I_VBUSD     => slv_VBUSD,
-		I_MEXTD     => slv_MEXTD
+		I_MEXTD     => I_MDATA
 	);
 
 	u_video : entity work.VIDEO
@@ -254,23 +282,27 @@ begin
 		I_VSCRLDn   => sl_VSCRLDn,
 		I_HSCRLDn   => sl_HSCRLDn,
 		I_VBKACKn   => sl_VBKACKn,
-		I_MOSR      => slv_MOSR,
-		I_PFSR      => slv_PFSR,
-		I_CPU_A     => slv_MA(13 downto 1),
+		I_MOSR      => I_MOSR,
+		I_PFSR      => I_PFSR,
+		I_CPU_A     => slv_MADDR(13 downto 1),
 		I_CPU_D     => slv_MDO,
 		O_CPU_D     => slv_VBUSD,
 
+		O_ADDR5F    => O_ADDR5F,
+		I_DATA5F    => I_DATA5F,
+
 		O_SNDRESn   => sl_SNDRESn,
-		O_MGHF      => sl_MGHF,
-		O_GLDn      => sl_GLDn,
-		O_MO_PFn    => sl_MO_PFn,
-		O_MATCHn    => sl_MATCHn,
+		O_MGHF      => O_MGHF,
+		O_GLDn      => O_GLDn,
+		O_MO_PFn    => O_MO_PFn,
+		O_MATCHn    => O_MATCHn,
 		O_VBKINTn   => sl_VBKINTn,
-		O_MGRA      => slv_MGRA,
+		O_MGRA      => O_MGRA,
 		O_VRAC2     => sl_VRAC2,
 		O_1H        => sl_1H,
 		O_2H        => sl_2H,
 		O_4H        => sl_4H,
+		O_8H        => sl_8H,
 		O_TBTEST    => sl_TBTEST,
 		O_TBRESn    => sl_TBRESn,
 
@@ -285,72 +317,24 @@ begin
 		O_CSYNC     => O_CSYNC
 	);
 
-	u_cart : entity work.INDY_CART
-	port map (
-		I_SLAP_TYPE => I_SLAP_TYPE,
-		I_MCKR      => I_CLK_7M,
-		I_XCKR      => I_CLK_14M,
-
-		I_SLAPn     => sl_SLAP,
-		I_MEXTn     => sl_MEXTn,
-		I_BLDSn     => sl_BLDS,
-		I_BASn      => sl_BASn,
-		I_BW_Rn     => sl_W_Rn,
-		O_INT1n     => sl_INT1n,
-		O_INT3n     => sl_INT3n,
-		O_WAITn     => sl_WAITn,
-
-		I_ROMn      => slv_ROMn,
-		I_MA18n     => sl_MA18n,
-		I_MA        => slv_MA,
-		O_MD        => slv_MEXTD,
-
-		I_SROMn     => slv_SROMn,
-		I_SMD       => slv_SBDO, --slv_SMDO, -- from Audio
-		O_SMD       => slv_SMDI, -- to Audio
-		I_SBA       => slv_SBA,
-
-		I_MGRA      => slv_MGRA,
-		I_MATCHn    => sl_MATCHn,
-		I_MGHF      => sl_MGHF,
-		I_GLDn      => sl_GLDn,
-		I_MO_PFn    => sl_MO_PFn,
-		I_SNDEXTn   => sl_SNDEXTn,
-		I_SNDRSTn   => sl_SNDRESn,
-		I_SNDBW_Rn  => sl_SNDBW_Rn,
-		I_B02       => sl_B02,
-
-		-- video
-		O_MOSR      => slv_MOSR,
-		O_PFSR      => slv_PFSR,
-
-		-- sound L and R are the same
-		O_SND       => s_TMS_out,
-		O_VADDR     => O_VADDR,
-		I_5C_DB     => I_5C_DB,
-		I_5C_DA     => I_5C_DA,
-		I_5B_DB     => I_5B_DB,
-		I_5B_DA     => I_5B_DA
-	);
-
 	u_audio : entity work.AUDIO
 	port map (
 		I_MCKR      => I_CLK_7M,
 		I_1H        => sl_1H,
 		I_2H        => sl_2H,
-		O_B02       => sl_B02,
+		O_B02       => O_B02,
 
 		I_SNDNMIn   => sl_SNDNMIn,
 		I_SNDRSTn   => sl_SNDRESn,
 		I_SNDINTn   => sl_SNDINTn,
-		O_SNDBW_Rn  => sl_SNDBW_Rn,
+		O_SNDBW_Rn  => O_SNDBW_Rn,
 		O_WR68Kn    => sl_WR68Kn,
 		O_RD68Kn    => sl_RD68Kn,
 
-		I_SELFTESTn => '1', -- FIXME connect inputs
-		I_COIN_AUX  => '1', -- FIXME connect inputs
-		I_COIN_L    => '1', -- FIXME connect inputs
-		I_COIN_R    => '1', -- FIXME connect inputs
+		I_SELFTESTn => I_SYS(8),
+		I_COIN_AUX  => I_SYS(7),
+		I_COIN_R    => I_SYS(6),
+		I_COIN_L    => I_SYS(5),
 
 		O_LED       => open,	-- LED indicators
 		O_CCTRn     => open,	-- coin counters open collector active low
@@ -358,11 +342,11 @@ begin
 		O_YM_R      => s_audio_YMR,
 		O_PKS       => s_POK_out,
 
-		O_SROMn     => slv_SROMn,
-		O_SNDEXTn   => sl_SNDEXTn,
-		O_SBA       => slv_SBA,
+		O_SROMn     => O_SROMn,
+		O_SNDEXTn   => O_SNDEXTn,
+		O_SBA       => O_SBA,
 		O_SBD       => slv_SBDO,
-		I_SMD       => slv_SMDI,
+		I_SMD       => I_SMD,
 --		O_SMD       => slv_SMDO,
 		I_SBD       => slv_SBDI
 	);
@@ -371,8 +355,8 @@ begin
 	begin
 		wait until rising_edge(I_CLK_7M);
 		-- add signed outputs together, already have extra spare bits for overflow
-		s_chan_l <= ( ((s_TMS_out & "00") + s_audio_YML) + (s_POK_out(s_POK_out'left) & s_POK_out & "000000000") );
-		s_chan_r <= ( ((s_TMS_out & "00") + s_audio_YMR) + (s_POK_out(s_POK_out'left) & s_POK_out & "000000000") );
+		s_chan_l <= ( ((I_SND & "00") + s_audio_YML) + (s_POK_out(s_POK_out'left) & s_POK_out & "000000000") );
+		s_chan_r <= ( ((I_SND & "00") + s_audio_YMR) + (s_POK_out(s_POK_out'left) & s_POK_out & "000000000") );
 
 		-- convert to unsigned slv for DAC usage
 		O_AUDIO_L <= std_logic_vector(s_chan_l + 16383);

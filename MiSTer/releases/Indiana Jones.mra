@@ -10,33 +10,69 @@
 	<mameinfo parent="atarisy1" cpp="atarisy1" input="atarisy1"/>
 	<display type="raster" rotate="0"/>
 	<buttons names="Magic/Start,Fire,-,-,Coin,-" default="B,A,R"/>
+
+	<!-- Slapstic type -->
 	<rom index="1">
 		<part>69</part>
 	</rom>
-	<rom index="0" zip="atarisy1.zip|indytemp.zip" md5="none">
+
+	<rom index="0" zip="indytemp.zip" md5="none">
+		<!-- Video ROMs -->
 		<interleave output="32">
-			<part crc="none" name="136036.139" map="0001"/>
-			<part crc="none" name="136036.135" map="0010"/>
-			<part crc="none" name="136036.147" map="0100"/>
-			<part crc="none" name="136036.143" map="1000"/>
+			<part crc="none" name="136036.143" map="0001"/>
+			<part crc="none" name="136036.147" map="0010"/>
+			<part crc="none" name="136036.135" map="0100"/>
+			<part crc="none" name="136036.139" map="1000"/>
 		</interleave>
 		<interleave output="32">
-			<part crc="none" name="136036.140" map="0001"/>
-			<part crc="none" name="136036.136" map="0010"/>
-			<part crc="none" name="136036.148" map="0100"/>
-			<part crc="none" name="136036.144" map="1000"/>
+			<part crc="none" name="136036.144" map="0001"/>
+			<part crc="none" name="136036.148" map="0010"/>
+			<part crc="none" name="136036.136" map="0100"/>
+			<part crc="none" name="136036.140" map="1000"/>
 		</interleave>
 		<interleave output="32">
-			<part crc="none" name="136036.141" map="0001"/>
-			<part crc="none" name="136036.137" map="0010"/>
-			<part crc="none" name="136036.149" map="0100"/>
-			<part crc="none" name="136036.145" map="1000"/>
+			<part crc="none" name="136036.145" map="0001"/>
+			<part crc="none" name="136036.149" map="0010"/>
+			<part crc="none" name="136036.137" map="0100"/>
+			<part crc="none" name="136036.141" map="1000"/>
 		</interleave>
 		<interleave output="32">
-			<part crc="none" name="136036.142" map="0001"/>
-			<part crc="none" name="136036.138" map="0010"/>
-			<part crc="none" name="136036.150" map="0100"/>
-			<part crc="none" name="136036.146" map="1000"/>
+			<part crc="none" name="136036.146" map="0001"/>
+			<part crc="none" name="136036.150" map="0010"/>
+			<part crc="none" name="136036.138" map="0100"/>
+			<part crc="none" name="136036.142" map="1000"/>
 		</interleave>
+
+		<!-- CART ROMs, Slapstic ROMs, System ROMs -->
+		<interleave output="16">
+			<part crc="none" name="136036.432" map="01"/>"
+			<part crc="none" name="136036.431" map="10"/>"
+		</interleave>
+		<interleave output="16">
+			<part crc="none" name="136036.434" map="01"/>"
+			<part crc="none" name="136036.433" map="10"/>"
+		</interleave>
+		<interleave output="16">
+			<part crc="none" name="136036.456" map="01"/>"
+			<part crc="none" name="136036.457" map="10"/>"
+		</interleave>
+		<interleave output="16">
+			<part crc="none" name="136036.358" map="01"/>"
+			<part crc="none" name="136036.359" map="10"/>"
+		</interleave>
+		<interleave output="16">
+			<part crc="none" name="136032.114.j11" zip="atarisy1.zip" map="01"/>
+			<part crc="none" name="136032.115.j10" zip="atarisy1.zip" map="10"/>
+		</interleave>
+
+		<!-- Audio ROMs -->
+		<part crc="none" name="136036.153"/>
+		<part crc="none" name="136036.154"/>
+		<part crc="none" name="136036.155"/>
+
+		<!-- PROMs -->
+		<part crc="none" name="136032.104.f5" zip="atarisy1.zip"/>
+		<part crc="none" name="136036.151"/>
+		<part crc="none" name="136036.152"/>
 	</rom>
 </misterromdescription>

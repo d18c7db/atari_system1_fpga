@@ -10,7 +10,7 @@
 --
 -- For full details, see the GNU General Public License at www.gnu.org/licenses
 --
--- Ïndiana Jones and the Temple of Doom cartridge for Atari System 1
+-- Indiana Jones and the Temple of Doom cartridge for Atari System 1
 -- From SP-282 schematic (identical to SP-280 just different page order)
 --
 -- controls
@@ -28,40 +28,36 @@
 
 -- MAINCPU           MAINCPU           PROMS        AUDIOCPU
 -- 10A 12A 14A 16A   10B 12B 14B 16B   4/5A  7A     13D 14/15D 16D
--- 431 433 457 359   432 434 456 358   151   152    153  154   155
--- 132 134 156 158   131 133 157 159   151   152    153  154   155
+-- 431 433 457 359   432 434 456 358   151   152    153  154   155 (indytemp)
+-- 132 134 156 158   131 133 157 159   151   152    153  154   155 (from TM-282)
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-entity INDY_CART is
+entity ATARI_CART is
 port(
 	I_SLAP_TYPE  : in  integer range 0 to 118; -- slapstic type can be changed dynamically
 	I_MCKR       : in  std_logic;
 	I_XCKR       : in  std_logic;
 
-	I_SLAPn      : in  std_logic;
-	I_MEXTn      : in  std_logic;
 	I_BLDSn      : in  std_logic;
 	I_BASn       : in  std_logic;
 	I_BW_Rn      : in  std_logic;
 	O_INT1n      : out std_logic;
 	O_INT3n      : out std_logic;
 	O_WAITn      : out std_logic;
-	I_MA18n      : in  std_logic;
 
 	-- sound ROMs
-	I_SROMn      : in  std_logic_vector( 2 downto 0);
 	I_SBA        : in  std_logic_vector(13 downto 0);
 	I_SMD        : in  std_logic_vector( 7 downto 0);
 	O_SMD        : out std_logic_vector( 7 downto 0);
 
 	-- main ROMs
-	I_ROMn       : in  std_logic_vector( 3 downto 0);
-	I_MA         : in  std_logic_vector(15 downto 1);
-	O_MD         : out std_logic_vector(15 downto 0);
+	I_SLAPn      : in  std_logic;
+	I_MA18n      : in  std_logic;
+	I_MADDR      : in  std_logic_vector(15 downto 1);
 
 	I_MGRA       : in  std_logic_vector(19 downto 1);
 	I_MATCHn     : in  std_logic;
@@ -80,35 +76,39 @@ port(
 	-- sound L and R are identical
 	O_SND        : out signed(13 downto 0);
 
-	O_VADDR      : out std_logic_vector(16 downto 0);
-	I_5C_DB      : in  std_logic_vector( 7 downto 0);
-	I_5C_DA      : in  std_logic_vector( 7 downto 0);
-	I_5B_DB      : in  std_logic_vector( 7 downto 0);
-	I_5B_DA      : in  std_logic_vector( 7 downto 0)
-);
-end INDY_CART;
+	-- CPU address to ROMs after Slapstic decoding
+	O_MADDR      : out std_logic_vector(15 downto 1);
 
-architecture logic of INDY_CART is
+	-- PROMs
+	O_PADDR      : out std_logic_vector( 8 downto 0);
+	I_PD4A       : in  std_logic_vector( 7 downto 0);
+	I_PD7A       : in  std_logic_vector( 7 downto 0);
+
+	-- sound ROMs
+	O_SADDR      : out std_logic_vector(13 downto 0);
+	I_SDATA      : in  std_logic_vector( 7 downto 0);
+
+	-- video ROMs
+	O_VADDR      : out std_logic_vector(16 downto 0);
+	I_VDATA      : in  std_logic_vector(31 downto 0)
+);
+end ATARI_CART;
+
+architecture logic of ATARI_CART is
 	signal
 		sl_MCKF,
-		sl_GCS4n,
-		sl_GCS3n,
-		sl_GCS2n,
-		sl_GCS1n,
 		sl_GD7P7,
 		sl_GD7P6,
 		sl_GD7P5,
 		sl_GD7P4,
 		sl_BASn,
 		sl_SLAPn,
-		sl_MEXTn,
 		sl_BLDSn,
 		sl_BW_Rn,
 		sl_GBA15n,
 		sl_INT1n,
 		sl_INT3n,
 		sl_WAITn,
-		sl_MA18n,
 		sl_BMO_PFn,
 		sl_MATCHn,
 		sl_MGHF,
@@ -129,11 +129,10 @@ architecture logic of INDY_CART is
 		slv_BS
 								: std_logic_vector( 1 downto 0):=(others=>'0');
 	signal
-		slv_SROMn
-								: std_logic_vector( 2 downto 0):=(others=>'1');
+		sl_GCSn
+								: std_logic_vector( 4 downto 1):=(others=>'1');
 	signal
-		slv_14S,
-		slv_ROMn
+		slv_14S
 								: std_logic_vector( 3 downto 0):=(others=>'1');
 	signal
 		slv_MOSR
@@ -184,11 +183,8 @@ architecture logic of INDY_CART is
 		slv_SBA
 								: std_logic_vector(13 downto 0):=(others=>'0');
 	signal
-		slv_MA
+		slv_MADDR
 								: std_logic_vector(15 downto 1):=(others=>'0');
-	signal
-		slv_MD
-								: std_logic_vector(15 downto 0):=(others=>'0');
 	signal
 		slv_GBA
 								: std_logic_vector(15 downto 1):=(others=>'0');
@@ -198,18 +194,16 @@ architecture logic of INDY_CART is
 begin
 	O_VADDR(14 downto 0) <= slv_GBA;
 	O_VADDR(16 downto 15) <=
-		"00" when sl_GCS1n = '0' else
-		"01" when sl_GCS2n = '0' else
-		"10" when sl_GCS3n = '0' else
-		"11" when sl_GCS4n = '0' else
+		"00" when sl_GCSn(1) = '0' else
+		"01" when sl_GCSn(2) = '0' else
+		"10" when sl_GCSn(3) = '0' else
+		"11" when sl_GCSn(4) = '0' else
 		(others=>'1');
 
 	sl_SLAPn    <= I_SLAPn;
-	sl_MEXTn    <= I_MEXTn;
 	sl_BLDSn    <= I_BLDSn;
 	sl_BASn     <= I_BASn;
 	sl_BW_Rn    <= I_BW_Rn;
-	sl_MA18n    <= I_MA18n;
 	sl_MATCHn   <= I_MATCHn;
 	sl_MGHF     <= I_MGHF;
 	sl_GLDn     <= I_GLDn;
@@ -222,14 +216,10 @@ begin
 	slv_SBA     <= I_SBA;
 	slv_MGRA    <= I_MGRA;
 
-	slv_MA      <= I_MA;
-	O_MD        <= slv_MD;
+	slv_MADDR   <= I_MADDR;
 
 	O_SMD       <= slv_SMDO;
 	slv_VIA_DI  <= I_SMD;
-
-	slv_ROMn    <= I_ROMn;
-	slv_SROMn   <= I_SROMn;
 
 	O_MOSR      <= slv_MOSR;
 	O_PFSR      <= slv_PFSR;
@@ -247,38 +237,13 @@ begin
 		I_CK  => I_MCKR,
 		I_ASn => sl_BASn,
 		I_CSn => sl_SLAPn,
-		I_A   => slv_MA(14 downto 1),
+		I_A   => slv_MADDR(14 downto 1),
 		O_BS  => slv_BS
 	);
 
-	-- SLAPSTIC controlled ROMs
-	ROM_16A : entity work.ROM_359 port map ( CLK=>I_XCKR, DATA=>slv_ROM_16A, ADDR(13 downto 12)=>slv_BS, ADDR(11 downto 0)=>slv_MA(12 downto 1) );
-	ROM_16B : entity work.ROM_358 port map ( CLK=>I_XCKR, DATA=>slv_ROM_16B, ADDR(13 downto 12)=>slv_BS, ADDR(11 downto 0)=>slv_MA(12 downto 1) );
-
-	-- MAIN CPU ROMs
-	ROM_10A : entity work.ROM_431 port map ( CLK=>I_XCKR, DATA=>slv_ROM_10A, ADDR=>slv_MA(15 downto 1) );
-	ROM_10B : entity work.ROM_432 port map ( CLK=>I_XCKR, DATA=>slv_ROM_10B, ADDR=>slv_MA(15 downto 1) );
-	ROM_12A : entity work.ROM_433 port map ( CLK=>I_XCKR, DATA=>slv_ROM_12A, ADDR=>slv_MA(15 downto 1) );
-	ROM_12B : entity work.ROM_434 port map ( CLK=>I_XCKR, DATA=>slv_ROM_12B, ADDR=>slv_MA(15 downto 1) );
-	ROM_14A : entity work.ROM_457 port map ( CLK=>I_XCKR, DATA=>slv_ROM_14A, ADDR=>slv_MA(14 downto 1) );
-	ROM_14B : entity work.ROM_456 port map ( CLK=>I_XCKR, DATA=>slv_ROM_14B, ADDR=>slv_MA(14 downto 1) );
-
---	ROM_11A : entity work.ROM_431 port map ( CLK=>I_XCKR, DATA=>slv_ROM_10A, ADDR=>slv_MA(15 downto 1) );
---	ROM_11B : entity work.ROM_432 port map ( CLK=>I_XCKR, DATA=>slv_ROM_10B, ADDR=>slv_MA(15 downto 1) );
---	ROM_13A : entity work.ROM_433 port map ( CLK=>I_XCKR, DATA=>slv_ROM_12A, ADDR=>slv_MA(15 downto 1) );
---	ROM_13B : entity work.ROM_434 port map ( CLK=>I_XCKR, DATA=>slv_ROM_12B, ADDR=>slv_MA(15 downto 1) );
---	ROM_15A : entity work.ROM_457 port map ( CLK=>I_XCKR, DATA=>slv_ROM_14A, ADDR=>slv_MA(14 downto 1) );
---	ROM_15B : entity work.ROM_456 port map ( CLK=>I_XCKR, DATA=>slv_ROM_14B, ADDR=>slv_MA(14 downto 1) );
-
-	slv_MD <=
-		slv_ROM_10B & slv_ROM_10A when sl_MA18n = '1' and slv_ROMn(1) = '0' else
-		slv_ROM_12B & slv_ROM_12A when sl_MA18n = '1' and slv_ROMn(2) = '0' else
-		slv_ROM_14B & slv_ROM_14A when sl_MA18n = '1' and slv_ROMn(3) = '0' else
---		slv_ROM_11B & slv_ROM_11A when sl_MA18n = '0' and slv_ROMn(1) = '0' else
---		slv_ROM_13B & slv_ROM_13A when sl_MA18n = '0' and slv_ROMn(2) = '0' else
---		slv_ROM_15B & slv_ROM_15A when sl_MA18n = '0' and slv_ROMn(3) = '0' else
-		slv_ROM_16B & slv_ROM_16A when sl_BW_Rn = '0' and sl_SLAPn    = '0' else
-		(others=>'Z');
+	-- Main CPU ROMs
+	-- if slapstic selected use descrambled addresses else use normal addresses
+	O_MADDR <= slv_MADDR(15 downto 1) when sl_SLAPn = '1' else '0' & slv_BS & slv_MADDR(12 downto 1);
 
 	----------------------------------------
 	-- sheet 4 SP-282 -- (sheet 2 SP-280) --
@@ -383,44 +348,32 @@ begin
 		O_SPKR   => O_SND
 	);
 
-	slv_SMDO <=
-		slv_VIA_DO  when sl_SNDBR_Wn = '1' and sl_SNDEXTn   = '0' else
-		slv_ROM_13D when sl_SNDBR_Wn = '1' and slv_SROMn(0) = '0' else
-		slv_ROM_14D when sl_SNDBR_Wn = '1' and slv_SROMn(1) = '0' else
-		slv_ROM_16D when sl_SNDBR_Wn = '1' and slv_SROMn(2) = '0' else
-		(others=>'Z');
+	-- sound ROMs
+	slv_SMDO <= slv_VIA_DO when (sl_SNDEXTn = '0') else I_SDATA;
 
-	-- AUDIO CPU ROMs
-	ROM_13D : entity work.ROM_153 port map ( CLK=>I_XCKR, DATA=>slv_ROM_13D, ADDR=>slv_SBA(13 downto 0) );
-	ROM_14D : entity work.ROM_154 port map ( CLK=>I_XCKR, DATA=>slv_ROM_14D, ADDR=>slv_SBA(13 downto 0) );
-	ROM_16D : entity work.ROM_155 port map ( CLK=>I_XCKR, DATA=>slv_ROM_16D, ADDR=>slv_SBA(13 downto 0) );
-
-	-- PROMs
-	ROM_4A  : entity work.ROM_151 port map ( CLK=>I_XCKR, DATA=>slv_ROM_4A, ADDR(8)=>sl_BMO_PFn, ADDR(7 downto 0)=>slv_MGRA(19 downto 12) );
-	ROM_7A  : entity work.ROM_152 port map ( CLK=>I_XCKR, DATA=>slv_ROM_7A, ADDR(8)=>sl_BMO_PFn, ADDR(7 downto 0)=>slv_MGRA(19 downto 12) );
+	--	PROMs
+	O_PADDR <= sl_BMO_PFn & slv_MGRA(19 downto 12);
 
 	-- implement pullups
-	sl_NOROM7n <= slv_ROM_4A(7) when sl_MATCHn = '0' else '1';
-	sl_NOROM6n <= slv_ROM_4A(6) when sl_MATCHn = '0' else '1';
-	sl_NOROM5n <= slv_ROM_4A(5) when sl_MATCHn = '0' else '1';
-	sl_NOROM4n <= slv_ROM_4A(4) when sl_MATCHn = '0' else '1';
+	sl_NOROM7n <= I_PD4A(7) when sl_MATCHn = '0' else '1';
+	sl_NOROM6n <= I_PD4A(6) when sl_MATCHn = '0' else '1';
+	sl_NOROM5n <= I_PD4A(5) when sl_MATCHn = '0' else '1';
+	sl_NOROM4n <= I_PD4A(4) when sl_MATCHn = '0' else '1';
 
-	sl_GD7P7   <= slv_ROM_4A(3) when sl_MATCHn = '0' else '1';
-	sl_GD7P6   <= slv_ROM_4A(2) when sl_MATCHn = '0' else '1';
-	sl_GD7P5   <= slv_ROM_4A(1) when sl_MATCHn = '0' else '1';
-	sl_GD7P4   <= slv_ROM_4A(0) when sl_MATCHn = '0' else '1';
+	sl_GD7P7   <= I_PD4A(3) when sl_MATCHn = '0' else '1';
+	sl_GD7P6   <= I_PD4A(2) when sl_MATCHn = '0' else '1';
+	sl_GD7P5   <= I_PD4A(1) when sl_MATCHn = '0' else '1';
+	sl_GD7P4   <= I_PD4A(0) when sl_MATCHn = '0' else '1';
+	--(sl_NOROM7n,sl_NOROM6n,sl_NOROM5n,sl_NOROM4n,sl_GD7P7,sl_GD7P6,sl_GD7P5,sl_GD7P4) <= I_PD4A when sl_MATCHn = '0' else (others=>'1');
 
-	sl_GCS4n   <= slv_ROM_7A(7) when sl_MATCHn = '0' else '1';
-	sl_GCS3n   <= slv_ROM_7A(6) when sl_MATCHn = '0' else '1';
-	sl_GCS2n   <= slv_ROM_7A(5) when sl_MATCHn = '0' else '1';
-	sl_GCS1n   <= slv_ROM_7A(4) when sl_MATCHn = '0' else '1';
+	-- buffers 3A, 6A
+	--(sl_GCSn,slv_GBA(15 downto 12)) <= I_PD7A when sl_MATCHn = '0' else (others=>'1');
+	sl_GCSn <= I_PD7A(7 downto 4) when sl_MATCHn = '0' else (others=>'1');
+	slv_GBA(15 downto 12) <= I_PD7A(3 downto 0)  when sl_MATCHn = '0' else (others=>'1'); -- FIXME what happens to these lines when PROM /CS is inactive?
+	slv_GBA(11 downto  1) <= slv_MGRA(11 downto 1);
 
 	-- gate 9A
 	sl_GBA15n <= not slv_GBA(15);
-
-	-- buffers 3A, 6A
-	slv_GBA(15 downto 12) <= slv_ROM_7A(3 downto 0)  when sl_MATCHn = '0' else "1111"; -- FIXME what happens to these lines when PROM /CS is inactive?
-	slv_GBA(11 downto  1) <= slv_MGRA(11 downto 1);
 
 	----------------------------------------
 	-- sheet 5 SP-282 -- (sheet 4 SP-280) --
@@ -444,30 +397,8 @@ begin
 		O_MODB     => slv_MOSR(0)
 	);
 
-	slv_5B_DB <= I_5B_DB;
-	slv_5B_DA <= I_5B_DA;
-
---	slv_5B_DB <=
---		slv_ROM_1B when sl_GCS1n = '0' else
---		slv_ROM_2B when sl_GCS2n = '0' else
---		slv_ROM_3B when sl_GCS3n = '0' else
---		slv_ROM_4B when sl_GCS4n = '0' else
---		(others=>'1');
---	slv_5B_DA <=
---		slv_ROM_6B when sl_GCS1n = '0' else
---		slv_ROM_7B when sl_GCS2n = '0' else
---		slv_ROM_8B when sl_GCS3n = '0' else
---		slv_ROM_9B when sl_GCS4n = '0' else
---		(others=>'1');
---
---	ROM_1B : entity work.ROM_135 port map ( CLK=>I_XCKR, DATA=>slv_ROM_1B, ADDR=>slv_GBA(15 downto 1) );
---	ROM_2B : entity work.ROM_136 port map ( CLK=>I_XCKR, DATA=>slv_ROM_2B, ADDR=>slv_GBA(15 downto 1) );
---	ROM_3B : entity work.ROM_137 port map ( CLK=>I_XCKR, DATA=>slv_ROM_3B, ADDR=>slv_GBA(15 downto 1) );
---	ROM_4B : entity work.ROM_138 port map ( CLK=>I_XCKR, DATA=>slv_ROM_4B, ADDR=>slv_GBA(15 downto 1) );
---	ROM_6B : entity work.ROM_139 port map ( CLK=>I_XCKR, DATA=>slv_ROM_6B, ADDR=>slv_GBA(15 downto 1) );
---	ROM_7B : entity work.ROM_140 port map ( CLK=>I_XCKR, DATA=>slv_ROM_7B, ADDR=>slv_GBA(15 downto 1) );
---	ROM_8B : entity work.ROM_141 port map ( CLK=>I_XCKR, DATA=>slv_ROM_8B, ADDR=>slv_GBA(15 downto 1) );
---	ROM_9B : entity work.ROM_142 port map ( CLK=>I_XCKR, DATA=>slv_ROM_9B, ADDR=>slv_GBA(15 downto 1) );
+	slv_5B_DB <= I_VDATA(15 downto 8);
+	slv_5B_DA <= I_VDATA( 7 downto 0);
 
 	----------------------------------------
 	-- sheet 6 SP-282 -- (sheet 5 SP-280) --
@@ -491,30 +422,8 @@ begin
 		O_MODB     => slv_MOSR(2)
 	);
 
-	slv_5C_DB <= I_5C_DB;
-	slv_5C_DA <= I_5C_DA;
-
---	slv_5C_DB <=
---		slv_ROM_1C when sl_GCS1n = '0' else
---		slv_ROM_2C when sl_GCS2n = '0' else
---		slv_ROM_3C when sl_GCS3n = '0' else
---		slv_ROM_4C when sl_GCS4n = '0' else
---		(others=>'1');
---	slv_5C_DA <=
---		slv_ROM_6C when sl_GCS1n = '0' else
---		slv_ROM_7C when sl_GCS2n = '0' else
---		slv_ROM_8C when sl_GCS3n = '0' else
---		slv_ROM_9C when sl_GCS4n = '0' else
---		(others=>'1');
---
---	ROM_1C : entity work.ROM_143 port map ( CLK=>I_XCKR, DATA=>slv_ROM_1C, ADDR=>slv_GBA(15 downto 1) );
---	ROM_2C : entity work.ROM_144 port map ( CLK=>I_XCKR, DATA=>slv_ROM_2C, ADDR=>slv_GBA(15 downto 1) );
---	ROM_3C : entity work.ROM_145 port map ( CLK=>I_XCKR, DATA=>slv_ROM_3C, ADDR=>slv_GBA(15 downto 1) );
---	ROM_4C : entity work.ROM_146 port map ( CLK=>I_XCKR, DATA=>slv_ROM_4C, ADDR=>slv_GBA(15 downto 1) );
---	ROM_6C : entity work.ROM_147 port map ( CLK=>I_XCKR, DATA=>slv_ROM_6C, ADDR=>slv_GBA(15 downto 1) );
---	ROM_7C : entity work.ROM_148 port map ( CLK=>I_XCKR, DATA=>slv_ROM_7C, ADDR=>slv_GBA(15 downto 1) );
---	ROM_8C : entity work.ROM_149 port map ( CLK=>I_XCKR, DATA=>slv_ROM_8C, ADDR=>slv_GBA(15 downto 1) );
---	ROM_9C : entity work.ROM_150 port map ( CLK=>I_XCKR, DATA=>slv_ROM_9C, ADDR=>slv_GBA(15 downto 1) );
+	slv_5C_DB <= I_VDATA(31 downto 24);
+	slv_5C_DA <= I_VDATA(23 downto 16);
 
 	----------------------------------------
 	-- sheet 7 SP-282 -- (sheet 6 SP-280) --
