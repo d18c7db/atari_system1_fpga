@@ -342,7 +342,7 @@ hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
 
 	.buttons(sl_buttons),
 	.status(status),
-	.status_menumask(direct_video),
+	.status_menumask({1'b0,direct_video}),
 	.direct_video(direct_video),
 
 	.ioctl_download(ioctl_download),
@@ -369,6 +369,8 @@ RGBI BCONV (.ADDR({gvid_I,gvid_B}), .DATA(b));
 // ###################################################
 
 /*************************************************************/
+wire [16:0] slv_VADDR;
+wire [31:0] slv_VDATA;
 wire [22:0] sdram_addr;
 reg  [31:0] sdram_data=0;
 reg         sdram_we=0;
@@ -428,9 +430,7 @@ wire sl_wr_10B_10A, sl_wr_12B_12A, sl_wr_14B_14A, sl_wr_16B_16A, sl_wr_11J_10J;
 wire sl_wr_23B, sl_wr_4A , sl_wr_7A;
 
 //wire [31:0] slv_ROM_1C_6C_1B_6B, slv_ROM_2C_7C_2B_7B, slv_ROM_3C_8C_3B_8B, slv_ROM_4C_9C_4B_9B;
-wire [31:0] slv_VDATA;
 wire [19:1] slv_MGRA;
-wire [16:0] slv_VADDR;
 wire [15:1] slv_MA;
 wire [15:1] slv_MADDR;
 wire [15:0] slv_MDATA;
