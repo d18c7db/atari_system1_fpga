@@ -36,7 +36,6 @@ entity sdram is
 		I_CLK         : in    std_logic; -- tCK above MUST match this clock!
 		I_RST         : in    std_logic; -- active high reset
 
-
 		I_ADDR        : in    std_logic_vector(22 downto 0); -- max 8M address by 32 bits (chip is 16M x16)
 		I_DATA        : in    std_logic_vector(31 downto 0);
 		O_DATA        : out   std_logic_vector(31 downto 0);
@@ -184,7 +183,7 @@ begin
 
 				-- #MODE#
 				when MODE =>
-					if (cycl_ctr = tMRD) then
+					if (cycl_ctr >= tMRD) then
 						cmd <= CMD_NOP;
 						state <= IDLE;
 						cycl_ctr <= 0;
@@ -210,7 +209,7 @@ begin
 				-- #ACTIVE# row and bank
 				when ACTV =>
 					-- observe tRCD ACTIVE-to-RD/WR delay
-					if (cycl_ctr = tRCD-1) then
+					if (cycl_ctr >= tRCD-1) then
 						if (dq_write = '1') then
 							cmd <= CMD_WRITE;
 						else
@@ -223,7 +222,7 @@ begin
 				-- #RDWR#
 				when RDWR =>
 					-- observe tCASL CAS Latency
-					if (cycl_ctr = tCASL + 3) then
+					if (cycl_ctr >= tCASL + 3) then
 					-- if a refresh is due soon, go direct to refresh state else idle
 						if (rfsh_ctr > tREF-20) then
 							cmd <= CMD_REFRESH;

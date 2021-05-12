@@ -231,7 +231,7 @@ wire [15:0] joy3;
 wire [10:0] ps2_key;
 
 wire [21:0] gamma_bus;
-wire sl_reset = RESET | status[0] | sl_buttons[1]| ioctl_download;
+wire sl_reset = RESET | status[0] | sl_buttons[1] | ioctl_download;
 
 reg [7:0]   p1 = 8'h0;
 reg [7:0]   p2 = 8'h0;
@@ -377,6 +377,7 @@ RGBI BCONV (.ADDR({gvid_I,gvid_B}), .DATA(b));
 wire [16:0] slv_VADDR;
 wire [31:0] slv_VDATA;
 wire [22:0] sdram_addr;
+reg  [22:0] addr_new;
 reg  [31:0] sdram_data=0;
 reg         sdram_we=0;
 wire        sdram_ready;
@@ -395,11 +396,12 @@ begin
 	if (ioctl_wr && (!ioctl_index) && ioctl_download && ioctl_addr[1] && ioctl_addr[0])
 	begin
 		sdram_data <= {acc_bytes,ioctl_dout};
+		addr_new <= ioctl_addr[24:2];
 		sdram_we <= 1'b1;
 	end
 end
 
-assign sdram_addr = ioctl_download?ioctl_addr[24:2]:{6'd0,slv_VADDR};
+assign sdram_addr = ioctl_download?addr_new:{6'd0,slv_VADDR};
 assign ioctl_wait = ~(pll_locked && sdram_ready);
 
 sdram #(.tCK_ns(1000/93.06817)) sdram
