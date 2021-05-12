@@ -21,16 +21,6 @@
 -- SW1 start1/whip
 -- SW2 start2/whip
 
--- ROM mapping on PCB
--- VIDEO             VIDEO             VIDEO             VIDEO
--- 1B  2B  3B  4B    6B  7B  8B  9B    1C  2C  3C  4C    6C  7C  8C  9C
--- 135 136 137 138   139 140 141 142   143 144 145 146   147 148 149 150
-
--- MAINCPU           MAINCPU           PROMS        AUDIOCPU
--- 10A 12A 14A 16A   10B 12B 14B 16B   4/5A  7A     13D 14/15D 16D
--- 431 433 457 359   432 434 456 358   151   152    153  154   155 (indytemp)
--- 132 134 156 158   131 133 157 159   151   152    153  154   155 (from TM-282)
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
@@ -85,7 +75,6 @@ port(
 	I_PD7A       : in  std_logic_vector( 7 downto 0);
 
 	-- sound ROMs
-	O_SADDR      : out std_logic_vector(13 downto 0);
 	I_SDATA      : in  std_logic_vector( 7 downto 0);
 
 	-- video ROMs

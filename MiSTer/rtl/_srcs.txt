@@ -67,6 +67,33 @@ lib/scan_converter.vhd
 ../../pipistrello/roms/indytemp/ROM_456.vhd
 ../../pipistrello/roms/indytemp/ROM_457.vhd
 
+# ../../pipistrello/roms/peterpak/ROM_105.vhd
+# ../../pipistrello/roms/peterpak/ROM_108.vhd
+# ../../pipistrello/roms/peterpak/ROM_111.vhd
+# ../../pipistrello/roms/peterpak/ROM_114.vhd
+# ../../pipistrello/roms/peterpak/ROM_138.vhd
+# ../../pipistrello/roms/peterpak/ROM_139.vhd
+# ../../pipistrello/roms/peterpak/ROM_140.vhd
+# ../../pipistrello/roms/peterpak/ROM_141.vhd
+# ../../pipistrello/roms/peterpak/ROM_150.vhd
+# ../../pipistrello/roms/peterpak/ROM_151.vhd
+# ../../pipistrello/roms/peterpak/ROM_152.vhd
+# ../../pipistrello/roms/peterpak/ROM_153.vhd
+#
+#../../pipistrello/roms/peterpak/ROM_142.vhd
+#../../pipistrello/roms/peterpak/ROM_143.vhd
+#../../pipistrello/roms/peterpak/ROM_144.vhd
+#../../pipistrello/roms/peterpak/ROM_145.vhd
+#../../pipistrello/roms/peterpak/ROM_146.vhd
+#../../pipistrello/roms/peterpak/ROM_147.vhd
+#../../pipistrello/roms/peterpak/ROM_148.vhd
+#../../pipistrello/roms/peterpak/ROM_149.vhd
+#
+#../../pipistrello/roms/peterpak/ROM_101.vhd
+#../../pipistrello/roms/peterpak/ROM_102.vhd
+#../../pipistrello/roms/peterpak/ROM_136.vhd
+#../../pipistrello/roms/peterpak/ROM_137.vhd
+
 atarisys1/EEPROM.vhd
 atarisys1/RAM_2K8.vhd
 atarisys1/CRAMS.vhd
@@ -94,6 +121,6 @@ atarisys1/ATARISYS1.vhd
 #../../pipistrello/testbed/ROMS_EXT_INDYTEMP.vhd
 #../../pipistrello/atarisys1_top.vhd
 #../../pipistrello/testbed/tb_atarisys1.vhd
-../hps_emu.vhd
+../hps_emu_indy.vhd
 ../Arcade-atarisys1_emu.sv
 ../tb_atarisys1_emu.vhd
