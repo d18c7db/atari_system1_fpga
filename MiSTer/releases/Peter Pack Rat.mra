@@ -1,0 +1,94 @@
+<misterromdescription>
+	<name>Peter Pack Rat</name>
+	<mameversion>0227</mameversion>
+	<setname>peterpak</setname>
+	<mratimestamp>20210102030405</mratimestamp>
+	<year>1985</year>
+	<manufacturer>Atari Games</manufacturer>
+	<category>Arcade</category>
+	<rbf>atarisys1</rbf>
+	<mameinfo parent="atarisy1" cpp="atarisy1" input="atarisy1"/>
+	<display type="raster" rotate="0"/>
+	<buttons names="Start,Fire,-,-,Coin,-" default="B,A,R"/>
+
+	<romstruct>
+		ROM labels to ROM chip mapping on PCB
+		VIDEO             VIDEO             VIDEO             VIDEO
+		1B  2B  3B  4B    6B  7B  8B  9B    1C  2C  3C  4C    6C  7C  8C  9C
+		138 150 105 ---   139 151 108 ---   140 152 111 ---   141 153 114 ---
+
+		MAINCPU                       MAINCPU                       PROMS        AUDIOCPU
+		10A 11A 12A 13A 14A 15A 16A   10B 11B 12B 13B 14B 15B 16B   4/5A  7A     13D 14/15D 16D
+		143 145 147 --- --- --- 149   142 144 146 --- --- --- 148    137  136    ---  101   102
+	</romstruct>
+
+	<!-- Slapstic type -->
+	<rom index="1">
+		<part>6B</part>
+	</rom>
+
+	<rom index="0" zip="peterpak.zip" md5="none">
+		<!-- Video ROMs -->
+		<interleave output="32">
+			<part crc="none" name="136028.140" map="0001"/>
+			<part crc="none" name="136028.141" map="0010"/>
+			<part crc="none" name="136028.138" map="0100"/>
+			<part crc="none" name="136028.139" map="1000"/>
+		</interleave>
+
+		<interleave output="32">
+			<part crc="none" name="136028.152" map="0001"/>
+			<part crc="none" name="136028.153" map="0010"/>
+			<part crc="none" name="136028.150" map="0100"/>
+			<part crc="none" name="136028.151" map="1000"/>
+		</interleave>
+
+		<interleave output="32">
+			<part crc="none" name="136028.111" map="0001"/>
+			<part crc="none" name="136028.114" map="0010"/>
+			<part crc="none" name="136028.105" map="0100"/>
+			<part crc="none" name="136028.108" map="1000"/>
+		</interleave>
+		<part repeat="65536">00</part>
+
+		<part repeat="65536">00</part>
+		<part repeat="65536">00</part>
+
+		<!-- CART ROMs, Slapstic ROMs, System ROMs -->
+		<interleave output="16">
+			<part crc="none" name="136028.142" map="01"/>"
+			<part crc="none" name="136028.143" map="10"/>"
+		</interleave>
+		<interleave output="16">
+			<part crc="none" name="136028.144" map="01"/>"
+			<part crc="none" name="136028.145" map="10"/>"
+		</interleave>
+
+		<interleave output="16">
+			<part crc="none" name="136028.146" map="01"/>"
+			<part crc="none" name="136028.147" map="10"/>"
+		</interleave>
+		<part repeat="32768">00</part>
+
+		<part repeat="32768">00</part>
+
+		<interleave output="16">
+			<part crc="none" name="136028.148" map="01"/>"
+			<part crc="none" name="136028.149" map="10"/>"
+		</interleave>
+		<interleave output="16">
+			<part crc="none" name="136032.114.j11" zip="atarisy1.zip" map="01"/>
+			<part crc="none" name="136032.115.j10" zip="atarisy1.zip" map="10"/>
+		</interleave>
+
+		<!-- Audio ROMs -->
+		<part repeat="16384">00</part>
+		<part crc="none" name="136028.101"/>
+		<part crc="none" name="136028.102"/>
+
+		<!-- PROMs -->
+		<part crc="none" name="136032.104.f5" zip="atarisy1.zip"/>
+		<part crc="none" name="136028.137"/>
+		<part crc="none" name="136028.136"/>
+	</rom>
+</misterromdescription>

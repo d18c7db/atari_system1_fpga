@@ -431,12 +431,12 @@ wire sl_wr_13D, sl_wr_14D, sl_wr_16D;
 wire sl_wr_10B_10A, sl_wr_12B_12A, sl_wr_14B_14A, sl_wr_16B_16A, sl_wr_11J_10J;
 wire sl_wr_23B, sl_wr_4A , sl_wr_7A;
 
-//wire [31:0] slv_ROM_1C_6C_1B_6B, slv_ROM_2C_7C_2B_7B, slv_ROM_3C_8C_3B_8B, slv_ROM_4C_9C_4B_9B;
+wire [31:0] slv_ROM_1C_6C_1B_6B, slv_ROM_2C_7C_2B_7B, slv_ROM_3C_8C_3B_8B, slv_ROM_4C_9C_4B_9B, slv_ROM_10B_10A, slv_ROM_11B_11A;
 wire [19:1] slv_MGRA;
 wire [15:1] slv_MA;
 wire [15:1] slv_MADDR;
 wire [15:0] slv_MDATA;
-wire [15:0] slv_ROM_10B_10A, slv_ROM_12B_12A, slv_ROM_14B_14A, slv_ROM_16B_16A, slv_ROM_11J_10J;
+wire [15:0] slv_ROM_12B_12A, slv_ROM_14B_14A, slv_ROM_16B_16A, slv_ROM_11J_10J;
 wire [13:0] slv_SBA;
 wire [13:0] s_snd;
 wire [12:0] slv_PA5F;
@@ -498,29 +498,30 @@ assign sl_wr_4A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h630) 
 assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) ? 1'b1 : 1'b0;
 // 0xC6400 bytes sent to FPGA
 
-//	assign slv_VDATA =
+//assign slv_VDATA =
 //	(slv_VADDR[16:15] == 2'b00)?slv_ROM_1C_6C_1B_6B:
 //	(slv_VADDR[16:15] == 2'b01)?slv_ROM_2C_7C_2B_7B:
 //	(slv_VADDR[16:15] == 2'b10)?slv_ROM_3C_8C_3B_8B:
 //	(slv_VADDR[16:15] == 2'b11)?slv_ROM_4C_9C_4B_9B:
 //	32'h0;
 
-//	ROM_143 ROM_1C( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[31:24]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_147 ROM_6C( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[23:16]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_135 ROM_1B( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[15:8 ]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_139 ROM_6B( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[ 7:0 ]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_144 ROM_2C( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[31:24]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_148 ROM_7C( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[23:16]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_136 ROM_2B( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[15:8 ]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_140 ROM_7B( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[ 7:0 ]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_145 ROM_3C( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[31:24]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_149 ROM_8C( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[23:16]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_137 ROM_3B( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[15:8 ]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_141 ROM_8B( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[ 7:0 ]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_146 ROM_4C( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[31:24]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_150 ROM_9C( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[23:16]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_138 ROM_4B( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[15:8 ]), .ADDR(slv_VADDR(14 downto 0)) );
-//	ROM_142 ROM_9B( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[ 7:0 ]), .ADDR(slv_VADDR(14 downto 0)) );
+//ROM_143 ROM_1C( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[31:24]), .ADDR(slv_VADDR[14:0]) );
+//ROM_147 ROM_6C( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[23:16]), .ADDR(slv_VADDR[14:0]) );
+//ROM_135 ROM_1B( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[15:8 ]), .ADDR(slv_VADDR[14:0]) );
+//ROM_139 ROM_6B( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[ 7:0 ]), .ADDR(slv_VADDR[14:0]) );
+//ROM_144 ROM_2C( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[31:24]), .ADDR(slv_VADDR[14:0]) );
+//ROM_148 ROM_7C( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[23:16]), .ADDR(slv_VADDR[14:0]) );
+//ROM_136 ROM_2B( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[15:8 ]), .ADDR(slv_VADDR[14:0]) );
+//ROM_140 ROM_7B( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[ 7:0 ]), .ADDR(slv_VADDR[14:0]) );
+//ROM_145 ROM_3C( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[31:24]), .ADDR(slv_VADDR[14:0]) );
+//ROM_149 ROM_8C( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[23:16]), .ADDR(slv_VADDR[14:0]) );
+//ROM_137 ROM_3B( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[15:8 ]), .ADDR(slv_VADDR[14:0]) );
+//ROM_141 ROM_8B( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[ 7:0 ]), .ADDR(slv_VADDR[14:0]) );
+
+//ROM_146 ROM_4C( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[31:24]), .ADDR(slv_VADDR(14 downto 0)) );
+//ROM_150 ROM_9C( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[23:16]), .ADDR(slv_VADDR(14 downto 0)) );
+//ROM_138 ROM_4B( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[15:8 ]), .ADDR(slv_VADDR(14 downto 0)) );
+//ROM_142 ROM_9B( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[ 7:0 ]), .ADDR(slv_VADDR(14 downto 0)) );
 
 	// 256 M10K blocks
 //	dpram #(16,32) gp_ram
@@ -530,6 +531,8 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) 
 assign slv_MDATA =
 	(~slv_ROMn[0])?slv_ROM_11J_10J:
 	(~slv_ROMn[1])?slv_ROM_10B_10A:
+//	(~slv_ROMn[1] && ~slv_MADDR[15])?slv_ROM_10B_10A:
+//	(~slv_ROMn[1] &&  slv_MADDR[15])?slv_ROM_11B_11A:
 	(~slv_ROMn[2])?slv_ROM_12B_12A:
 	(~slv_ROMn[3])?slv_ROM_14B_14A:
 	(~sl_SLAPn   )?slv_ROM_16B_16A:
@@ -607,17 +610,17 @@ dpram #(14, 8) ap_ram_16D
 //ROM_151 ROM_4A ( .CLK(clk_14M), .DATA(slv_PD4A), .ADDR(slv_PADDR) );
 //ROM_152 ROM_7A ( .CLK(clk_14M), .DATA(slv_PD7A), .ADDR(slv_PADDR) );
 
-	// 8 M10K blocks
+// 8 M10K blocks
 dpram  #(13,8) cp_ram_23B
 (.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_23B    ), .address_a(ioctl_addr[12:0]), .data_a(                 ioctl_dout ), .q_a(               ),
  .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(  slv_PA5F[12:0]), .data_b(                            ), .q_b(slv_PD5F       ));
 
-	// 1 M10K blocks
+// 1 M10K blocks
 dpram  #(9,8) cp_ram_4A
 (.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_4A     ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
  .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD4A       ));
 
-	// 1 M10K blocks
+// 1 M10K blocks
 dpram  #(9,8) cp_ram_7A
 (.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_7A     ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
  .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD7A       ));
@@ -636,6 +639,13 @@ dpram  #(9,8) cp_ram_7A
 // 10 KEY       10 V_DIR1   10 Right Coin                      10 SW3
 // 11 GND       11 GND      11 GND                             11 GND
 
+// Slapstic type: marble=103, indytemp=105, peterpak=107, roadrunn=108, roadb109=109, roadb110=110
+// for some reason the ADC index is shifted by 1 for indy, wtf?
+// confirmed in MAME IRQ handler, ADC indexes are 4=UP 3=DN 2=LT 1=RT for Indy and 3=UP 2=DN 1=LT 0=RT for Peter Packrat
+wire [7:0] inputs;
+// for Indy (105) shift inputs by one (000UDLR0) else (0000UDLR)
+assign inputs = (slap_type==105)?({3'b0, (p2[7:4] | p1[7:4] | joy1[3:0] | joy0[3:0]),1'b0})  :  ({4'b0, (p2[7:4] | p1[7:4] | joy1[3:0] | joy0[3:0])});
+
 FPGA_ATARISYS1 atarisys1
 (
 	.I_SLAP_TYPE(slap_type),
@@ -644,12 +654,14 @@ FPGA_ATARISYS1 atarisys1
 
 	.I_RESET(sl_reset),
 
-	.I_JOY({(p2[7:4] | joy1[3:0]), (p1[7:4] | joy0[3:0])}), // P2-U,D,L,R P1-U,D,L,R active high
+	// SELFTEST, COIN_AUX, COIN_L, COIN_R, SW[5:1] active low
+	.I_SELFTESTn(~m_service),
+	.I_COIN({~m_coin_aux, ~(m_coin_r), ~(m_coin_l | joy0[8])}),
+	.I_PB({~(p2[0] | p1[0] | joy1[5] | joy0[5]),       ~(p2[1] | joy1[5] | joy0[5]),       ~(p1[1] | joy1[4] | joy0[4])}), // Whip2/Start2 Whip1/Start1
+
+	.I_JOY(inputs),  // P2-U,D,L,R P1-U,D,L,R active high
 	.I_CLK(4'b1111), // LETA trackball inputs active low
 	.I_DIR(4'b1111), // LETA trackball inputs active low
-
-	// SELFTEST, COIN_AUX, COIN_L, COIN_R, SW[5:1] active low
-	.I_SYS({~m_service, ~m_coin_aux, ~(m_coin_r | joy1[8]), ~(m_coin_l | joy0[8]), 2'b11, ~(p2[0] | p1[0] | joy1[4] | joy0[4]), ~(p2[1] | joy1[5]), ~(p1[1] | joy0[5])}),
 
 	.O_LEDS(),
 

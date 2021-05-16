@@ -43,7 +43,9 @@ entity FPGA_ATARISYS1 is
 		I_CLK      : in  std_logic_vector(3 downto 0); -- HCLK2,VCLK2,HCLK1,VCLK1
 		I_DIR      : in  std_logic_vector(3 downto 0); -- HDIR2,VDIR2,HDIR1,VDIR1
 		-- System inputs active low
-		I_SYS      : in  std_logic_vector(8 downto 0); -- SELFTEST, COIN_AUX, COIN_R, COIN_L, SW[5:1]
+		I_SELFTESTn: in  std_logic;                    -- SELFTEST
+		I_PB       : in  std_logic_vector(5 downto 1); -- SW[5:1]
+		I_COIN     : in  std_logic_vector(2 downto 0); -- COIN_AUX, COIN_R, COIN_L
 
 		O_LEDS     : out std_logic_vector(2 downto 1);
 
@@ -178,12 +180,8 @@ begin
 			sl_adc_eoc <= '0';
 			-- when button is pressed ADC value goes full scale, else ADC value is VCC/2
 			-- we present 0xFF for button press and 0x7F for button release
-			-- game reads ADC value and checks if it's above or below 0xF0
-
-			-- for some reason the ADC index is shifted by 1, wtf, schemafail
-			-- confirmed in MAME, indexes are 7=HI, 6=HI, 5=HI, 4=UP 3=DN 2=LT 1=RT 0=RT
-			-- so right key actions both ADC index 0 and 1
-			slv_adc_data(7) <= I_JOY(to_integer(unsigned(slv_adc_addr-1)));
+			-- game reads ADC value and checks if it's above or below threshold
+			slv_adc_data(7) <= I_JOY(to_integer(unsigned(slv_adc_addr)));
 		elsif slv_adc_ctr = 0 then
 			sl_adc_eoc <= '1';
 		else
@@ -237,8 +235,8 @@ begin
 
 		-- J106 (+5 N/C LED2 LED1 KEY PB5 PB2 PB4 PB1 PB3 GND) push buttons 5-1 and SELFTEST
 		-- PB5=N/C, PB4=N/C, PB3=Jump (not used for Indiana Jones cart), PB2 = Start2/Whip/Throw, PB1=Start1/Whip/Throw
-		I_PB        => I_SYS(4 downto 0),
-		I_SELFTESTn => I_SYS(8),
+		I_PB        => I_PB(5 downto 1),
+		I_SELFTESTn => I_SELFTESTn,
 
 		-- interface to extenal ADC0809 chip
 		O_ADC_SOC   => sl_adc_soc, -- active high start of conversion
@@ -331,10 +329,10 @@ begin
 		O_WR68Kn    => sl_WR68Kn,
 		O_RD68Kn    => sl_RD68Kn,
 
-		I_SELFTESTn => I_SYS(8),
-		I_COIN_AUX  => I_SYS(7),
-		I_COIN_R    => I_SYS(6),
-		I_COIN_L    => I_SYS(5),
+		I_SELFTESTn => I_SELFTESTn,
+		I_COIN_AUX  => I_COIN(2),
+		I_COIN_R    => I_COIN(1),
+		I_COIN_L    => I_COIN(0),
 
 		O_LED       => open,	-- LED indicators
 		O_CCTRn     => open,	-- coin counters open collector active low
