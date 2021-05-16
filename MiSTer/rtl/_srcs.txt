@@ -37,62 +37,62 @@ lib/scan_converter.vhd
 ../../pipistrello/roms/atarisy1/ROM_2B.vhd
 ../../pipistrello/roms/atarisy1/ROM_5F.vhd
 
-../../pipistrello/roms/indytemp/ROM_135.vhd
-../../pipistrello/roms/indytemp/ROM_136.vhd
-../../pipistrello/roms/indytemp/ROM_137.vhd
-../../pipistrello/roms/indytemp/ROM_138.vhd
-../../pipistrello/roms/indytemp/ROM_139.vhd
-../../pipistrello/roms/indytemp/ROM_140.vhd
-../../pipistrello/roms/indytemp/ROM_141.vhd
-../../pipistrello/roms/indytemp/ROM_142.vhd
-../../pipistrello/roms/indytemp/ROM_143.vhd
-../../pipistrello/roms/indytemp/ROM_144.vhd
-../../pipistrello/roms/indytemp/ROM_145.vhd
-../../pipistrello/roms/indytemp/ROM_146.vhd
-../../pipistrello/roms/indytemp/ROM_147.vhd
-../../pipistrello/roms/indytemp/ROM_148.vhd
-../../pipistrello/roms/indytemp/ROM_149.vhd
-../../pipistrello/roms/indytemp/ROM_150.vhd
-../../pipistrello/roms/indytemp/ROM_151.vhd
-../../pipistrello/roms/indytemp/ROM_152.vhd
-../../pipistrello/roms/indytemp/ROM_153.vhd
-../../pipistrello/roms/indytemp/ROM_154.vhd
-../../pipistrello/roms/indytemp/ROM_155.vhd
-../../pipistrello/roms/indytemp/ROM_358.vhd
-../../pipistrello/roms/indytemp/ROM_359.vhd
-../../pipistrello/roms/indytemp/ROM_431.vhd
-../../pipistrello/roms/indytemp/ROM_432.vhd
-../../pipistrello/roms/indytemp/ROM_433.vhd
-../../pipistrello/roms/indytemp/ROM_434.vhd
-../../pipistrello/roms/indytemp/ROM_456.vhd
-../../pipistrello/roms/indytemp/ROM_457.vhd
+#../../pipistrello/roms/indytemp/ROM_135.vhd
+#../../pipistrello/roms/indytemp/ROM_136.vhd
+#../../pipistrello/roms/indytemp/ROM_137.vhd
+#../../pipistrello/roms/indytemp/ROM_138.vhd
+#../../pipistrello/roms/indytemp/ROM_139.vhd
+#../../pipistrello/roms/indytemp/ROM_140.vhd
+#../../pipistrello/roms/indytemp/ROM_141.vhd
+#../../pipistrello/roms/indytemp/ROM_142.vhd
+#../../pipistrello/roms/indytemp/ROM_143.vhd
+#../../pipistrello/roms/indytemp/ROM_144.vhd
+#../../pipistrello/roms/indytemp/ROM_145.vhd
+#../../pipistrello/roms/indytemp/ROM_146.vhd
+#../../pipistrello/roms/indytemp/ROM_147.vhd
+#../../pipistrello/roms/indytemp/ROM_148.vhd
+#../../pipistrello/roms/indytemp/ROM_149.vhd
+#../../pipistrello/roms/indytemp/ROM_150.vhd
+#../../pipistrello/roms/indytemp/ROM_151.vhd
+#../../pipistrello/roms/indytemp/ROM_152.vhd
+#../../pipistrello/roms/indytemp/ROM_153.vhd
+#../../pipistrello/roms/indytemp/ROM_154.vhd
+#../../pipistrello/roms/indytemp/ROM_155.vhd
+#../../pipistrello/roms/indytemp/ROM_358.vhd
+#../../pipistrello/roms/indytemp/ROM_359.vhd
+#../../pipistrello/roms/indytemp/ROM_431.vhd
+#../../pipistrello/roms/indytemp/ROM_432.vhd
+#../../pipistrello/roms/indytemp/ROM_433.vhd
+#../../pipistrello/roms/indytemp/ROM_434.vhd
+#../../pipistrello/roms/indytemp/ROM_456.vhd
+#../../pipistrello/roms/indytemp/ROM_457.vhd
 
-# ../../pipistrello/roms/peterpak/ROM_105.vhd
-# ../../pipistrello/roms/peterpak/ROM_108.vhd
-# ../../pipistrello/roms/peterpak/ROM_111.vhd
-# ../../pipistrello/roms/peterpak/ROM_114.vhd
-# ../../pipistrello/roms/peterpak/ROM_138.vhd
-# ../../pipistrello/roms/peterpak/ROM_139.vhd
-# ../../pipistrello/roms/peterpak/ROM_140.vhd
-# ../../pipistrello/roms/peterpak/ROM_141.vhd
-# ../../pipistrello/roms/peterpak/ROM_150.vhd
-# ../../pipistrello/roms/peterpak/ROM_151.vhd
-# ../../pipistrello/roms/peterpak/ROM_152.vhd
-# ../../pipistrello/roms/peterpak/ROM_153.vhd
-#
-#../../pipistrello/roms/peterpak/ROM_142.vhd
-#../../pipistrello/roms/peterpak/ROM_143.vhd
-#../../pipistrello/roms/peterpak/ROM_144.vhd
-#../../pipistrello/roms/peterpak/ROM_145.vhd
-#../../pipistrello/roms/peterpak/ROM_146.vhd
-#../../pipistrello/roms/peterpak/ROM_147.vhd
-#../../pipistrello/roms/peterpak/ROM_148.vhd
-#../../pipistrello/roms/peterpak/ROM_149.vhd
-#
-#../../pipistrello/roms/peterpak/ROM_101.vhd
-#../../pipistrello/roms/peterpak/ROM_102.vhd
-#../../pipistrello/roms/peterpak/ROM_136.vhd
-#../../pipistrello/roms/peterpak/ROM_137.vhd
+ ../../pipistrello/roms/peterpak/ROM_105.vhd
+ ../../pipistrello/roms/peterpak/ROM_108.vhd
+ ../../pipistrello/roms/peterpak/ROM_111.vhd
+ ../../pipistrello/roms/peterpak/ROM_114.vhd
+ ../../pipistrello/roms/peterpak/ROM_138.vhd
+ ../../pipistrello/roms/peterpak/ROM_139.vhd
+ ../../pipistrello/roms/peterpak/ROM_140.vhd
+ ../../pipistrello/roms/peterpak/ROM_141.vhd
+ ../../pipistrello/roms/peterpak/ROM_150.vhd
+ ../../pipistrello/roms/peterpak/ROM_151.vhd
+ ../../pipistrello/roms/peterpak/ROM_152.vhd
+ ../../pipistrello/roms/peterpak/ROM_153.vhd
+
+../../pipistrello/roms/peterpak/ROM_142.vhd
+../../pipistrello/roms/peterpak/ROM_143.vhd
+../../pipistrello/roms/peterpak/ROM_144.vhd
+../../pipistrello/roms/peterpak/ROM_145.vhd
+../../pipistrello/roms/peterpak/ROM_146.vhd
+../../pipistrello/roms/peterpak/ROM_147.vhd
+../../pipistrello/roms/peterpak/ROM_148.vhd
+../../pipistrello/roms/peterpak/ROM_149.vhd
+
+../../pipistrello/roms/peterpak/ROM_101.vhd
+../../pipistrello/roms/peterpak/ROM_102.vhd
+../../pipistrello/roms/peterpak/ROM_136.vhd
+../../pipistrello/roms/peterpak/ROM_137.vhd
 
 atarisys1/EEPROM.vhd
 atarisys1/RAM_2K8.vhd
@@ -121,6 +121,6 @@ atarisys1/ATARISYS1.vhd
 #../../pipistrello/testbed/ROMS_EXT_INDYTEMP.vhd
 #../../pipistrello/atarisys1_top.vhd
 #../../pipistrello/testbed/tb_atarisys1.vhd
-../hps_emu_indy.vhd
-../Arcade-atarisys1_emu.sv
+../hps_emu_ppk.vhd
+../Arcade-atarisys1_emu_ppk.sv
 ../tb_atarisys1_emu.vhd
