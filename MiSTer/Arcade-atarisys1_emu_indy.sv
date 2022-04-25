@@ -20,10 +20,7 @@
 //
 //============================================================================
 // these defines needed for simulation
-`define USE_FB=0
-`define USE_DDRAM=0
-`define USE_SDRAM=0
-`define DUAL_SDRAM=0
+`define MISTER_FB=0
 
 module emu
 (
@@ -35,7 +32,7 @@ module emu
 	input         RESET,
 
 	//Must be passed to hps_io module
-	inout  [45:0] HPS_BUS,
+	inout  [48:0] HPS_BUS,
 
 	//Base video clock. Usually equals to CLK_SYS.
 	output        CLK_VIDEO,
@@ -45,8 +42,9 @@ module emu
 	output        CE_PIXEL,
 
 	//Video aspect ratio for HDMI. Most retro systems have ratio 4:3.
-	output [11:0] VIDEO_ARX,
-	output [11:0] VIDEO_ARY,
+	//if VIDEO_ARX[12] or VIDEO_ARY[12] is set then [11:0] contains scaled size instead of aspect ratio.
+	output [12:0] VIDEO_ARX,
+	output [12:0] VIDEO_ARY,
 
 	output  [7:0] VGA_R,
 	output  [7:0] VGA_G,
@@ -58,7 +56,11 @@ module emu
 	output [1:0]  VGA_SL,
 	output        VGA_SCALER, // Force VGA scaler
 
-`ifdef USE_FB
+	input  [11:0] HDMI_WIDTH,
+	input  [11:0] HDMI_HEIGHT,
+	output        HDMI_FREEZE,
+
+`ifdef MISTER_FB
 	// Use framebuffer in DDRAM (USE_FB=1 in qsf)
 	// FB_FORMAT:
 	//    [2:0] : 011=8bpp(palette) 100=16bpp 101=24bpp 110=32bpp
@@ -76,6 +78,7 @@ module emu
 	input         FB_LL,
 	output        FB_FORCE_BLANK,
 
+`ifdef MISTER_FB_PALETTE
 	// Palette control for 8bit modes.
 	// Ignored for other video modes.
 	output        FB_PAL_CLK,
@@ -83,6 +86,7 @@ module emu
 	output [23:0] FB_PAL_DOUT,
 	input  [23:0] FB_PAL_DIN,
 	output        FB_PAL_WR,
+`endif
 `endif
 
 	output        LED_USER,  // 1 - ON, 0 - OFF.
@@ -114,7 +118,6 @@ module emu
 	output        SD_CS,
 	input         SD_CD,
 
-`ifdef USE_DDRAM
 	//High latency DDR3 RAM interface
 	//Use for non-critical time purposes
 	output        DDRAM_CLK,
@@ -127,9 +130,7 @@ module emu
 	output [63:0] DDRAM_DIN,
 	output  [7:0] DDRAM_BE,
 	output        DDRAM_WE,
-`endif
 
-`ifdef USE_SDRAM
 	//SDRAM interface with lower latency
 	output        SDRAM_CLK,
 	output        SDRAM_CKE,
@@ -142,10 +143,10 @@ module emu
 	output        SDRAM_nCAS,
 	output        SDRAM_nRAS,
 	output        SDRAM_nWE,
-`endif
 
-`ifdef DUAL_SDRAM
+`ifdef MISTER_DUAL_SDRAM
 	//Secondary SDRAM
+	//Set all output SDRAM_* signals to Z ASAP if SDRAM2_EN is 0
 	input         SDRAM2_EN,
 	output        SDRAM2_CLK,
 	output [12:0] SDRAM2_A,
@@ -181,13 +182,13 @@ assign ADC_BUS  = 'Z;
 assign USER_OUT = '1;
 assign {UART_RTS, UART_TXD, UART_DTR} = 0;
 assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
-//assign {SDRAM_DQ, SDRAM_A, SDRAM_BA, SDRAM_CLK, SDRAM_CKE, SDRAM_DQML, SDRAM_DQMH, SDRAM_nWE, SDRAM_nCAS, SDRAM_nRAS, SDRAM_nCS} = 'Z;
-assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = 'Z;  
+assign {SDRAM_DQ, SDRAM_A, SDRAM_BA, SDRAM_CLK, SDRAM_CKE, SDRAM_DQML, SDRAM_DQMH, SDRAM_nWE, SDRAM_nCAS, SDRAM_nRAS, SDRAM_nCS} = 'Z;
+assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;  
 
 //assign VGA_SL = 0;
-
 assign VGA_F1 = 0;
 assign VGA_SCALER = 0;
+assign HDMI_FREEZE = 0;
 
 integer     slap_type = 107; // Slapstic type: marble=103, indytemp=105, peterpak=107, roadrunn=108, roadb109=109, roadb110=110
 
@@ -199,11 +200,10 @@ reg         ce_pix;
 wire        pll_locked;
 wire        hblank, vblank;
 wire        hs, vs;
-//reg  [ 7:0] sw[8];
 wire [ 3:0] r,g,b, gvid_I, gvid_R, gvid_G, gvid_B;
 wire [15:0] aud_l, aud_r;
 wire [31:0] status;
-wire [ 1:0] sl_buttons;
+wire [ 1:0] buttons;
 wire        forced_scandoubler;
 wire        direct_video;
 wire        ioctl_download;
@@ -231,7 +231,7 @@ wire [15:0] joy3;
 wire [10:0] ps2_key;
 
 wire [21:0] gamma_bus;
-wire sl_reset = RESET | status[0] | sl_buttons[1] | ioctl_download;
+wire sl_reset = RESET | status[0] | buttons[1] | ioctl_download;
 
 reg [7:0]   p1 = 8'h0;
 reg [7:0]   p2 = 8'h0;
@@ -241,7 +241,7 @@ reg  m_coin_l   = 1'b0;
 reg  m_coin_r   = 1'b0;
 wire m_service = status[7];
 
-assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
+//assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
 
 wire [1:0] ar = status[9:8];
 
@@ -277,7 +277,6 @@ pll pll
 	.locked(pll_locked)
 );
 
-//always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) sw[ioctl_addr[2:0]] <= ioctl_dout;
 always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==1)) slap_type <= ioctl_dout;
 
 wire pressed = ps2_key[9];
@@ -335,17 +334,16 @@ end
 //	.fx(status[5:3])
 //);
 
-hps_io_emu #(.STRLEN($size(CONF_STR)>>3)) hps_io
+hps_io_emu #(.CONF_STR(CONF_STR)) hps_io
 (
 	.clk_sys(clk_sys),
 	.HPS_BUS(HPS_BUS),
 	.EXT_BUS(),
 	.gamma_bus(gamma_bus),
 
-	.conf_str(CONF_STR),
 	.forced_scandoubler(forced_scandoubler),
 
-	.buttons(sl_buttons),
+	.buttons(buttons),
 	.status(status),
 	.status_menumask({1'b0,direct_video}),
 	.direct_video(direct_video),
@@ -436,12 +434,12 @@ wire sl_wr_13D, sl_wr_14D, sl_wr_16D;
 wire sl_wr_10B_10A, sl_wr_12B_12A, sl_wr_14B_14A, sl_wr_16B_16A, sl_wr_11J_10J;
 wire sl_wr_23B, sl_wr_4A , sl_wr_7A;
 
-wire [31:0] slv_ROM_1C_6C_1B_6B, slv_ROM_2C_7C_2B_7B, slv_ROM_3C_8C_3B_8B, slv_ROM_4C_9C_4B_9B, slv_ROM_10B_10A, slv_ROM_11B_11A;
+wire [31:0] slv_ROM_1C_6C_1B_6B, slv_ROM_2C_7C_2B_7B, slv_ROM_3C_8C_3B_8B, slv_ROM_4C_9C_4B_9B;
 wire [19:1] slv_MGRA;
 wire [15:1] slv_MA;
 wire [15:1] slv_MADDR;
 wire [15:0] slv_MDATA;
-wire [15:0] slv_ROM_12B_12A, slv_ROM_14B_14A, slv_ROM_16B_16A, slv_ROM_11J_10J;
+wire [15:0] slv_ROM_12B_12A, slv_ROM_14B_14A, slv_ROM_16B_16A, slv_ROM_11J_10J, slv_ROM_10B_10A, slv_ROM_11B_11A;
 wire [13:0] slv_SBA;
 wire [13:0] s_snd;
 wire [12:0] slv_PA5F;
@@ -536,6 +534,8 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) 
 assign slv_MDATA =
 	(~slv_ROMn[0])?slv_ROM_11J_10J:
 	(~slv_ROMn[1])?slv_ROM_10B_10A:
+//	(~slv_ROMn[1] && ~slv_MADDR[15])?slv_ROM_10B_10A:
+//	(~slv_ROMn[1] &&  slv_MADDR[15])?slv_ROM_11B_11A:
 	(~slv_ROMn[2])?slv_ROM_12B_12A:
 	(~slv_ROMn[3])?slv_ROM_14B_14A:
 	(~sl_SLAPn   )?slv_ROM_16B_16A:
@@ -660,7 +660,7 @@ FPGA_ATARISYS1 atarisys1
 	// SELFTEST, COIN_AUX, COIN_L, COIN_R, SW[5:1] active low
 	.I_SELFTESTn(~m_service),
 	.I_COIN({~m_coin_aux, ~(m_coin_r), ~(m_coin_l | joy0[8])}),
-	.I_PB({~(p2[0] | p1[0] | joy1[5] | joy0[5]),       ~(p2[1] | joy1[5] | joy0[5]),       ~(p1[1] | joy1[4] | joy0[4])}), // Whip2/Start2 Whip1/Start1
+	.I_PB({2'b11, ~(p2[0] | p1[0] | joy1[5] | joy0[5]), ~(p2[1] | joy1[5] | joy0[5]), ~(p1[1] | joy1[4] | joy0[4])}), // Whip2/Start2 Whip1/Start1
 
 	.I_JOY(inputs),  // P2-U,D,L,R P1-U,D,L,R active high
 	.I_CLK(4'b1111), // LETA trackball inputs active low
