@@ -42,6 +42,7 @@ entity MAIN is
 		O_VRAMWR    : out std_logic;
 		O_CRAMn     : out std_logic;
 		O_CRBUSn    : out std_logic;
+		O_SYSRESn   : out std_logic;
 
 		O_VBKACKn   : out std_logic;
 		O_SNDINTn   : out std_logic;
@@ -230,6 +231,7 @@ begin
 	O_SNDINTn    <= sl_SNDINTn;
 	O_MADDR      <= slv_cpu_ad(15 downto 1);
 	O_MDATA      <= slv_cpu_do;
+	O_SYSRESn    <= sl_SYSRESn;
 
 	slv_VBUSD    <= I_VBUSD;
 	slv_ADC_data <= I_ADC_DATA;

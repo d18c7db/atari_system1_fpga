@@ -122,6 +122,7 @@ architecture RTL of FPGA_ATARISYS1 is
 		sl_SNDNMIn,
 		sl_SNDRESn,
 		sl_SNDINTn,
+		sl_SYSRESn,
 
 		sl_CRAMn,
 		sl_CRBUSn,
@@ -221,6 +222,7 @@ begin
 		O_CRAMWRn   => sl_CRAMWRn,
 		O_VRAMWR    => sl_VRAMWR,
 		O_CRBUSn    => sl_CRBUSn,
+		O_SYSRESn   => sl_SYSRESn,
 
 		O_HSCRLDn   => sl_HSCRLDn,
 		O_SNDNMIn   => sl_SNDNMIn,
@@ -268,6 +270,7 @@ begin
 	port map (
 		I_MCKR      => I_CLK_7M,
 		I_XCKR      => I_CLK_14M,
+		I_SYSRESn   => sl_SYSRESn,
 		I_CRBUSn    => sl_CRBUSn,
 		I_CRAMn     => sl_CRAMn,
 		I_CRAMWRn   => sl_CRAMWRn,

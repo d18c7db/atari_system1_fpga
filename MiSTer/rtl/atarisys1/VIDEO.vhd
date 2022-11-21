@@ -25,6 +25,7 @@ entity VIDEO is
 	port(
 		I_MCKR     : in  std_logic; -- MCKR  7.159 MHz
 		I_XCKR     : in  std_logic; -- XCKR 14.318 MHz
+		I_SYSRESn  : in  std_logic;
 		I_CRBUSn   : in  std_logic;
 		I_CRAMn    : in  std_logic;
 		I_VBUSn    : in  std_logic;
@@ -396,6 +397,7 @@ begin
 	O_8H       <= slv_H(3);
 	O_CPU_D    <= slv_MDO;
 
+	sl_SYSRESn <= I_SYSRESn;
 	sl_CRAMWRn <= I_CRAMWRn;
 	sl_VRAMWR  <= I_VRAMWR;
 	slv_MDI    <= I_CPU_D;
