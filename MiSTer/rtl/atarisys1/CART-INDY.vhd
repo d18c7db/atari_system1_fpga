@@ -137,7 +137,11 @@ architecture logic of ATARI_CART is
 		slv_5B_DB,
 		slv_5B_DA,
 		slv_5C_DB,
-		slv_5C_DA
+		slv_5C_DA,
+		slv_5D_DB,
+		slv_5D_DA,
+		slv_5E_DB,
+		slv_5E_DA
 								: std_logic_vector( 7 downto 0):=(others=>'1');
 	signal
 		slv_SBA
@@ -392,10 +396,8 @@ begin
 	u_5D : entity work.SLAGS
 	port map (
 		I_MCKR          => I_MCKR,
-		I_B(7)          => sl_GD7P4,
-		I_B(6 downto 0) => (others=>'1'), -- no ROMs fitted on PCB
-		I_A(7)          => sl_GD7P5,
-		I_A(6 downto 0) => (others=>'1'), -- no ROMs fitted on PCB
+		I_B             => slv_5D_DB,
+		I_A             => slv_5D_DA,
 		I_HLDBn         => sl_NOROM4n,
 		I_HLDAn         => sl_NOROM5n,
 		I_FLP           => sl_MGHF,
@@ -408,6 +410,10 @@ begin
 		O_MODB          => slv_MOSR(4)
 	);
 
+	-- for if no ROMs fitted on PCB
+	slv_5D_DB <= sl_GD7P4 & "1111111" when sl_NOROM4n = '0' else I_VDATA(15 downto 8);
+	slv_5D_DA <= sl_GD7P5 & "1111111" when sl_NOROM5n = '0' else I_VDATA( 7 downto 0);
+
 	----------------------------------------
 	-- sheet 8 SP-282 -- (sheet 3 SP-280) --
 	----------------------------------------
@@ -415,10 +421,8 @@ begin
 	u_5E : entity work.SLAGS
 	port map (
 		I_MCKR          => I_MCKR,
-		I_B(7)          => sl_GD7P6,
-		I_B(6 downto 0) => (others=>'1'), -- no ROMs fitted on PCB
-		I_A(7)          => sl_GD7P7,
-		I_A(6 downto 0) => (others=>'1'), -- no ROMs fitted on PCB
+		I_B             => slv_5E_DB,
+		I_A             => slv_5E_DA,
 		I_HLDBn         => sl_NOROM6n,
 		I_HLDAn         => sl_NOROM7n,
 		I_FLP           => sl_MGHF,
@@ -430,4 +434,9 @@ begin
 		O_MODA          => open,
 		O_MODB          => slv_MOSR(6)
 	);
+
+	-- for if no ROMs fitted on PCB
+	slv_5E_DB <= sl_GD7P6 & "1111111" when sl_NOROM6n = '0' else I_VDATA(31 downto 24);
+	slv_5E_DA <= sl_GD7P7 & "1111111" when sl_NOROM7n = '0' else I_VDATA(23 downto 16);
+
 end;
