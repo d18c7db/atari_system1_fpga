@@ -13,8 +13,10 @@ end entity;
 architecture RTL of PROM_3E is
 	type ROM_ARRAY is array (0 to 31) of std_logic_vector(3 downto 0);
 	signal ROM : ROM_ARRAY := (
-		x"A",x"A",x"5",x"A",x"F",x"F",x"5",x"5",x"A",x"A",x"5",x"A",x"F",x"F",x"5",x"5", -- 0x0000
-		x"A",x"A",x"5",x"A",x"F",x"F",x"5",x"5",x"A",x"A",x"A",x"A",x"A",x"A",x"A",x"A"  -- 0x0010
+		x"A",x"A",x"5",x"A",x"F",x"F",x"5",x"5", -- 0x00
+		x"A",x"A",x"5",x"A",x"F",x"F",x"5",x"5", -- 0x08
+		x"A",x"A",x"5",x"A",x"F",x"F",x"5",x"5", -- 0x10
+		x"A",x"A",x"A",x"A",x"A",x"A",x"A",x"A"  -- 0x18
 	);
 	attribute ram_style : string;
 	attribute ram_style of ROM : signal is "distributed";
