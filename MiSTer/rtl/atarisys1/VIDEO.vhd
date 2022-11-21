@@ -728,10 +728,10 @@ begin
 		I_MA     => slv_MA(10 downto 9),
 
 		-- I_D controls color for alphanumerics
-		I_D(3)   => slv_VRD(13), -- slv_VRD(13),
-		I_D(2)   => slv_VRD(12), -- slv_VRD(10),
-		I_D(1)   => slv_VRD(11), -- slv_VRD(11),
-		I_D(0)   => slv_VRD(10), -- slv_VRD(12),
+		I_D(3)   => slv_VRD(13), -- SP286 schema has D3<-VRD13
+		I_D(2)   => slv_VRD(12), -- SP286 schema has D2<-VRD10
+		I_D(1)   => slv_VRD(11), -- SP286 schema has D1<-VRD11
+		I_D(0)   => slv_VRD(10), -- SP286 schema has D0<-VRD12
 
 		-- PF data
 		I_P      => slv_PFX,

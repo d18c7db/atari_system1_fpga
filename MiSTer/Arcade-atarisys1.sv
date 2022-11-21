@@ -281,6 +281,14 @@ pll pll
 	.locked(pll_locked)
 );
 
+/* Slapstic Types:
+    marble  =103 (x67)
+    indytemp=105 (x69)
+    peterpak=107 (x6B)
+    roadrunn=108 (x6C)
+    roadb109=109 (x6D)
+    roadb110=110 (x6E)
+*/
 always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==1)) slap_type <= ioctl_dout;
 
 wire pressed = ps2_key[9];
@@ -531,9 +539,9 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) 
 //ROM_142 ROM_9B( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[ 7:0 ]), .ADDR(slv_VADDR(14 downto 0)) );
 
 	// 256 M10K blocks
-//	dpram #(16,32) gp_ram
-//	(.clock_a(clk_sys    ), .enable_a(), .wren_a(gp_wr        ), .address_a(ioctl_addr[17:2]), .data_a({acc_bytes[23:0],ioctl_dout}), .q_a(               ),
-//	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_VADDR[15:0]), .data_b(                            ), .q_b(slv_VDATA      ));
+//dpram #(16,32) gp_ram
+//(.clock_a(clk_sys    ), .enable_a(), .wren_a(gp_wr        ), .address_a(ioctl_addr[17:2]), .data_a({acc_bytes[23:0],ioctl_dout}), .q_a(               ),
+// .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_VADDR[15:0]), .data_b(                            ), .q_b(slv_VDATA      ));
 
 assign slv_MDATA =
 	(~slv_ROMn[0])?slv_ROM_11J_10J:

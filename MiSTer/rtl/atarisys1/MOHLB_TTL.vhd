@@ -10,7 +10,7 @@
 --
 -- For full details, see the GNU General Public License at www.gnu.org/licenses
 --
--- Motion Object Horizontal Line Buffer
+-- Motion Object Horizontal Line Buffer based on SP-277 schematic sheet 9A
 
 library ieee;
 	use ieee.std_logic_1164.all;

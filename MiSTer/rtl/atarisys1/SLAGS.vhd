@@ -70,13 +70,13 @@ begin
 	sl_LDPFn	<= I_LDn or (    I_MO_PFn);
 	sl_LDMOn	<= I_LDn or (not I_MO_PFn);
 
-	-- in schema SP-276 when /NOROM signals are asserted they cause the shifters to hold their state and also they
-	-- cause /CPAL signals to pull low the D0 line of the ROMS (which are not fitted to PCB, hence the /NOROM signal)
+	-- In schema SP-276 when /NOROM signals are asserted they cause the shifters to hold their state and also they
+	-- cause /CPAL signals to pull low the D0/D7 lines of the ROMS (which are not fitted to PCB, hence the /NOROM signal)
 	-- the final effect of that is to bring low the MOSR lines when FLIP is asserted
-	-- in later schemas such as SP-282, SP-298 using LSI chips, the pulldown on D0 line of the ROMs has moved to D7
+	-- In later schemas such as SP-282, SP-298 using LSI chips, the pulldown on D0 line of the ROMs is removed
 	-- this causes incorrect SLAGS output when both /HOLD and FLIP are asserted because MOSR is taken from the wrong end
 	-- of the shifter, so without detailed knowledge of the internals of the LSI, the best guess is to cancel the FLIP
-	-- signal when /HOLD is asserted by logical anding them together
+	-- signal when /HOLD is asserted by logical and-ing them together
 
 	-- latch 8B
 	p_8B : process
