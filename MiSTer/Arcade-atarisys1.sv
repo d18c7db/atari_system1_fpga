@@ -53,7 +53,9 @@ module emu
 	output        VGA_F1,
 	output [1:0]  VGA_SL,
 	output        VGA_SCALER, // Force VGA scaler
-
+`ifndef MISTER_DUAL_SDRAM
+	output        VGA_DISABLE,
+`endif
 	input  [11:0] HDMI_WIDTH,
 	input  [11:0] HDMI_HEIGHT,
 	output        HDMI_FREEZE,
@@ -188,6 +190,10 @@ assign VGA_F1 = 0;
 assign VGA_SCALER = 0;
 assign HDMI_FREEZE = 0;
 
+`ifndef MISTER_DUAL_SDRAM
+	assign VGA_DISABLE = 0;
+`endif
+
 integer     slap_type = 105; // Slapstic type: marble=103, indytemp=105, peterpak=107, roadrunn=108, roadb109=109, roadb110=110
 
 wire        clk_7M;
@@ -200,7 +206,7 @@ wire        hblank, vblank;
 wire        hs, vs;
 wire [ 3:0] r,g,b, gvid_I, gvid_R, gvid_G, gvid_B;
 wire [15:0] aud_l, aud_r;
-wire [31:0] status;
+wire [127:0] status;
 wire [ 1:0] buttons;
 wire        forced_scandoubler;
 wire        direct_video;
@@ -221,10 +227,10 @@ assign LED_DISK = 0;
 assign LED_POWER = 0;
 assign BUTTONS = 0;
 
-wire [15:0] joy0;
-wire [15:0] joy1;
-wire [15:0] joy2;
-wire [15:0] joy3;
+wire [31:0] joy0;
+wire [31:0] joy1;
+wire [31:0] joy2;
+wire [31:0] joy3;
 
 wire [10:0] ps2_key;
 
