@@ -58,7 +58,7 @@ architecture RTL of tb_atarisys1 is
 		SDRAM_nWE          : std_logic := '0';
 
 	-- HPS_IO
-	signal HPS_BUS        : std_logic_vector(45 downto  0) := (others=>'0');
+	signal HPS_BUS        : std_logic_vector(48 downto  0) := (others=>'0');
 	signal io_din         : std_logic_vector(31 downto 16) := (others=>'0');
 	signal io_dout        : std_logic_vector(15 downto  0) := (others=>'0');
 	signal cmd            : std_logic_vector(15 downto  0) := (others=>'0');
@@ -84,7 +84,7 @@ architecture RTL of tb_atarisys1 is
 	port (
 		CLK_50M          : in    std_logic;
 		RESET            : in    std_logic;
-		HPS_BUS          : inout std_logic_vector(45 downto 0);
+		HPS_BUS          : inout std_logic_vector(48 downto 0);
 		CLK_VIDEO        : out   std_logic;
 		CE_PIXEL         : out   std_logic;
 		VIDEO_ARX        : out   std_logic_vector( 7 downto 0);
@@ -97,21 +97,41 @@ architecture RTL of tb_atarisys1 is
 		VGA_DE           : out   std_logic;
 		VGA_F1           : out   std_logic;
 		VGA_SL           : out   std_logic_vector( 1 downto 0);
-		FB_EN            : out   std_logic;
-		FB_FORMAT        : out   std_logic_vector( 4 downto 0);
-		FB_WIDTH         : out   std_logic_vector(11 downto 0);
-		FB_HEIGHT        : out   std_logic_vector(11 downto 0);
-		FB_BASE          : out   std_logic_vector(31 downto 0);
-		FB_STRIDE        : out   std_logic_vector(13 downto 0);
-		FB_VBL           : in    std_logic;
-		FB_LL            : in    std_logic;
+		VGA_SCALER       : out   std_logic;
+		HDMI_WIDTH       : in    std_logic_vector(11 downto 0);
+		HDMI_HEIGHT      : in    std_logic_vector(11 downto 0);
+		HDMI_FREEZE      : out   std_logic;
+--		FB_EN            : out   std_logic;
+--		FB_FORMAT        : out   std_logic_vector( 4 downto 0);
+--		FB_WIDTH         : out   std_logic_vector(11 downto 0);
+--		FB_HEIGHT        : out   std_logic_vector(11 downto 0);
+--		FB_BASE          : out   std_logic_vector(31 downto 0);
+--		FB_STRIDE        : out   std_logic_vector(13 downto 0);
+--		FB_VBL           : in    std_logic;
+--		FB_LL            : in    std_logic;
+--		FB_FORCE_BLANK   : out   std_logic;
+
+--		FB_PAL_CLK       : out   std_logic;
+--		FB_PAL_ADDR      : out   std_logic_vector( 7 downto 0);
+--		FB_PAL_DOUT      : out   std_logic_vector(23 downto 0);
+--		FB_PAL_DIN       : in    std_logic_vector(23 downto 0);
+--		FB_PAL_WR        : out   std_logic;
 		LED_USER         : out   std_logic;
 		LED_POWER        : out   std_logic_vector( 1 downto 0);
 		LED_DISK         : out   std_logic_vector( 1 downto 0);
+		BUTTONS          : out   std_logic_vector( 1 downto 0);
 		CLK_AUDIO        : in    std_logic;
 		AUDIO_L          : out   std_logic_vector(15 downto 0);
 		AUDIO_R          : out   std_logic_vector(15 downto 0);
 		AUDIO_S          : out   std_logic;
+		AUDIO_MIX        : out   std_logic_vector( 1 downto 0);
+
+		SD_SCK           : out   std_logic;
+		SD_MOSI          : out   std_logic;
+		SD_MISO          : in    std_logic;
+		SD_CS            : out   std_logic;
+		SD_CD            : in    std_logic;
+
 		DDRAM_CLK        : out   std_logic;
 		DDRAM_BUSY       : in    std_logic;
 		DDRAM_BURSTCNT   : out   std_logic_vector( 7 downto 0);
@@ -135,27 +155,45 @@ architecture RTL of tb_atarisys1 is
 		SDRAM_nRAS       : in std_logic;
 		SDRAM_nWE        : in std_logic;
 
+--		SDRAM2_EN        : in    std_logic;
+--		SDRAM2_CLK       : out   std_logic;
+--		SDRAM2_A         : out   std_logic_vector(12 downto 0);
+--		SDRAM2_BA        : out   std_logic_vector( 1 downto 0);
+--		SDRAM2_DQ        : inout std_logic_vector(15 downto 0);
+--		SDRAM2_nCS       : out   std_logic;
+--		SDRAM2_nCAS      : out   std_logic;
+--		SDRAM2_nRAS      : out   std_logic;
+--		SDRAM2_nWE       : out   std_logic;
+
+		UART_CTS         : in    std_logic;
+		UART_RTS         : out   std_logic;
+		UART_RXD         : in    std_logic;
+		UART_TXD         : out   std_logic;
+		UART_DTR         : out   std_logic;
+		UART_DSR         : in    std_logic;
+
 		USER_IN          : in    std_logic_vector( 6 downto 0);
-		USER_OUT         : out   std_logic_vector( 6 downto 0)
+		USER_OUT         : out   std_logic_vector( 6 downto 0);
+		OSD_STATUS       : in    std_logic
 	);
 	end component;
 
 begin
 	-- simulation model of SDRAM
-	u_sdram : entity work.mt48lc16m16a2
-	port map (
-		clk    => SDRAM_CLK,
-		cke    => SDRAM_CKE,
-		addr   => SDRAM_A,
-		ba     => SDRAM_BA,
-		dq     => SDRAM_DQ,
-		dqm(1) => SDRAM_DQMH,
-		dqm(0) => SDRAM_DQML,
-		cs_n   => SDRAM_nCS,
-		cas_n  => SDRAM_nCAS,
-		ras_n  => SDRAM_nRAS,
-		we_n   => SDRAM_nWE
-	);
+--	u_sdram : entity work.mt48lc16m16a2
+--	port map (
+--		clk    => SDRAM_CLK,
+--		cke    => SDRAM_CKE,
+--		addr   => SDRAM_A,
+--		ba     => SDRAM_BA,
+--		dq     => SDRAM_DQ,
+--		dqm(1) => SDRAM_DQMH,
+--		dqm(0) => SDRAM_DQML,
+--		cs_n   => SDRAM_nCS,
+--		cas_n  => SDRAM_nCAS,
+--		ras_n  => SDRAM_nRAS,
+--		we_n   => SDRAM_nWE
+--	);
 
 	DUT : entity work.emu
 	port map (
@@ -177,21 +215,25 @@ begin
 		VGA_SL           => open,
 		VGA_SCALER       => open,
 
-		FB_EN            => open,
-		FB_FORMAT        => open,
-		FB_WIDTH         => open,
-		FB_HEIGHT        => open,
-		FB_BASE          => open,
-		FB_STRIDE        => open,
-		FB_VBL           => '0',
-		FB_LL            => '0',
-		FB_FORCE_BLANK   => open,
+		HDMI_WIDTH       => (others=>'0'),
+		HDMI_HEIGHT      => (others=>'0'),
+		HDMI_FREEZE      => open,
 
-		FB_PAL_CLK       => open,
-		FB_PAL_ADDR      => open,
-		FB_PAL_DOUT      => open,
-		FB_PAL_DIN       => (others=>'0'),
-		FB_PAL_WR        => open,
+--		FB_EN            => open,
+--		FB_FORMAT        => open,
+--		FB_WIDTH         => open,
+--		FB_HEIGHT        => open,
+--		FB_BASE          => open,
+--		FB_STRIDE        => open,
+--		FB_VBL           => '0',
+--		FB_LL            => '0',
+--		FB_FORCE_BLANK   => open,
+
+--		FB_PAL_CLK       => open,
+--		FB_PAL_ADDR      => open,
+--		FB_PAL_DOUT      => open,
+--		FB_PAL_DIN       => (others=>'0'),
+--		FB_PAL_WR        => open,
 
 		LED_USER         => open,
 		LED_POWER        => open,
@@ -235,7 +277,15 @@ begin
 		SDRAM_nRAS       => SDRAM_nRAS,
 		SDRAM_nWE        => SDRAM_nWE,
 
-		SDRAM2_EN        => '0',
+--		SDRAM2_EN        => '0',
+--		SDRAM2_CLK       => open,
+--		SDRAM2_A         => open,
+--		SDRAM2_BA        => open,
+--		SDRAM2_DQ        => open,
+--		SDRAM2_nCS       => open,
+--		SDRAM2_nCAS      => open,
+--		SDRAM2_nRAS      => open,
+--		SDRAM2_nWE       => open,
 
 		UART_CTS         => '1',
 		UART_RTS         => open,
