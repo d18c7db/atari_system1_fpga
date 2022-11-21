@@ -118,7 +118,7 @@ architecture logic of ATARI_CART is
 		slv_BS
 								: std_logic_vector( 1 downto 0):=(others=>'0');
 	signal
-		sl_GCSn
+		slv_GCSn
 								: std_logic_vector( 4 downto 1):=(others=>'1');
 	signal
 		slv_14S
@@ -137,36 +137,7 @@ architecture logic of ATARI_CART is
 		slv_5B_DB,
 		slv_5B_DA,
 		slv_5C_DB,
-		slv_5C_DA,
-		slv_ROM_16A,
-		slv_ROM_16B,
-		slv_ROM_10A,
-		slv_ROM_10B,
-		slv_ROM_12A,
-		slv_ROM_12B,
-		slv_ROM_14A,
-		slv_ROM_14B,
-		slv_ROM_4A,
-		slv_ROM_7A,
-		slv_ROM_13D,
-		slv_ROM_14D,
-		slv_ROM_16D,
-		slv_ROM_1B,
-		slv_ROM_2B,
-		slv_ROM_3B,
-		slv_ROM_4B,
-		slv_ROM_6B,
-		slv_ROM_7B,
-		slv_ROM_8B,
-		slv_ROM_9B,
-		slv_ROM_1C,
-		slv_ROM_2C,
-		slv_ROM_3C,
-		slv_ROM_4C,
-		slv_ROM_6C,
-		slv_ROM_7C,
-		slv_ROM_8C,
-		slv_ROM_9C
+		slv_5C_DA
 								: std_logic_vector( 7 downto 0):=(others=>'1');
 	signal
 		slv_SBA
@@ -183,10 +154,10 @@ architecture logic of ATARI_CART is
 begin
 	O_VADDR(14 downto 0) <= slv_GBA;
 	O_VADDR(16 downto 15) <=
-		"00" when sl_GCSn(1) = '0' else
-		"01" when sl_GCSn(2) = '0' else
-		"10" when sl_GCSn(3) = '0' else
-		"11" when sl_GCSn(4) = '0' else
+		"00" when slv_GCSn(1) = '0' else
+		"01" when slv_GCSn(2) = '0' else
+		"10" when slv_GCSn(3) = '0' else
+		"11" when slv_GCSn(4) = '0' else
 		(others=>'1');
 
 	sl_SLAPn    <= I_SLAPn;
@@ -356,8 +327,8 @@ begin
 	--(sl_NOROM7n,sl_NOROM6n,sl_NOROM5n,sl_NOROM4n,sl_GD7P7,sl_GD7P6,sl_GD7P5,sl_GD7P4) <= I_PD4A when sl_MATCHn = '0' else (others=>'1');
 
 	-- buffers 3A, 6A
-	--(sl_GCSn,slv_GBA(15 downto 12)) <= I_PD7A when sl_MATCHn = '0' else (others=>'1');
-	sl_GCSn <= I_PD7A(7 downto 4) when sl_MATCHn = '0' else (others=>'1');
+	--(slv_GCSn,slv_GBA(15 downto 12)) <= I_PD7A when sl_MATCHn = '0' else (others=>'1');
+	slv_GCSn <= I_PD7A(7 downto 4) when sl_MATCHn = '0' else (others=>'1');
 	slv_GBA(15 downto 12) <= I_PD7A(3 downto 0)  when sl_MATCHn = '0' else (others=>'1'); -- FIXME what happens to these lines when PROM /CS is inactive?
 	slv_GBA(11 downto  1) <= slv_MGRA(11 downto 1);
 

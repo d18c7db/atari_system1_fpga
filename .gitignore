@@ -1,4 +1,8 @@
 db
+pipistrello
+sim
+MiSTer/tb
+MiSTer/rtl/lib/debug
 greybox_tmp
 incremental_db
 output_files
@@ -24,7 +28,6 @@ PLLJ_PLLSPE_INFO.txt
 *.qws
 *.ppf
 *.ddb
-build_id.v
 c5_pin_model_dump.txt
 *.sopcinfo
 *.csv
