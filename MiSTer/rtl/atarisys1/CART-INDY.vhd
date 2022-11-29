@@ -361,8 +361,8 @@ begin
 		O_MODB     => slv_MOSR(0)
 	);
 
-	slv_5B_DB <= I_VDATA(15 downto 8);
-	slv_5B_DA <= I_VDATA( 7 downto 0);
+	slv_5B_DB <= I_VDATA(31 downto 24);
+	slv_5B_DA <= I_VDATA(23 downto 16);
 
 	----------------------------------------
 	-- sheet 6 SP-282 -- (sheet 5 SP-280) --
@@ -386,8 +386,8 @@ begin
 		O_MODB     => slv_MOSR(2)
 	);
 
-	slv_5C_DB <= I_VDATA(31 downto 24);
-	slv_5C_DA <= I_VDATA(23 downto 16);
+	slv_5C_DB <= I_VDATA(15 downto 8);
+	slv_5C_DA <= I_VDATA( 7 downto 0);
 
 	----------------------------------------
 	-- sheet 7 SP-282 -- (sheet 6 SP-280) --
@@ -411,8 +411,8 @@ begin
 	);
 
 	-- for if no ROMs fitted on PCB
-	slv_5D_DB <= sl_GD7P4 & "1111111" when sl_NOROM4n = '0' else I_VDATA(15 downto 8);
-	slv_5D_DA <= sl_GD7P5 & "1111111" when sl_NOROM5n = '0' else I_VDATA( 7 downto 0);
+	slv_5D_DB <= sl_GD7P4 & "1111111" when sl_NOROM4n = '0' else I_VDATA(31 downto 24);
+	slv_5D_DA <= sl_GD7P5 & "1111111" when sl_NOROM5n = '0' else I_VDATA(23 downto 16);
 
 	----------------------------------------
 	-- sheet 8 SP-282 -- (sheet 3 SP-280) --
@@ -436,7 +436,7 @@ begin
 	);
 
 	-- for if no ROMs fitted on PCB
-	slv_5E_DB <= sl_GD7P6 & "1111111" when sl_NOROM6n = '0' else I_VDATA(31 downto 24);
-	slv_5E_DA <= sl_GD7P7 & "1111111" when sl_NOROM7n = '0' else I_VDATA(23 downto 16);
+	slv_5E_DB <= sl_GD7P6 & "1111111" when sl_NOROM6n = '0' else I_VDATA(15 downto 8);
+	slv_5E_DA <= sl_GD7P7 & "1111111" when sl_NOROM7n = '0' else I_VDATA( 7 downto 0);
 
 end;
