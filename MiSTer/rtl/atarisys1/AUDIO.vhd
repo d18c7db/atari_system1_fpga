@@ -159,6 +159,17 @@ begin
 	-------------
 	-- sheet 5 --
 	-------------
+-- Atari System 1 TTL motherboard PCB factory modification according to atarisy1.cpp from MAME 
+-- Location A2 simply fixes a PCB layout pin swap issue with /COMPSYNC to match the schematic.
+-- Location J16 and J17 implements a halt to 6502 for 8 video frames after a /RST or /IRQ
+-- A 74LS164 shit register is configured as:
+-- 74LS164 inputs A,B tied High, CLK tied to /VBLANK, /RST tied to output of AND gate with inputs /6502IRQ 6502 pin 4, /SNDRST 6502 pin 40
+-- 74LS164 output QH and signal /SELFTEST go to inputs of NAND gate whose output goes to 6502 /RDY pin 2.
+-- When either /6502IRQ or /SNDRST is asserted, the shift register is cleared so 6502 /RDY pin 2 is asserted halting the processor
+-- Also 6502 is simoulatneously reset directly through /SNDRST
+-- after 8 /VBLANK pulses a logical high has moved through the shift register outputs QA, QB, ..., QG, QH releasing the 6502 from halt
+-- QH is logical-NANDed with /SELFTEST then connected to 6502 /RDY pin 2.
+-- This means that when /SELFTEST is asserted the above delay behaviour is cancelled and 6502 runns immediatley after /SNDRST is deasserted
 
 	u_16JK : entity work.T65
 	port map (
@@ -169,7 +180,7 @@ begin
 		IRQ_n   => sl_6502IRQn, -- in, active low irq
 		NMI_n   => sl_SNDNMIn,  -- in, active low nmi
 		RES_n   => sl_SNDRSTn,  -- in, active low reset
-		RDY     => '1',         -- in, ready
+		RDY     => '1',         -- in, ready (see above PCB factory mod comment ***)
 		SO_n    => '1',         -- in, set overflow
 		DI      => slv_SBDI,    -- in, data
 

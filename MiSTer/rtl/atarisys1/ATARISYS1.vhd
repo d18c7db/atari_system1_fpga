@@ -22,11 +22,6 @@ library ieee;
 	use ieee.std_logic_unsigned.all;
 	use ieee.numeric_std.all;
 
---pragma translate_off
-	use ieee.std_logic_textio.all;
-	use std.textio.all;
---pragma translate_on
-
 entity FPGA_ATARISYS1 is
 	port(
 		I_SLAP_TYPE: in  integer range 0 to 118; -- slapstic type can be changed dynamically

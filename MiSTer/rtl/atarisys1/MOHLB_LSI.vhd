@@ -126,7 +126,7 @@ begin
 		O_MPX         => slv_MPXB
 	);
 
-	-- gate 11L generates top bit of MOSR
+	-- gate 1L generates top bit of MOSR
 	slv_MOSR   <= (not sl_MOn) & I_MOSR;
 
 	-- gates 5J/K - the function of this circuit is to ensure that if the two LBC chips start synchronized

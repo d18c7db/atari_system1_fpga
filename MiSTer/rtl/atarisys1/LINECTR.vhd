@@ -20,7 +20,7 @@ library ieee;
 entity LINECTR is
 	port(
 		I_MCKR   : in  std_logic;
-		I_VRD    : in  std_logic_vector(10 downto 0);
+		I_VRD    : in  std_logic_vector(15 downto 5);
 		I_NXLn   : in  std_logic;
 
 		O_BQ     : out std_logic_vector(8 downto 0);
@@ -132,8 +132,8 @@ begin
 	begin
 		wait until rising_edge(I_MCKR);
 		if (sl_H01n = '0') and (sl_4H = '1') then -- rising 4HDD
-			sl_MOSR7D  <= I_VRD(10);
-			slv_3J     <= I_VRD(8 downto 0); -- latch 3J
+			sl_MOSR7D  <= I_VRD(15);
+			slv_3J     <= I_VRD(13 downto 5); -- latch 3J
 		end if;
 		if (sl_H02n = '0') and (sl_4H = '0') then -- rising /4HD3
 			sl_MOn <= sl_MOSR7D; -- VRD15 delayed by 4HDD and then by /4HD3
