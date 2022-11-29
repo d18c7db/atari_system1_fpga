@@ -1,9 +1,9 @@
 pll
 pll.v
 
-mem/dpram.vhd
-mem/mt48lc16m16a2.v
-mem/sdram_emu.vhd
+#mem/dpram.vhd
+#mem/mt48lc16m16a2.v
+#mem/sdram_emu.vhd
 
 atarisys1/RGBI.vhd
 #lib/debug/debug.vhd
@@ -22,15 +22,15 @@ lib/TG68K/TG68K_ALU.vhd
 lib/bitmap/bmp_pkg.vhd
 lib/bitmap/bmp_out.vhd
 lib/LETA_REP.vhd
-lib/spi_flash.vhd
-lib/bootstrap.vhd
-lib/gamecube/gamecube.vhd
-lib/dac.vhd
-lib/tmds_encoder.vhd
-lib/dvid.vhd
-lib/scan_converter.vhd
+#lib/spi_flash.vhd
+#lib/bootstrap.vhd
+#lib/gamecube/gamecube.vhd
+#lib/dac.vhd
+#lib/tmds_encoder.vhd
+#lib/dvid.vhd
+#lib/scan_converter.vhd
 
-../../pipistrello/roms/atarisy1/PROM_3E.vhd
+#../../pipistrello/roms/atarisy1/PROM_3E.vhd
 ../../pipistrello/roms/atarisy1/PROM_5E.vhd
 ../../pipistrello/roms/atarisy1/BIOS.LSI.115.J10.VHD
 ../../pipistrello/roms/atarisy1/BIOS.LSI.114.J11.VHD
@@ -96,6 +96,8 @@ atarisys1/EEPROM.vhd
 atarisys1/RAM_2K8.vhd
 atarisys1/CRAMS.vhd
 atarisys1/VRAMS.vhd
+#../tb/CRAMS.pp.vhd
+#../tb/VRAMS.pp-moalpf.vhd
 atarisys1/LS299.vhd
 atarisys1/LINEBUF.vhd
 atarisys1/LINECTR.vhd
@@ -108,17 +110,17 @@ atarisys1/SYNGEN.vhd
 atarisys1/TMS5220.vhd
 atarisys1/TG68K.vhd
 atarisys1/SLAPSTIC.vhd
-atarisys1/MAIN.vhd
 atarisys1/CART-INDY.vhd
 
-atarisys1/AUDIO.vhd
+atarisys1/MAIN.vhd
 atarisys1/VIDEO.vhd
+atarisys1/AUDIO.vhd
 atarisys1/ATARISYS1.vhd
 
 #../../pipistrello/xilinx_pll.vhd
 #../../pipistrello/testbed/ROMS_EXT_INDYTEMP.vhd
 #../../pipistrello/atarisys1_top.vhd
 #../../pipistrello/testbed/tb_atarisys1.vhd
-../hps_emu_ppk.vhd
+#../tb/hps_emu_ppk.vhd
 ../Arcade-atarisys1.sv
-../tb_atarisys1_emu.vhd
+../tb/tb_atarisys1.vhd

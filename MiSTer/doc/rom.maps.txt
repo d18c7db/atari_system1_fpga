@@ -1,35 +1,13 @@
-ROM_SYSTEM_BIOS( 1, "ttl1", "TTL Motherboard (Rev 1)" )
-ROM_LOAD16_BYTE_BIOS(1, "136032.105.l13", 0x00000, 0x04000
-ROM_LOAD16_BYTE_BIOS(1, "136032.106.l12", 0x00001, 0x04000
-#define MOTHERBOARD_ALPHA
-ROM_LOAD_BIOS(1, "136032.104.f5", 0x00000, 0x02000
-#define MOTHERBOARD_PROMS
-ROM_LOAD_BIOS(1, "136032.101.e3", 0x00000, 0x00100
-ROM_LOAD_BIOS(1, "136032.102.e5", 0x00000, 0x00100
-ROM_LOAD_BIOS(1, "136032.103.f7", 0x00000, 0x000eb /* N82S153 */
+"TTL Motherboard (Rev 1)"                          "TTL Motherboard (Rev 2)"                         "LSI Motherboard"
+"136032.105.l13", 0x00000, 0x04000                 "136032.205.l13", 0x00000, 0x04000                "136032.114.j11", 0x00000, 0x04000
+"136032.106.l12", 0x00001, 0x04000                 "136032.206.l12", 0x00001, 0x04000                "136032.115.j10", 0x00001, 0x04000
+#define MOTHERBOARD_ALPHA                          #define MOTHERBOARD_ALPHA                         #define MOTHERBOARD_ALPHA
+"136032.104.f5",  0x00000, 0x02000                 "136032.104.f5",  0x00000, 0x02000                "136032.107.b2",  0x00000, 0x02000
+#define MOTHERBOARD_PROMS                          #define MOTHERBOARD_PROMS
+"136032.101.e3",  0x00000, 0x00100                 "136032.101.e3",  0x00000, 0x00100
+"136032.102.e5",  0x00000, 0x00100                 "136032.102.e5",  0x00000, 0x00100
+"136032.103.f7",  0x00000, 0x000eb /* N82S153 */   "136032.103.f7",  0x00000, 0x000eb /* N82S153 */
 
-ROM_SYSTEM_BIOS( 0, "ttl", "TTL Motherboard (Rev 2)" )
-ROM_LOAD16_BYTE_BIOS(0, "136032.205.l13", 0x00000, 0x04000
-ROM_LOAD16_BYTE_BIOS(0, "136032.206.l12", 0x00001, 0x04000
-#define MOTHERBOARD_ALPHA
-ROM_LOAD_BIOS(0, "136032.104.f5", 0x00000, 0x02000
-#define MOTHERBOARD_PROMS
-ROM_LOAD_BIOS(0, "136032.101.e3", 0x00000, 0x00100
-ROM_LOAD_BIOS(0, "136032.102.e5", 0x00000, 0x00100
-ROM_LOAD_BIOS(0, "136032.103.f7", 0x00000, 0x000eb /* N82S153 */
-
-ROM_SYSTEM_BIOS( 2, "lsi", "LSI Motherboard" )
-ROM_LOAD16_BYTE_BIOS(2, "136032.114.j11", 0x00000, 0x04000
-ROM_LOAD16_BYTE_BIOS(2, "136032.115.j10", 0x00001, 0x04000
-#define MOTHERBOARD_ALPHA
-ROM_LOAD_BIOS(2, "136032.107.b2", 0x00000, 0x02000
-
-ROM_START( atarisy1 )
-ROM_REGION( 0x88000, "maincpu", 0 )
-ROM_REGION( 0x10000, "audiocpu", ROMREGION_ERASE00 )    /* 64k for 6502 code */
-ROM_REGION( 0x100000, "tiles" )
-ROM_REGION( 0x201, "motherbrd_proms", 0) /* Motherboard PROM's (Only used by the TTL version.) */
-ROM_REGION( 0x400, "proms", ROMREGION_ERASE00 ) /* graphics mapping PROMs */
 
 
 /****Marble Madness****/                       /****Peter Pack-Rat****/                /****Indiana Jones****/               /****Road Runner****/                   /****Road Blasters****/

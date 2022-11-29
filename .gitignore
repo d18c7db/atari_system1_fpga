@@ -1,8 +1,8 @@
 db
+tb
 pipistrello
-sim
-MiSTer/tb
-MiSTer/rtl/lib/debug
+debug
+doc
 greybox_tmp
 incremental_db
 output_files

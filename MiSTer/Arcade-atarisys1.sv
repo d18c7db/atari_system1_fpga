@@ -19,9 +19,12 @@
 //  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 //============================================================================
-`define MODELSIM
-`undef MODELSIM_INDYTEMP
-`define MODELSIM_PETERPAK
+//`define MODELSIM
+//`define MODELSIM_INDYTEMP
+//`define MODELSIM_PETERPAK
+//`define MODELSIM_MARBLEMAD
+//`define MODELSIM_ROADRUN
+//`define MODELSIM_ROADBLAST
 
 module emu
 (
@@ -197,7 +200,8 @@ assign HDMI_FREEZE = 0;
 	assign VGA_DISABLE = 0;
 `endif
 
-integer     slap_type = 105; // Slapstic type: marble=103, indytemp=105, peterpak=107, roadrunn=108, roadb109=109, roadb110=110
+// Slapstic Types: marble=103 (x67), indytemp=105 (x69), peterpak=107 (x6B), roadrunn=108 (x6C), roadb109=109 (x6D), roadb110=110 (x6E)
+integer     slap_type = 105;
 
 wire        clk_7M;
 wire        clk_14M;
@@ -230,10 +234,10 @@ assign LED_DISK = 0;
 assign LED_POWER = 0;
 assign BUTTONS = 0;
 
-wire [31:0] joy0;
-wire [31:0] joy1;
-wire [31:0] joy2;
-wire [31:0] joy3;
+wire [31:0] joystick_0;
+wire [31:0] joystick_1;
+wire [31:0] joystick_2;
+wire [31:0] joystick_3;
 
 wire [10:0] ps2_key;
 
@@ -284,14 +288,7 @@ pll pll
 	.locked(pll_locked)
 );
 
-/* Slapstic Types:
-    marble  =103 (x67)
-    indytemp=105 (x69)
-    peterpak=107 (x6B)
-    roadrunn=108 (x6C)
-    roadb109=109 (x6D)
-    roadb110=110 (x6E)
-*/
+// Slapstic Types: marble=103 (x67), indytemp=105 (x69), peterpak=107 (x6B), roadrunn=108 (x6C), roadb109=109 (x6D), roadb110=110 (x6E)
 always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==1)) slap_type <= ioctl_dout;
 
 wire pressed = ps2_key[9];
@@ -319,7 +316,6 @@ always @(posedge clk_sys) begin
 			'h02E: m_coin_l     <= pressed; // coin_l     (5)
 			'h036: m_coin_r     <= pressed; // coin_r     (6)
 			'h03D: m_coin_aux   <= pressed; // coin_aux   (7)
-//			'h03E: m_           <= pressed; //            (8)
 		endcase
 	end
 end
@@ -331,55 +327,6 @@ always @(posedge clk_vid) begin
 	div <= div + 1'd1;
 	ce_pix <= !div;
 end
-
-`ifndef MODELSIM
-screen_rotate screen_rotate (.*);
-arcade_video #(.WIDTH(320), .DW(12)) arcade_video
-(
-	.*,
-
-	.clk_video(clk_vid),
-	.ce_pix(ce_pix),
-
-	.RGB_in({r,g,b}),
-	.HBlank(~hblank),
-	.VBlank(~vblank),
-	.HSync(~hs),
-	.VSync(~vs),
-
-	.fx(status[5:3])
-);
-
-hps_io #(.CONF_STR(CONF_STR)) hps_io
-(
-	.clk_sys(clk_sys),
-	.HPS_BUS(HPS_BUS),
-	.EXT_BUS(),
-	.gamma_bus(gamma_bus),
-
-	.forced_scandoubler(forced_scandoubler),
-
-	.buttons(buttons),
-	.status(status),
-	.status_menumask({1'b0,direct_video}),
-	.direct_video(direct_video),
-
-	.ioctl_download(ioctl_download),
-	.ioctl_wr(ioctl_wr),
-	.ioctl_addr(ioctl_addr),
-	.ioctl_dout(ioctl_dout),
-	.ioctl_index(ioctl_index),
-	.ioctl_wait(ioctl_wait),
-
-	.joystick_0(joy0),
-	.joystick_1(joy1),
-	.joystick_2(joy2),
-	.joystick_3(joy3),
-	.ps2_key(ps2_key)
-);
-`else
-	assign ioctl_download = 0;
-`endif
 
 // convert input video from 16bit IRGB to 12 bit RGB
 RGBI RCONV (.ADDR({gvid_I,gvid_R}), .DATA(r));
@@ -399,7 +346,7 @@ reg         sdram_we=0;
 wire        sdram_ready;
 
 // the order in which the files are listed in the .mra file determines the order in which they appear here on the HPS bus
-// some files are interleaved as DWORD, some are interleaved as WORD and some are not interleaved and appear as BYTEs
+// some files are interleaved as DWORD, some are interleaved as WORD and some are not interleaved and appear as BYTE
 // acc_bytes collects previous bytes so that when a WORD or DWORD is complete it is written to the RAM as appropriate
 reg [23:0] acc_bytes = 0;
 always @(posedge clk_sys)
@@ -429,7 +376,7 @@ wire [19:1] slv_MGRA;
 wire [15:1] slv_MA;
 wire [15:1] slv_MADDR;
 wire [15:0] slv_MDATA;
-wire [15:0] slv_ROM_12B_12A, slv_ROM_14B_14A, slv_ROM_16B_16A, slv_ROM_11J_10J, slv_ROM_10B_10A, slv_ROM_11B_11A;
+wire [15:0] slv_ROM_12B_12A, slv_ROM_14B_14A, slv_ROM_16B_16A, slv_ROM_11J_10J, slv_ROM_10B_10A;
 wire [13:0] slv_SBA;
 wire [13:0] s_snd;
 wire [12:0] slv_PA5F;
@@ -444,23 +391,177 @@ wire [ 2:0] slv_SROMn;
 wire sl_SLAPn, sl_BLDSn, sl_BASn, sl_BW_Rn, sl_INT1n, sl_INT3n, sl_WAITn, sl_MA18n;
 wire sl_MATCHn, sl_MGHF, sl_GLDn, sl_MO_PFn, sl_SNDEXTn, sl_SNDRSTn, sl_SNDBW_Rn, sl_B02;
 
-`ifdef MODELSIM
-// hardcoded ROMs for testing, use SDRAM/DPRAM for release
-wire [31:0] slv_ROM_1C_6C_1B_6B, slv_ROM_2C_7C_2B_7B, slv_ROM_3C_8C_3B_8B, slv_ROM_4C_9C_4B_9B;
+// Video ROMs
+//assign gp_wr         = (ioctl_wr && !ioctl_index && ioctl_addr[24:17] < 8'h03  && ioctl_addr[1:0]==2'b11) ? 1'b1 : 1'b0;
+assign sl_wr_10B_10A = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h08  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
+assign sl_wr_12B_12A = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h09  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
+assign sl_wr_14B_14A = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h14  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
+assign sl_wr_16B_16A = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h15  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
+assign sl_wr_11J_10J = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h16  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
+assign sl_wr_13D     = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h2E ) ? 1'b1 : 1'b0;
+assign sl_wr_14D     = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h2F ) ? 1'b1 : 1'b0;
+assign sl_wr_16D     = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h30 ) ? 1'b1 : 1'b0;
+assign sl_wr_23B     = (ioctl_wr && !ioctl_index && ioctl_addr[24:13]==12'h62 ) ? 1'b1 : 1'b0;
+assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h630) ? 1'b1 : 1'b0;
+assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) ? 1'b1 : 1'b0;
 
-assign slv_VDATA =
-	(slv_VADDR[16:15] == 2'b00)?slv_ROM_1C_6C_1B_6B:
-	(slv_VADDR[16:15] == 2'b01)?slv_ROM_2C_7C_2B_7B:
-	(slv_VADDR[16:15] == 2'b10)?slv_ROM_3C_8C_3B_8B:
-	(slv_VADDR[16:15] == 2'b11)?slv_ROM_4C_9C_4B_9B:
-	32'h0;
+`ifndef MODELSIM
+	arcade_video #(.WIDTH(320), .DW(12)) arcade_video
+	(
+		.*,
+
+		.clk_video(clk_vid),
+		.ce_pix(ce_pix),
+
+		.RGB_in({r,g,b}),
+		.HBlank(~hblank),
+		.VBlank(~vblank),
+		.HSync(~hs),
+		.VSync(~vs),
+
+		.fx(status[5:3])
+	);
+
+	hps_io #(.CONF_STR(CONF_STR)) hps_io
+	(
+		.clk_sys(clk_sys),
+		.HPS_BUS(HPS_BUS),
+		.EXT_BUS(),
+		.gamma_bus(gamma_bus),
+
+		.forced_scandoubler(forced_scandoubler),
+
+		.buttons(buttons),
+		.status(status),
+		.status_menumask({1'b0,direct_video}),
+		.direct_video(direct_video),
+
+		.ioctl_download(ioctl_download),
+		.ioctl_wr(ioctl_wr),
+		.ioctl_addr(ioctl_addr),
+		.ioctl_dout(ioctl_dout),
+		.ioctl_index(ioctl_index),
+		.ioctl_wait(ioctl_wait),
+
+		.joystick_0(joystick_0),
+		.joystick_1(joystick_1),
+		.joystick_2(joystick_2),
+		.joystick_3(joystick_3),
+		.ps2_key(ps2_key)
+	);
+
+	sdram #(.tCK_ns(1000/93.06817)) sdram
+	(
+		.I_RST(~pll_locked),
+		.I_CLK(clk_sys),
+
+		// controller interface
+		.I_ADDR(sdram_addr),
+		.I_DATA(sdram_data),
+		.I_WE(sdram_we),
+		.O_RDY(sdram_ready),
+		.O_DATA(slv_VDATA),
+
+		// SDRAM interface
+		.SDRAM_DQ(SDRAM_DQ),
+		.SDRAM_A(SDRAM_A),
+		.SDRAM_BA(SDRAM_BA),
+		.SDRAM_DQML(SDRAM_DQML),
+		.SDRAM_DQMH(SDRAM_DQMH),
+		.SDRAM_CLK(),
+		.SDRAM_CKE(SDRAM_CKE),
+		.SDRAM_nCS(SDRAM_nCS),
+		.SDRAM_nRAS(SDRAM_nRAS),
+		.SDRAM_nCAS(SDRAM_nCAS),
+		.SDRAM_nWE(SDRAM_nWE)
+	);
+
+	// 256 M10K blocks (not used, replaced with sdram above due to size constraints)
+	//dpram #(16,32) gp_ram
+	//(.clock_a(clk_sys    ), .enable_a(), .wren_a(gp_wr        ), .address_a(ioctl_addr[17:2]), .data_a({acc_bytes[23:0],ioctl_dout}), .q_a(               ),
+	// .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_VADDR[15:0]), .data_b(                            ), .q_b(slv_VDATA      ));
+
+	// 32 M10K blocks
+	dpram #(15,16) mp_ram_10B_10A
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_10B_10A), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[15:1]), .data_b(                            ), .q_b(slv_ROM_10B_10A));
+
+	// 32 M10K blocks
+	dpram #(15,16) mp_ram_12B_12A
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_12B_12A), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[15:1]), .data_b(                            ), .q_b(slv_ROM_12B_12A));
+
+	// 16 M10K blocks
+	dpram #(14,16) mp_ram_14B_14A
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_14B_14A), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM_14B_14A));
+
+	// 16 M10K blocks
+	dpram #(14,16) mp_ram_16B_16A
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_16B_16A), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM_16B_16A));
+
+	// 16 M10K blocks
+	dpram #(14,16) mp_ram_11J_10J
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_11J_10J), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM_11J_10J));
+
+	// 16 M10K blocks
+	dpram #(14, 8) ap_ram_13D
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_13D    ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_ROM_13D    ));
+
+	// 16 M10K blocks
+	dpram #(14, 8) ap_ram_14D
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_14D    ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_ROM_14D    ));
+
+	// 16 M10K blocks
+	dpram #(14, 8) ap_ram_16D
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_16D    ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_ROM_16D    ));
+
+	// 8 M10K blocks
+	dpram  #(13,8) cp_ram_23B
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_23B    ), .address_a(ioctl_addr[12:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(  slv_PA5F[12:0]), .data_b(                            ), .q_b(slv_PD5F       ));
+
+	// 1 M10K blocks
+	dpram  #(9,8) cp_ram_5A
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_5A     ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD4A       ));
+
+	// 1 M10K blocks
+	dpram  #(9,8) cp_ram_7A
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_7A     ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD7A       ));
+`else
+	assign sdram_ready = 0;
+
+	// hps_io outputs
+	assign buttons = 0;
+	assign ioctl_download = 0;
+	assign ioctl_wr = 0;
+	assign ioctl_addr = 0;
+	assign ioctl_dout = 0;
+	assign ioctl_index = 0;
+	assign joystick_0 = 0;
+	assign joystick_1 = 0;
+	assign joystick_2 = 0;
+	assign joystick_3 = 0;
+	assign ps2_key = 0;
+	assign gamma_bus = 0;
+	assign forced_scandoubler = 0;
+	assign status = 0; // 1 is reset, 0 is free run
+	assign direct_video = 0;
+
+	`include "tb/debug_roms.v"
+
 `endif
 
 assign slv_MDATA =
 	(~slv_ROMn[0])?slv_ROM_11J_10J:
 	(~slv_ROMn[1])?slv_ROM_10B_10A:
-//	(~slv_ROMn[1] && ~slv_MADDR[15])?slv_ROM_10B_10A:
-//	(~slv_ROMn[1] &&  slv_MADDR[15])?slv_ROM_11B_11A:
 	(~slv_ROMn[2])?slv_ROM_12B_12A:
 	(~slv_ROMn[3])?slv_ROM_14B_14A:
 	(~sl_SLAPn   )?slv_ROM_16B_16A:
@@ -472,433 +573,6 @@ assign slv_SDATA =
 	(~slv_SROMn[2])?slv_ROM_16D:
 	8'h0;
 
-// Video ROMs
-//  00000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.143, start=0, len=0, map(4)=0001
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.147, start=0, len=0, map(4)=0010
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.135, start=0, len=0, map(4)=0100
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.139, start=0, len=0, map(4)=1000
-//  20000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.144, start=0, len=0, map(4)=0001
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.148, start=0, len=0, map(4)=0010
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.136, start=0, len=0, map(4)=0100
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.140, start=0, len=0, map(4)=1000
-//  40000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.145, start=0, len=0, map(4)=0001
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.149, start=0, len=0, map(4)=0010
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.137, start=0, len=0, map(4)=0100
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.141, start=0, len=0, map(4)=1000
-//  60000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.146, start=0, len=0, map(4)=0001
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.150, start=0, len=0, map(4)=0010
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.138, start=0, len=0, map(4)=0100
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.142, start=0, len=0, map(4)=1000
-//assign gp_wr         = (ioctl_wr && !ioctl_index && ioctl_addr[24:17] < 8'h03 && ioctl_addr[1:0]==2'b11) ? 1'b1 : 1'b0;
-//  80000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.431, start=0, len=0, map(2)=01
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.432, start=0, len=0, map(2)=10
-assign sl_wr_10B_10A = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h08  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-//  90000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.433, start=0, len=0, map(2)=01
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.434, start=0, len=0, map(2)=10
-assign sl_wr_12B_12A = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h09  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-//  A0000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.457, start=0, len=0, map(2)=01
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.456, start=0, len=0, map(2)=10
-assign sl_wr_14B_14A = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h14  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-//  A8000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.358, start=0, len=0, map(2)=01
-//         file: /media/fat/_Arcade/mame/indytemp.zip/136036.359, start=0, len=0, map(2)=10
-assign sl_wr_16B_16A = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h15  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-//  B0000: file: /media/fat/_Arcade/mame/atarisy1.zip/136032.115.j10, start=0, len=0, map(2)=01
-//         file: /media/fat/_Arcade/mame/atarisy1.zip/136032.114.j11, start=0, len=0, map(2)=10
-assign sl_wr_11J_10J = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h16  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0;
-//  B8000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.153, start=0, len=0
-assign sl_wr_13D     = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h2E ) ? 1'b1 : 1'b0;
-//  BC000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.154, start=0, len=0
-assign sl_wr_14D     = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h2F ) ? 1'b1 : 1'b0;
-//  C0000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.155, start=0, len=0
-assign sl_wr_16D     = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h30 ) ? 1'b1 : 1'b0;
-//  C4000: file: /media/fat/_Arcade/mame/atarisy1.zip/136032.104.f5, start=0, len=0
-assign sl_wr_23B     = (ioctl_wr && !ioctl_index && ioctl_addr[24:13]==12'h62 ) ? 1'b1 : 1'b0;
-//  C6000: file: /media/fat/_Arcade/mame/indytemp.zip/136036.151, start=0, len=0
-assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h630) ? 1'b1 : 1'b0;
-//  C6200: file: /media/fat/_Arcade/mame/indytemp.zip/136036.152, start=0, len=0
-assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) ? 1'b1 : 1'b0;
-// 0xC6400 bytes sent to FPGA
-
-`ifndef MODELSIM
-sdram #(.tCK_ns(1000/93.06817)) sdram
-(
-	.I_RST(~pll_locked),
-	.I_CLK(clk_sys),
-
-	// controller interface
-	.I_ADDR(sdram_addr),
-	.I_DATA(sdram_data),
-	.I_WE(sdram_we),
-	.O_RDY(sdram_ready),
-	.O_DATA(slv_VDATA),
-
-	// SDRAM interface
-	.SDRAM_DQ(SDRAM_DQ),
-	.SDRAM_A(SDRAM_A),
-	.SDRAM_BA(SDRAM_BA),
-	.SDRAM_DQML(SDRAM_DQML),
-	.SDRAM_DQMH(SDRAM_DQMH),
-	.SDRAM_CLK(),
-	.SDRAM_CKE(SDRAM_CKE),
-	.SDRAM_nCS(SDRAM_nCS),
-	.SDRAM_nRAS(SDRAM_nRAS),
-	.SDRAM_nCAS(SDRAM_nCAS),
-	.SDRAM_nWE(SDRAM_nWE)
-);
-
-// 256 M10K blocks (not used, replaced with sdram above due to size constraints)
-//dpram #(16,32) gp_ram
-//(.clock_a(clk_sys    ), .enable_a(), .wren_a(gp_wr        ), .address_a(ioctl_addr[17:2]), .data_a({acc_bytes[23:0],ioctl_dout}), .q_a(               ),
-// .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_VADDR[15:0]), .data_b(                            ), .q_b(slv_VDATA      ));
-
-// 32 M10K blocks
-dpram #(15,16) mp_ram_10B_10A
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_10B_10A), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[15:1]), .data_b(                            ), .q_b(slv_ROM_10B_10A));
-
-// 32 M10K blocks
-dpram #(15,16) mp_ram_12B_12A
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_12B_12A), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[15:1]), .data_b(                            ), .q_b(slv_ROM_12B_12A));
-
-// 16 M10K blocks
-dpram #(14,16) mp_ram_14B_14A
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_14B_14A), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM_14B_14A));
-
-// 16 M10K blocks
-dpram #(14,16) mp_ram_16B_16A
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_16B_16A), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM_16B_16A));
-
-// 16 M10K blocks
-dpram #(14,16) mp_ram_11J_10J
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_11J_10J), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM_11J_10J));
-
-// 16 M10K blocks
-dpram #(14, 8) ap_ram_13D
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_13D    ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_ROM_13D    ));
-
-// 16 M10K blocks
-dpram #(14, 8) ap_ram_14D
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_14D    ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_ROM_14D    ));
-
-// 16 M10K blocks
-dpram #(14, 8) ap_ram_16D
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_16D    ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_ROM_16D    ));
-
-// 8 M10K blocks
-dpram  #(13,8) cp_ram_23B
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_23B    ), .address_a(ioctl_addr[12:0]), .data_a(                 ioctl_dout ), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b(  slv_PA5F[12:0]), .data_b(                            ), .q_b(slv_PD5F       ));
-
-// 1 M10K blocks
-dpram  #(9,8) cp_ram_5A
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_5A     ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD4A       ));
-
-// 1 M10K blocks
-dpram  #(9,8) cp_ram_7A
-(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_7A     ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
- .clock_b(clk_sys    ), .enable_b(), .wren_b(             ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD7A       ));
-`endif
-
-`ifdef MODELSIM_INDYTEMP
-	/* Indiana Jones
-	ROM_REGION 0x88000, "maincpu"
-		"136036.432",   0x10000, 0x08000
-		"136036.431",   0x10001, 0x08000
-		"136036.434",   0x20000, 0x08000
-		"136036.433",   0x20001, 0x08000
-		"136036.456",   0x30000, 0x04000
-		"136036.457",   0x30001, 0x04000
-		"136036.358",   0x80000, 0x04000
-		"136036.359",   0x80001, 0x04000
-	ROM_REGION 0x10000, "audiocpu"
-		"136036.153",   0x04000, 0x04000
-		"136036.154",   0x08000, 0x04000
-		"136036.155",   0x0c000, 0x04000
-	ROM_REGION 0x380000, "tiles"
-		"136036.135",   0x000000, 0x08000
-		"136036.139",   0x010000, 0x08000
-		"136036.143",   0x020000, 0x08000
-		"136036.147",   0x030000, 0x08000
-		"136036.136",   0x080000, 0x08000
-		"136036.140",   0x090000, 0x08000
-		"136036.144",   0x0a0000, 0x08000
-		"136036.148",   0x0b0000, 0x08000
-		"136036.137",   0x100000, 0x08000
-		"136036.141",   0x110000, 0x08000
-		"136036.145",   0x120000, 0x08000
-		"136036.149",   0x130000, 0x08000
-		"136036.138",   0x180000, 0x08000
-		"136036.142",   0x190000, 0x08000
-		"136036.146",   0x1a0000, 0x08000
-		"136036.150",   0x1b0000, 0x08000
-	ROM_REGION 0x400, "proms"
-		"136036.152",   0x000, 0x200
-		"136036.151",   0x200, 0x200
-	*/
-	// Video ROMs
-	ROM_143 ROM_1C( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[31:24]), .ADDR(slv_VADDR[14:0]) );
-	ROM_147 ROM_6C( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[23:16]), .ADDR(slv_VADDR[14:0]) );
-	ROM_135 ROM_1B( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[15:8 ]), .ADDR(slv_VADDR[14:0]) );
-	ROM_139 ROM_6B( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[ 7:0 ]), .ADDR(slv_VADDR[14:0]) );
-
-	ROM_144 ROM_2C( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[31:24]), .ADDR(slv_VADDR[14:0]) );
-	ROM_148 ROM_7C( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[23:16]), .ADDR(slv_VADDR[14:0]) );
-	ROM_136 ROM_2B( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[15:8 ]), .ADDR(slv_VADDR[14:0]) );
-	ROM_140 ROM_7B( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[ 7:0 ]), .ADDR(slv_VADDR[14:0]) );
-
-	ROM_145 ROM_3C( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[31:24]), .ADDR(slv_VADDR[14:0]) );
-	ROM_149 ROM_8C( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[23:16]), .ADDR(slv_VADDR[14:0]) );
-	ROM_137 ROM_3B( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[15:8 ]), .ADDR(slv_VADDR[14:0]) );
-	ROM_141 ROM_8B( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[ 7:0 ]), .ADDR(slv_VADDR[14:0]) );
-
-	ROM_146 ROM_4C( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[31:24]), .ADDR(slv_VADDR[14:0]) );
-	ROM_150 ROM_9C( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[23:16]), .ADDR(slv_VADDR[14:0]) );
-	ROM_138 ROM_4B( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[15:8 ]), .ADDR(slv_VADDR[14:0]) );
-	ROM_142 ROM_9B( .CLK(clk_14M), .DATA(slv_ROM_4C_9C_4B_9B[ 7:0 ]), .ADDR(slv_VADDR[14:0]) );
-
-	// MAIN CPU ROMs
-	ROM_432 ROM_10B( .CLK(clk_14M), .DATA(slv_ROM_10B_10A[15:8]), .ADDR(slv_MADDR[15:1]) ); // /ROM1
-	ROM_431 ROM_10A( .CLK(clk_14M), .DATA(slv_ROM_10B_10A[ 7:0]), .ADDR(slv_MADDR[15:1]) ); // /ROM1
-	ROM_434 ROM_12B( .CLK(clk_14M), .DATA(slv_ROM_12B_12A[15:8]), .ADDR(slv_MADDR[15:1]) ); // /ROM2
-	ROM_433 ROM_12A( .CLK(clk_14M), .DATA(slv_ROM_12B_12A[ 7:0]), .ADDR(slv_MADDR[15:1]) ); // /ROM2
-	ROM_456 ROM_14B( .CLK(clk_14M), .DATA(slv_ROM_14B_14A[15:8]), .ADDR(slv_MADDR[14:1]) ); // /ROM3
-	ROM_457 ROM_14A( .CLK(clk_14M), .DATA(slv_ROM_14B_14A[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /ROM3
-
-	// SLAPSTIC controlled ROMs
-	ROM_358 ROM_16B( .CLK(clk_14M), .DATA(slv_ROM_16B_16A[15:8]), .ADDR(slv_MADDR[14:1]) ); // /SLAP
-	ROM_359 ROM_16A( .CLK(clk_14M), .DATA(slv_ROM_16B_16A[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /SLAP
-
-	// System ROM
-	ROM_11J ROM_11J( .CLK(clk_14M), .DATA(slv_ROM_11J_10J[15:8]), .ADDR(slv_MADDR[14:1]) ); // /ROM0
-	ROM_10J ROM_10J( .CLK(clk_14M), .DATA(slv_ROM_11J_10J[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /ROM0
-
-	// AUDIO CPU ROMs
-	ROM_153 ROM_13D ( .CLK(clk_14M), .DATA(slv_ROM_13D), .ADDR(slv_SBA) );
-	ROM_154 ROM_14D ( .CLK(clk_14M), .DATA(slv_ROM_14D), .ADDR(slv_SBA) );
-	ROM_155 ROM_16D ( .CLK(clk_14M), .DATA(slv_ROM_16D), .ADDR(slv_SBA) );
-
-	// PROMs
-	ROM_5F ROM_23B ( .CLK(clk_14M), .DATA(slv_PD5F), .ADDR(slv_PA5F ) );
-	ROM_151 ROM_5A ( .CLK(clk_14M), .DATA(slv_PD4A), .ADDR(slv_PADDR) );
-	ROM_152 ROM_7A ( .CLK(clk_14M), .DATA(slv_PD7A), .ADDR(slv_PADDR) );
-`elsif MODELSIM_PETERPAK
-/* Peter Pack-Rat
-	ROM_REGION 0x88000, "maincpu"
-		"136028.142",   0x10000, 0x04000
-		"136028.143",   0x10001, 0x04000
-		"136028.144",   0x18000, 0x04000
-		"136028.145",   0x18001, 0x04000
-		"136028.146",   0x20000, 0x04000
-		"136028.147",   0x20001, 0x04000
-		"136028.148",   0x80000, 0x04000
-		"136028.149",   0x80001, 0x04000
-	ROM_REGION 0x10000, "audiocpu"
-		"136028.101",   0x08000, 0x04000
-		"136028.102",   0x0c000, 0x04000
-	ROM_REGION 0x380000, "tiles"
-		"136028.138",   0x000000, 0x08000
-		"136028.139",   0x010000, 0x08000
-		"136028.140",   0x020000, 0x08000
-		"136028.141",   0x030000, 0x08000
-		"136028.150",   0x080000, 0x08000
-		"136028.151",   0x090000, 0x08000
-		"136028.152",   0x0a0000, 0x08000
-		"136028.153",   0x0b0000, 0x08000
-		"136028.105",   0x104000, 0x04000
-		"136028.108",   0x114000, 0x04000
-		"136028.111",   0x124000, 0x04000
-		"136028.114",   0x134000, 0x04000
-	ROM_REGION 0x400, "proms"
-		"136028.136",   0x000, 0x200
-		"136028.137",   0x200, 0x200
-*/
-	// Video ROMs
-	ROM_140 ROM_1C( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[31:24]), .ADDR(slv_VADDR[14:0]) );
-	ROM_141 ROM_6C( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[23:16]), .ADDR(slv_VADDR[14:0]) );
-	ROM_138 ROM_1B( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[15:8 ]), .ADDR(slv_VADDR[14:0]) );
-	ROM_139 ROM_6B( .CLK(clk_14M), .DATA(slv_ROM_1C_6C_1B_6B[ 7:0 ]), .ADDR(slv_VADDR[14:0]) );
-
-	ROM_152 ROM_2C( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[31:24]), .ADDR(slv_VADDR[14:0]) );
-	ROM_153 ROM_7C( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[23:16]), .ADDR(slv_VADDR[14:0]) );
-	ROM_150 ROM_2B( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[15:8 ]), .ADDR(slv_VADDR[14:0]) );
-	ROM_151 ROM_7B( .CLK(clk_14M), .DATA(slv_ROM_2C_7C_2B_7B[ 7:0 ]), .ADDR(slv_VADDR[14:0]) );
-
-	ROM_111 ROM_3C( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[31:24]), .ADDR(slv_VADDR[13:0]) );
-	ROM_114 ROM_8C( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[23:16]), .ADDR(slv_VADDR[13:0]) );
-	ROM_105 ROM_3B( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[15:8 ]), .ADDR(slv_VADDR[13:0]) );
-	ROM_108 ROM_8B( .CLK(clk_14M), .DATA(slv_ROM_3C_8C_3B_8B[ 7:0 ]), .ADDR(slv_VADDR[13:0]) );
-
-	// unpopulated video ROMs
-	assign slv_ROM_4C_9C_4B_9B = 32'h0000;
-
-	// MAIN CPU ROMs
-	ROM_142 ROM_10B( .CLK(clk_14M), .DATA(slv_ROM_10B_10A[15:8]), .ADDR(slv_MADDR[14:1]) ); // /ROM1 lo
-	ROM_143 ROM_10A( .CLK(clk_14M), .DATA(slv_ROM_10B_10A[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /ROM1 lo
-	ROM_144 ROM_11B( .CLK(clk_14M), .DATA(slv_ROM_11B_11A[15:8]), .ADDR(slv_MADDR[14:1]) ); // /ROM1 hi
-	ROM_145 ROM_11A( .CLK(clk_14M), .DATA(slv_ROM_11B_11A[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /ROM1 hi
-	ROM_146 ROM_12B( .CLK(clk_14M), .DATA(slv_ROM_12B_12A[15:8]), .ADDR(slv_MADDR[14:1]) ); // /ROM2 lo
-	ROM_147 ROM_12A( .CLK(clk_14M), .DATA(slv_ROM_12B_12A[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /ROM2 lo
-
-	// SLAPSTIC controlled ROMs
-	ROM_148 ROM_16B( .CLK(clk_14M), .DATA(slv_ROM_16B_16A[15:8]), .ADDR(slv_MADDR[14:1]) ); // /SLAP
-	ROM_149 ROM_16A( .CLK(clk_14M), .DATA(slv_ROM_16B_16A[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /SLAP
-
-	// System ROM
-	ROM_11J ROM_11J( .CLK(clk_14M), .DATA(slv_ROM_11J_10J[15:8]), .ADDR(slv_MADDR[14:1]) ); // /ROM0
-	ROM_10J ROM_10J( .CLK(clk_14M), .DATA(slv_ROM_11J_10J[ 7:0]), .ADDR(slv_MADDR[14:1]) ); // /ROM0
-
-	// AUDIO CPU ROMs
-	ROM_101 ROM_14D ( .CLK(clk_14M), .DATA(slv_ROM_14D), .ADDR(slv_SBA) );
-	ROM_102 ROM_16D ( .CLK(clk_14M), .DATA(slv_ROM_16D), .ADDR(slv_SBA) );
-
-	// PROMs
-	ROM_5F ROM_23B ( .CLK(clk_14M), .DATA(slv_PD5F), .ADDR(slv_PA5F ) );
-	ROM_137 ROM_5A ( .CLK(clk_14M), .DATA(slv_PD4A), .ADDR(slv_PADDR) );
-	ROM_136 ROM_7A ( .CLK(clk_14M), .DATA(slv_PD7A), .ADDR(slv_PADDR) );
-`endif
-
-/* Marble Madness
-	ROM_REGION 0x88000, "maincpu"
-		"136033.623",   0x10000, 0x04000
-		"136033.624",   0x10001, 0x04000
-		"136033.625",   0x18000, 0x04000
-		"136033.626",   0x18001, 0x04000
-		"136033.627",   0x20000, 0x04000
-		"136033.628",   0x20001, 0x04000
-		"136033.229",   0x28000, 0x04000
-		"136033.630",   0x28001, 0x04000
-		"136033.107",   0x80000, 0x04000
-		"136033.108",   0x80001, 0x04000
-	ROM_REGION 0x10000, "audiocpu"
-		"136033.421",   0x08000, 0x04000
-		"136033.422",   0x0c000, 0x04000
-	ROM_REGION 0x380000, "tiles"
-		"136033.137",   0x000000, 0x04000
-		"136033.138",   0x004000, 0x04000
-		"136033.139",   0x010000, 0x04000
-		"136033.140",   0x014000, 0x04000
-		"136033.141",   0x020000, 0x04000
-		"136033.142",   0x024000, 0x04000
-		"136033.143",   0x030000, 0x04000
-		"136033.144",   0x034000, 0x04000
-		"136033.145",   0x040000, 0x04000
-		"136033.146",   0x044000, 0x04000
-		"136033.149",   0x084000, 0x04000
-		"136033.151",   0x094000, 0x04000
-		"136033.153",   0x0a4000, 0x04000
-	ROM_REGION 0x400, "proms"
-		"136033.118",   0x000, 0x200
-		"136033.119",   0x200, 0x200
-*/
-
-/* Road Runner
-	ROM_REGION 0x88000, "maincpu"
-		"136040-228.11c",  0x10000, 0x08000
-		"136040-229.11a",  0x10001, 0x08000
-		"136040-230.13c",  0x20000, 0x08000
-		"136040-231.13a",  0x20001, 0x08000
-		"136040-134.12c",  0x50000, 0x08000
-		"136040-135.12a",  0x50001, 0x08000
-		"136040-136.14c",  0x60000, 0x08000
-		"136040-137.14a",  0x60001, 0x08000
-		"136040-138.16c",  0x70000, 0x08000
-		"136040-139.16a",  0x70001, 0x08000
-		"136040-140.17c",  0x80000, 0x04000
-		"136040-141.17a",  0x80001, 0x04000
-	ROM_REGION 0x10000, "audiocpu"
-		"136040-143.15e",  0x08000, 0x4000
-		"136040-144.17e",  0x0c000, 0x4000
-	ROM_REGION 0x380000, "tiles"
-		"136040-101.4b",   0x000000, 0x08000
-		"136040-107.9b",   0x010000, 0x08000
-		"136040-113.4f",   0x020000, 0x08000
-		"136040-119.9f",   0x030000, 0x08000
-		"136040-102.3b",   0x080000, 0x08000
-		"136040-108.8b",   0x090000, 0x08000
-		"136040-114.3f",   0x0a0000, 0x08000
-		"136040-120.8f",   0x0b0000, 0x08000
-		"136040-103.2b",   0x100000, 0x08000
-		"136040-109.7b",   0x110000, 0x08000
-		"136040-115.2f",   0x120000, 0x08000
-		"136040-121.7f",   0x130000, 0x08000
-		"136040-104.1b",   0x180000, 0x08000
-		"136040-110.6b",   0x190000, 0x08000
-		"136040-116.1f",   0x1a0000, 0x08000
-		"136040-122.6f",   0x1b0000, 0x08000
-		"136040-105.4d",   0x200000, 0x08000
-		"136040-111.9d",   0x210000, 0x08000
-		"136040-117.2d",   0x220000, 0x08000
-		"136040-123.7d",   0x230000, 0x08000
-		"136040-106.3d",   0x280000, 0x08000
-		"136040-112.8d",   0x290000, 0x08000
-		"136040-118.1d",   0x2a0000, 0x08000
-		"136040-124.6d",   0x2b0000, 0x08000
-	ROM_REGION 0x400, "proms"
-		"136040-126.7a",   0x0000, 0x0200
-		"136040-125.5a",   0x0200, 0x0200
-*/
-
-/* Road Blasters
-	ROM_REGION 0x88000, "maincpu"
-		"136048-1157.11c",   0x10000, 0x08000
-		"136048-1158.11a",   0x10001, 0x08000
-		"136048-1159.13c",   0x20000, 0x08000
-		"136048-1160.13a",   0x20001, 0x08000
-		"136048-2141.7l",    0x50000, 0x08000
-		"136048-2142.8l",    0x50001, 0x08000
-		"136048-2143.7m",    0x60000, 0x08000
-		"136048-2144.8m",    0x60001, 0x08000
-		"136048-2145.7n",    0x70000, 0x08000
-		"136048-2146.8n",    0x70001, 0x08000
-		"136048-2147.7k",    0x80000, 0x04000
-		"136048-2148.8k",    0x80001, 0x04000
-	ROM_REGION 0x10000, "audiocpu"
-		"136048-1149.14e",   0x04000, 0x04000
-		"136048-1169.1516e", 0x08000, 0x04000
-		"136048-1170.17e",   0x0c000, 0x04000
-	ROM_REGION 0x380000, "tiles"
-		"136048-1101.2s",  0x000000, 0x08000  - bank 1, plane 0
-		"136048-1102.2r",  0x010000, 0x08000  - bank 1, plane 1
-		"136048-1103.2n",  0x020000, 0x08000  - bank 1, plane 2
-		"136048-1104.2m",  0x030000, 0x08000  - bank 1, plane 3
-		"136048-1105.2k",  0x040000, 0x08000  - bank 1, plane 4
-		"136048-1106.2j",  0x050000, 0x08000  - bank 1, plane 5
-		"136048-1107.3s",  0x080000, 0x08000  - bank 2, plane 0
-		"136048-1108.2p",  0x090000, 0x08000  - bank 2, plane 1
-		"136048-1109.3n",  0x0a0000, 0x08000  - bank 2, plane 2
-		"136048-1110.2l",  0x0b0000, 0x08000  - bank 2, plane 3
-		"136048-1107.3s",  0x100000, 0x08000  - bank 3, plane 0
-		"136048-1108.2p",  0x110000, 0x08000  - bank 3, plane 1
-		"136048-1109.3n",  0x120000, 0x08000  - bank 3, plane 2
-		"136048-1110.2l",  0x130000, 0x08000  - bank 3, plane 3
-		"136048-1111.4s",  0x180000, 0x08000  - bank 4, plane 0
-		"136048-1112.3r",  0x190000, 0x08000  - bank 4, plane 1
-		"136048-1113.4n",  0x1a0000, 0x08000  - bank 4, plane 2
-		"136048-1114.3m",  0x1b0000, 0x08000  - bank 4, plane 3
-		"136048-1111.4s",  0x200000, 0x08000  - bank 5, plane 0
-		"136048-1112.3r",  0x210000, 0x08000  - bank 5, plane 1
-		"136048-1113.4n",  0x220000, 0x08000  - bank 5, plane 2
-		"136048-1114.3m",  0x230000, 0x08000  - bank 5, plane 3
-		"136048-1115.4r",  0x280000, 0x08000  - bank 6, plane 0
-		"136048-1116.3p",  0x290000, 0x08000  - bank 6, plane 1
-		"136048-1117.4m",  0x2a0000, 0x08000  - bank 6, plane 2
-		"136048-1118.3l",  0x2b0000, 0x08000  - bank 6, plane 3
-		"136048-1115.4r",  0x300000, 0x08000  - bank 7, plane 0
-		"136048-1116.3p",  0x310000, 0x08000  - bank 7, plane 1
-		"136048-1117.4m",  0x320000, 0x08000  - bank 7, plane 2
-		"136048-1118.3l",  0x330000, 0x08000  - bank 7, plane 3
-	ROM_REGION 0x400, "proms"
-		"136048-1174.12d", 0x0000, 0x0200 - remap
-		"136048-1173.2d",  0x0200, 0x0200 - color
-*/
 
 // ##################################################################################
 // J102         J103        P104            P105               J106
@@ -914,12 +588,12 @@ dpram  #(9,8) cp_ram_7A
 // 10 KEY       10 V_DIR1   10 Right Coin                      10 SW3
 // 11 GND       11 GND      11 GND                             11 GND
 
-// Slapstic type: marble=103, indytemp=105, peterpak=107, roadrunn=108, roadb109=109, roadb110=110
+// Slapstic Types: marble=103 (x67), indytemp=105 (x69), peterpak=107 (x6B), roadrunn=108 (x6C), roadb109=109 (x6D), roadb110=110 (x6E)
 // for some reason the ADC index is shifted by 1 for indy
 // confirmed in MAME IRQ handler, ADC indexes are 4=UP 3=DN 2=LT 1=RT for Indy and 3=UP 2=DN 1=LT 0=RT for Peter Packrat
 wire [7:0] inputs;
 // for Indy (105) shift inputs by one (000UDLR0) else (0000UDLR)
-assign inputs = (slap_type==105)?({3'b0, (p2[7:4] | p1[7:4] | joy1[3:0] | joy0[3:0]),1'b0})  :  ({4'b0, (p2[7:4] | p1[7:4] | joy1[3:0] | joy0[3:0])});
+assign inputs = (slap_type==105)?({3'b0, (p2[7:4] | p1[7:4] | joystick_1[3:0] | joystick_0[3:0]),1'b0})  :  ({4'b0, (p2[7:4] | p1[7:4] | joystick_1[3:0] | joystick_0[3:0])});
 
 FPGA_ATARISYS1 atarisys1
 (
@@ -931,8 +605,8 @@ FPGA_ATARISYS1 atarisys1
 
 	// SELFTEST, COIN_AUX, COIN_L, COIN_R, SW[5:1] active low
 	.I_SELFTESTn(~m_service),
-	.I_COIN({~m_coin_aux, ~(m_coin_r), ~(m_coin_l | joy0[8])}),
-	.I_PB({2'b11, ~(p2[0] | p1[0] | joy1[5] | joy0[5]), ~(p2[1] | joy1[5] | joy0[5]), ~(p1[1] | joy1[4] | joy0[4])}), // Whip2/Start2 Whip1/Start1
+	.I_COIN({~m_coin_aux, ~(m_coin_r), ~(m_coin_l | joystick_0[8])}),
+	.I_PB({2'b11, ~(p2[0] | p1[0] | joystick_1[5] | joystick_0[5]), ~(p2[1] | joystick_1[5] | joystick_0[5]), ~(p1[1] | joystick_1[4] | joystick_0[4])}), // Whip2/Start2 Whip1/Start1
 
 	.I_JOY(inputs),  // P2-U,D,L,R P1-U,D,L,R active high
 	.I_CLK(4'b1111), // LETA trackball inputs active low
