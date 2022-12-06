@@ -245,7 +245,7 @@ wire [21:0] gamma_bus;
 wire sl_reset = RESET | status[0] | buttons[1] | ioctl_download;
 
 reg [7:0]   p1 = 8'h0;
-reg [7:0]   p2 = 8'h0;
+//reg [7:0]   p2 = 8'h0;
 
 reg  m_coin_aux = 1'b0;
 reg  m_coin_l   = 1'b0;
@@ -306,12 +306,12 @@ always @(posedge clk_sys) begin
 			'h014: p1[1]        <= pressed; // start/whip (left ctrl)
 			'h011: p1[0]        <= pressed; // jump       (left alt)
 
-			'h02D: p2[7]        <= pressed; // up         (R)
-			'h02B: p2[6]        <= pressed; // down       (F)
-			'h023: p2[5]        <= pressed; // left       (D)
-			'h034: p2[4]        <= pressed; // right      (G)
-			'h01C: p2[1]        <= pressed; // start/whip (A)
-			'h01B: p2[0]        <= pressed; // jump       (S)
+//			'h02D: p2[7]        <= pressed; // up         (R)
+//			'h02B: p2[6]        <= pressed; // down       (F)
+//			'h023: p2[5]        <= pressed; // left       (D)
+//			'h034: p2[4]        <= pressed; // right      (G)
+//			'h01C: p2[1]        <= pressed; // start/whip (A)
+//			'h01B: p2[0]        <= pressed; // jump       (S)
 
 			'h02E: m_coin_l     <= pressed; // coin_l     (5)
 			'h036: m_coin_r     <= pressed; // coin_r     (6)
@@ -593,7 +593,7 @@ assign slv_SDATA =
 // confirmed in MAME IRQ handler, ADC indexes are 4=UP 3=DN 2=LT 1=RT for Indy and 3=UP 2=DN 1=LT 0=RT for Peter Packrat
 wire [7:0] inputs;
 // for Indy (105) shift inputs by one (000UDLR0) else (0000UDLR)
-assign inputs = (slap_type==105)?({3'b0, (p2[7:4] | p1[7:4] | joystick_1[3:0] | joystick_0[3:0]),1'b0})  :  ({4'b0, (p2[7:4] | p1[7:4] | joystick_1[3:0] | joystick_0[3:0])});
+assign inputs = (slap_type==105)?({3'b0, (p1[7:4] | joystick_0[3:0]), 1'b0}) : ({4'b0, (p1[7:4] | joystick_0[3:0])});
 
 FPGA_ATARISYS1 atarisys1
 (
@@ -606,7 +606,7 @@ FPGA_ATARISYS1 atarisys1
 	// SELFTEST, COIN_AUX, COIN_L, COIN_R, SW[5:1] active low
 	.I_SELFTESTn(~m_service),
 	.I_COIN({~m_coin_aux, ~(m_coin_r), ~(m_coin_l | joystick_0[8])}),
-	.I_PB({2'b11, ~(p2[0] | p1[0] | joystick_1[5] | joystick_0[5]), ~(p2[1] | joystick_1[5] | joystick_0[5]), ~(p1[1] | joystick_1[4] | joystick_0[4])}), // Whip2/Start2 Whip1/Start1
+	.I_PB({3'b111,   ~(p1[0] | joystick_0[4]),   ~(p1[1] | joystick_0[5])}),   // NC, NC, Jump (NC), Whip2/Start2, Whip1/Start1
 
 	.I_JOY(inputs),  // P2-U,D,L,R P1-U,D,L,R active high
 	.I_CLK(4'b1111), // LETA trackball inputs active low
