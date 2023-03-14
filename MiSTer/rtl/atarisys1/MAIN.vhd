@@ -85,11 +85,7 @@ end MAIN;
 
 architecture RTL of MAIN is
 	signal
-		sl_8H
-								: std_logic := '1';
-	signal
 		sl_12F_En,
-		sl_4H,
 		sl_68KBUF,
 		sl_8H5,
 		sl_8H8,
@@ -111,8 +107,6 @@ architecture RTL of MAIN is
 		sl_INT1n,
 		sl_INT3n,
 		sl_LDSn,
-		sl_LETA_RES,
-		sl_LETA_TST,
 		sl_MEXTn,
 		sl_MISCn,
 		sl_PFSPCn,
@@ -169,8 +163,6 @@ architecture RTL of MAIN is
 								: std_logic_vector( 2 downto 0) := (others=>'U');
 	signal
 		slv_ROMn,
-		slv_LETA_CLK,
-		slv_LETA_DIR,
 		slv_7Ka_Y,
 		slv_7Kb_Y,
 		ctr_11C,
@@ -222,7 +214,7 @@ begin
 	O_HSCRLDn    <= sl_HSCRLDn;
 	O_SNDNMIn    <= sl_SNDNMIn;
 	O_ADC_SOC    <= sl_RAJS;
-	O_ADC_CLK    <= sl_4H;
+	O_ADC_CLK    <= I_4H;
 	O_ADC_ADDR   <= slv_cpu_ad(3 downto 1);
 	O_CRAMWRn    <= sl_CRAMWRn;
 	O_VRAMWR     <= sl_VRAMWR;
@@ -236,8 +228,6 @@ begin
 	slv_VBUSD    <= I_VBUSD;
 	slv_ADC_data <= I_ADC_DATA;
 	sl_AJSINTn   <= not (I_ADC_EOC and sl_8H8); --gate 15J
-	sl_4H        <= I_4H;
-	sl_8H        <= I_8H;
 	sl_RESETn    <= not I_RESET;
 	sl_INT1n     <= I_INT1n;
 	sl_INT3n     <= I_INT3n;
@@ -249,10 +239,6 @@ begin
 	sl_WR68Kn    <= I_WR68Kn;
 	sl_SNDRSTn   <= I_SNDRESn;
 	sl_SELFTESTn <= I_SELFTESTn;
-	slv_LETA_CLK <= I_LETA_CLK;
-	slv_LETA_DIR <= I_LETA_DIR;
-	sl_LETA_TST  <= I_LETA_TST;
-	sl_LETA_RES  <= I_LETA_RES;
 	sl_68KBUF    <= not sl_SNDNMIn;
 --	sl_SNDBUFn   <= not sl_SNDINTn;
 	sl_VRAC2     <= I_VRAC2;
@@ -260,15 +246,15 @@ begin
 
 	-- CPU input data bus mux
 	slv_cpu_di <=
-		slv_12K_data & slv_12L_data when sl_R_Wn = '1' and sl_RAM0 = '1' else
-		slv_13K_data & slv_13L_data when sl_R_Wn = '1' and sl_RAM1 = '1' else
+		slv_12K_data & slv_12L_data when sl_R_Wn = '1' and sl_RAM0   = '1' else
+		slv_13K_data & slv_13L_data when sl_R_Wn = '1' and sl_RAM1   = '1' else
 								slv_MEXTD when sl_R_Wn = '1' and (slv_ROMn /= "1111" or sl_SLAPn = '0') else
-								slv_VBUSD when sl_R_Wn = '1' and sl_VBUSn = '0' else
-				 x"FF" & slv_ADC_DATA when sl_R_Wn = '1' and sl_IBUSn = '0' and sl_RAJS    = '1' else
-				 x"FF" & slv_SBDI     when sl_R_Wn = '1' and sl_IBUSn = '0' and sl_SNDRDn  = '0' else
-				 x"FF" & slv_LETADB   when sl_R_Wn = '1' and sl_IBUSn = '0' and sl_RLETAn  = '0' else
-				 x"FF" & slv_EEPROM   when sl_R_Wn = '1' and sl_IBUSn = '0' and sl_E2PROMn = '0' else
-				 x"FF" & slv_INPUTS   when sl_R_Wn = '1' and sl_IBUSn = '0' and sl_INPUTn  = '0' else
+								slv_VBUSD when sl_R_Wn = '1' and sl_VBUSn   = '0' else
+				 x"FF" & slv_ADC_DATA when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RAJS    = '1' else
+				 x"FF" & slv_SBDI     when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_SNDRDn  = '0' else
+				 x"FF" & slv_LETADB   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RLETAn  = '0' else
+				 x"FF" & slv_EEPROM   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_E2PROMn = '0' else
+				 x"FF" & slv_INPUTS   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_INPUTn  = '0' else
 		(others=>'Z');
 
 	-------------
@@ -579,7 +565,7 @@ begin
 	port map (
 		db      => slv_LETADB,
 		cs      => sl_RLETAn,
-		ck      => sl_8H,
+		ck      => I_8H,
 		ad      => slv_cpu_ad( 2 downto 1),
 		clks    => I_LETA_CLK,
 		dirs    => I_LETA_DIR,

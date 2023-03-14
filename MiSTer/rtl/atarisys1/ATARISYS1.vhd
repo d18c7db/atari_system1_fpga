@@ -60,8 +60,8 @@ entity FPGA_ATARISYS1 is
 		O_HBLANK   : out	std_logic;
 		O_VBLANK   : out	std_logic;
 
-		O_ADDR5F   : out std_logic_vector(12 downto 0);
-		I_DATA5F   : in  std_logic_vector( 7 downto 0);
+		O_ADDR2B   : out std_logic_vector(12 downto 0);
+		I_DATA2B   : in  std_logic_vector( 7 downto 0);
 
 		-- CART interface
 		O_SLAPn    : out std_logic;
@@ -284,8 +284,8 @@ begin
 		I_CPU_D     => slv_MDO,
 		O_CPU_D     => slv_VBUSD,
 
-		O_ADDR5F    => O_ADDR5F,
-		I_DATA5F    => I_DATA5F,
+		O_ADDR2B    => O_ADDR2B,
+		I_DATA2B    => I_DATA2B,
 
 		O_SNDRESn   => sl_SNDRESn,
 		O_MGHF      => O_MGHF,

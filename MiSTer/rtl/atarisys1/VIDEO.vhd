@@ -43,8 +43,8 @@ entity VIDEO is
 		I_CPU_D    : in  std_logic_vector(15 downto 0);
 		O_CPU_D    : out std_logic_vector(15 downto 0);
 
-		O_ADDR5F   : out std_logic_vector(12 downto 0);
-		I_DATA5F   : in  std_logic_vector( 7 downto 0);
+		O_ADDR2B   : out std_logic_vector(12 downto 0);
+		I_DATA2B   : in  std_logic_vector( 7 downto 0);
 
 		O_TBTEST   : out std_logic;
 		O_TBRESn   : out std_logic;
@@ -680,9 +680,9 @@ begin
 	slv_ROM_2B_addr(3 downto 0) <= slv_V(2 downto 0) & sl_4Hn;
 	slv_ROM_2B_addr(13) <= sl_ALBNK; -- not used because 2B ROM is only 8K
 
-	-- 2/3B ROM (BAD DUMP, use 5F instead)
-	O_ADDR5F <= slv_ROM_2B_addr(12 downto 0);
-	slv_ROM_2B_data <= I_DATA5F;
+	-- 2/3B ROM (same as 5F)
+	O_ADDR2B <= slv_ROM_2B_addr(12 downto 0);
+	slv_ROM_2B_data <= I_DATA2B;
 
 	-- 1B, 2B shifters S1 S0 11=load 10=shift left 01=shift right 00=inhibit
 	p_1B_2B : process
