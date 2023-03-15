@@ -1,7 +1,7 @@
 <misterromdescription>
-	<name>Indiana Jones (set 1)</name>
+	<name>Road Runner (rev 2)</name>
 	<mameversion>0252</mameversion>
-	<setname>indytemp</setname>
+	<setname>roadrunn</setname>
 	<mratimestamp>20230303000000</mratimestamp>
 	<year>1985</year>
 	<manufacturer>Atari Games</manufacturer>
@@ -13,53 +13,57 @@
 
 	<!-- Slapstic type -->
 	<rom index="1">
-		<part>69</part>
+		<part>6C</part>
 	</rom>
 
-	<rom index="0" zip="indytemp.zip" md5="none">
+	<rom index="0" zip="roadrunn.zip" md5="none">
 		<!-- TILE ROMs Bank 1 Plane 3, 2, 1, 0 (0x030000, 0x020000, 0x010000, 0x000000) 32Kx32 -->
 		<interleave output="32">
-			<part crc="ffa8749c" name="136036.135" map="0001"/>
-			<part crc="b682bfca" name="136036.139" map="0010"/>
-			<part crc="7697da26" name="136036.143" map="0100"/>
-			<part crc="4e9d664c" name="136036.147" map="1000"/>
+			<part crc="26d9f29c" name="136040-101.4b" map="0001"/>
+			<part crc="8aac0ba4" name="136040-107.9b" map="0010"/>
+			<part crc="48b74c52" name="136040-113.4f" map="0100"/>
+			<part crc="17a6510c" name="136040-119.9f" map="1000"/>
 		</interleave>
 
 		<!-- TILE ROMs Bank 2 Plane 3, 2, 1, 0 (0x0B0000, 0x0A0000 , 0x090000, 0x080000) 32Kx32 -->
 		<interleave output="32">
-			<part crc="b2b403aa" name="136036.136" map="0001"/>
-			<part crc="ec0c19ca" name="136036.140" map="0010"/>
-			<part crc="4407df98" name="136036.144" map="0100"/>
-			<part crc="70dce06d" name="136036.148" map="1000"/>
+			<part crc="ae88f54b" name="136040-102.3b" map="0001"/>
+			<part crc="a2ac13d4" name="136040-108.8b" map="0010"/>
+			<part crc="c91c3fcb" name="136040-114.3f" map="0100"/>
+			<part crc="42d25859" name="136040-120.8f" map="1000"/>
 		</interleave>
 
 		<!-- TILE ROMs Bank 3 Plane 3, 2, 1, 0 (0x130000, 0x120000 , 0x110000, 0x100000) 32Kx32 -->
 		<interleave output="32">
-			<part crc="3f352547" name="136036.137" map="0001"/>
-			<part crc="9cbdffd0" name="136036.141" map="0010"/>
-			<part crc="e828e64b" name="136036.145" map="0100"/>
-			<part crc="81503a23" name="136036.149" map="1000"/>
+			<part crc="f2d7ef55" name="136040-103.2b" map="0001"/>
+			<part crc="11a843dc" name="136040-109.7b" map="0010"/>
+			<part crc="8b1fa5bc" name="136040-115.2f" map="0100"/>
+			<part crc="ecf278f2" name="136040-121.7f" map="1000"/>
 		</interleave>
 
 		<!-- TILE ROMs Bank 4 Plane 3, 2, 1, 0 (0x1B0000, 0x1A0000, 0x190000, 0x180000) 32Kx32 -->
 		<interleave output="32">
-			<part crc="48c4d79d" name="136036.138" map="0001"/>
-			<part crc="7faae75f" name="136036.142" map="0010"/>
-			<part crc="8ae5a7b5" name="136036.146" map="0100"/>
-			<part crc="a10c4bd9" name="136036.150" map="1000"/>
+			<part crc="0203d89c" name="136040-104.1b" map="0001"/>
+			<part crc="64801601" name="136040-110.6b" map="0010"/>
+			<part crc="52b23a36" name="136040-116.1f" map="0100"/>
+			<part crc="b1137a9d" name="136040-122.6f" map="1000"/>
 		</interleave>
 
 		<!-- TILE ROMs Bank 5 Plane 3, 2, 1, 0 (0x230000, 0x220000, 0x210000, 0x200000) 32Kx32 -->
-		<part repeat="32768">FF</part>
-		<part repeat="32768">FF</part>
-		<part repeat="32768">FF</part>
-		<part repeat="32768">FF</part>
+		<interleave output="32">
+			<part crc="398a36f8" name="136040-105.4d" map="0001"/>
+			<part crc="f08b418b" name="136040-111.9d" map="0010"/>
+			<part crc="c4394834" name="136040-117.2d" map="0100"/>
+			<part crc="dafd3dbe" name="136040-123.7d" map="1000"/>
+		</interleave>
 
 		<!-- TILE ROMs Bank 6 Plane 3, 2, 1, 0 (0x2B0000, 0x2A0000, 0x290000, 0x280000) 32Kx32 -->
-		<part repeat="32768">FF</part>
-		<part repeat="32768">FF</part>
-		<part repeat="32768">FF</part>
-		<part repeat="32768">FF</part>
+		<interleave output="32">
+			<part crc="36a77bc5" name="136040-106.3d" map="0001"/>
+			<part crc="b6624f3c" name="136040-112.8d" map="0010"/>
+			<part crc="f489a968" name="136040-118.1d" map="0100"/>
+			<part crc="524d65f7" name="136040-124.6d" map="1000"/>
+		</interleave>
 
 		<!-- TILE ROMs Bank 7 Plane 3, 2, 1, 0 (0x330000, 0x320000, 0x310000, 0x300000) 32Kx32 -->
 		<part repeat="32768">FF</part>
@@ -85,14 +89,14 @@
 
 		<!-- 0x10000 - 0x1ffff MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
-			<part crc="d888cdf1" name="136036.432" map="01"/>"
-			<part crc="b7ac7431" name="136036.431" map="10"/>"
+			<part crc="b66c629a" name="136040-228.11c" map="01"/>"
+			<part crc="5638959f" name="136040-229.11a" map="10"/>"
 		</interleave>
 
 		<!-- 0x20000 - 0x2ffff MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
-			<part crc="802495fd" name="136036.434" map="01"/>"
-			<part crc="3a914e5c" name="136036.433" map="10"/>"
+			<part crc="cd7956a3" name="136040-230.13c" map="01"/>"
+			<part crc="722f2d3b" name="136040-231.13a" map="10"/>"
 		</interleave>
 
 		<!-- 0x30000 - 0x3ffff Filler 32Kx16 -->
@@ -104,39 +108,39 @@
 		<part repeat="32768">FF</part>
 
 		<!-- 0x50000 - 0x5ffff Filler 32Kx16 -->
-		<part repeat="32768">FF</part>
-		<part repeat="32768">FF</part>
-
-		<!-- 0x60000 - 0x6ffff Filler 32Kx16 -->
-		<part repeat="32768">FF</part>
-		<part repeat="32768">FF</part>
-
-		<!-- 0x70000 - 0x77fff MAINCPU ROMs 0x30000 16Kx16 remapped here -->
 		<interleave output="16">
-			<part crc="ec146b09" name="136036.456" map="01"/>"
-			<part crc="6628de01" name="136036.457" map="10"/>"
+			<part crc="18f431fe" name="136040-134.12c" map="01"/>"
+			<part crc="cb06f9ab" name="136040-135.12a" map="10"/>"
 		</interleave>
 
-		<!-- 0x78000 - 0x7ffff Filler 16Kx16 -->
-		<part repeat="16384">FF</part>
-		<part repeat="16384">FF</part>
+		<!-- 0x60000 - 0x6ffff Filler 32Kx16 -->
+		<interleave output="16">
+			<part crc="8050bce4" name="136040-136.14c" map="01"/>"
+			<part crc="3372a5cf" name="136040-137.14a" map="10"/>"
+		</interleave>
+
+		<!-- 0x70000 - 0x77fff MAINCPU ROMs 32Kx16 -->
+		<interleave output="16">
+			<part crc="a83155ee" name="136040-138.16c" map="01"/>"
+			<part crc="23aead1c" name="136040-139.16a" map="10"/>"
+		</interleave>
 
 		<!-- 0x80000 - 0x87fff SLAPSTIC ROMs 16Kx16 -->
 		<interleave output="16">
-			<part crc="d9351106" name="136036.358" map="01"/>"
-			<part crc="e731caea" name="136036.359" map="10"/>"
+			<part crc="d1464c88" name="136040-140.17c" map="01"/>"
+			<part crc="f8f2acdf" name="136040-141.17a" map="10"/>"
 		</interleave>
 
 		<!-- AUDIOCPU ROM 0x4000 16Kx8 -->
-		<part crc="95294641" name="136036.153"/>
+		<part repeat="16384">FF</part>
 		<!-- AUDIOCPU ROM 0x8000 16Kx8 -->
-		<part crc="cbfc6adb" name="136036.154"/>
+		<part crc="62b9878e" name="136040-143.15e"/>
 		<!-- AUDIOCPU ROM 0xC000 16Kx8 -->
-		<part crc="4c8233ac" name="136036.155"/>
+		<part crc="6ef1b804" name="136040-144.17e"/>
 
 		<!-- PROMs -->
 		<part crc="7a29dc07" name="136032.104.b2" zip="atarisy1.zip"/>
-		<part crc="7daf351f" name="136036.151"/>
-		<part crc="4f96e57c" name="136036.152"/>
+		<part crc="a9ca8795" name="136040-125.5a"/>
+		<part crc="1713c0cd" name="136040-126.7a"/>
 	</rom>
 </misterromdescription>

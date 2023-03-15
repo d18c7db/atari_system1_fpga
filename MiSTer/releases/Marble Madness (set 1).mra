@@ -59,6 +59,40 @@
 		<part repeat="32768">FF</part>
 		<part repeat="32768">FF</part>
 
+		<!-- TILE ROMs Bank 5 Plane 3, 2, 1, 0 (0x230000, 0x220000, 0x210000, 0x200000) 32Kx32 -->
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+
+		<!-- TILE ROMs Bank 6 Plane 3, 2, 1, 0 (0x2B0000, 0x2A0000, 0x290000, 0x280000) 32Kx32 -->
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+
+		<!-- TILE ROMs Bank 7 Plane 3, 2, 1, 0 (0x330000, 0x320000, 0x310000, 0x300000) 32Kx32 -->
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+
+		<!-- TILE ROMs Bank 1 Plane 7, 6, 5, 4 (0x070000, 0x060000, 0x050000, 0x040000) 32Kx32 -->
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+
+		<!-- 0x00000 - 0x07fff BIOS ROMs 16Kx16 -->
+		<interleave output="16">
+			<part crc="195c54ad" name="136032.114.j11" zip="atarisy1.zip" map="01"/>
+			<part crc="7275b4dc" name="136032.115.j10" zip="atarisy1.zip" map="10"/>
+		</interleave>
+
+		<!-- 0x08000 - 0x0ffff Filler 16Kx16 -->
+		<part repeat="16384">FF</part>
+		<part repeat="16384">FF</part>
+
 		<!-- 0x10000 - 0x17fff MAINCPU ROMs 16Kx16 -->
 		<interleave output="16">
 			<part crc="284ed2e9" name="136033.623" map="01"/>"
@@ -67,7 +101,7 @@
 
 		<!-- 0x18000 - 0x1ffff MAINCPU ROMs  16Kx16 -->
 		<interleave output="16">
-			<part crc="563575c7" name="136033.625" map="01"/>"
+			<part crc="563755c7" name="136033.625" map="01"/>"
 			<part crc="860feeb3" name="136033.626" map="10"/>"
 		</interleave>
 
@@ -82,21 +116,30 @@
 			<part crc="c81d5c14" name="136033.229" map="01"/>"
 			<part crc="687a09f7" name="136033.630" map="10"/>"
 		</interleave>
+		<!-- 0x30000 - 0x3ffff Filler 32Kx16 -->
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
 
-		<!-- 0x30000 - 0x37fff Filler 16Kx16 -->
-		<part repeat="16384">FF</part>
-		<part repeat="16384">FF</part>
+		<!-- 0x40000 - 0x4ffff Filler 32Kx16 -->
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+
+		<!-- 0x50000 - 0x5ffff Filler 32Kx16 -->
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+
+		<!-- 0x60000 - 0x6ffff Filler 32Kx16 -->
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
+
+		<!-- 0x70000 - 0x7ffff filler 32Kx16 -->
+		<part repeat="32768">FF</part>
+		<part repeat="32768">FF</part>
 
 		<!-- 0x80000 - 0x87fff SLAPSTIC ROMs 16Kx16 -->
 		<interleave output="16">
 			<part crc="f3b8745b" name="136033.107" map="01"/>"
 			<part crc="e51eecaa" name="136033.108" map="10"/>"
-		</interleave>
-
-		<!-- 0x00000 - 0x07fff BIOS ROMs 16Kx16 -->
-		<interleave output="16">
-			<part crc="195c54ad" name="136032.114.j11" zip="atarisy1.zip" map="01"/>
-			<part crc="7275b4dc" name="136032.115.j10" zip="atarisy1.zip" map="10"/>
 		</interleave>
 
 		<!-- AUDIOCPU ROM 0x4000 16Kx8 -->

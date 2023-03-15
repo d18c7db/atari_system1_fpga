@@ -64,9 +64,8 @@ entity FPGA_ATARISYS1 is
 		I_DATA2B   : in  std_logic_vector( 7 downto 0);
 
 		-- CART interface
-		O_SLAPn    : out std_logic;
-
-		O_ROMn     : out std_logic_vector( 3 downto 0);
+		O_ROMn     : out std_logic_vector( 4 downto 0);
+		O_MA18n    : out std_logic;
 		O_MADEC    : out std_logic_vector(15 downto 1);
 		I_MDATA    : in  std_logic_vector(15 downto 0);
 
@@ -97,7 +96,6 @@ architecture RTL of FPGA_ATARISYS1 is
 		sl_SNDEXTn,
 		sl_SNDBW_Rn,
 		sl_B02,
-		sl_SLAPn,
 
 		sl_adc_eoc,
 		sl_adc_soc,
@@ -134,6 +132,9 @@ architecture RTL of FPGA_ATARISYS1 is
 	signal
 		slv_adc_addr
 								: std_logic_vector( 2 downto 0) := (others=>'0');
+	signal
+		slv_ROMn
+								: std_logic_vector( 4 downto 0) := (others=>'0');
 	signal
 		s_POK_out
 								:           signed( 5 downto 0) := (others=>'0');
@@ -199,8 +200,9 @@ begin
 
 	O_HBLANK  <= sl_HBLANKn;
 	O_VBLANK  <= sl_VBLANKn;
-	O_SLAPn   <= sl_SLAPn;
 	O_SBA     <= slv_SBA;
+	O_MA18n   <= sl_MA18n;
+	O_ROMn    <= slv_ROMn;
 
 	u_main : entity work.MAIN
 	port map (
@@ -260,8 +262,7 @@ begin
 		-- to game cartridge
 		O_MA18n     => sl_MA18n,
 		O_BLDS      => open,
-		O_SLAP      => sl_SLAPn,
-		O_ROMn      => O_ROMn,
+		O_ROMn      => slv_ROMn,
 		O_BASn      => sl_BASn,
 		O_MEXTn     => open,
 		O_MADDR     => slv_MADDR,
@@ -366,7 +367,7 @@ begin
 		O_INT1n     => sl_INT1n,
 		O_INT3n     => sl_INT3n,
 		O_WAITn     => sl_WAITn,
-		I_SLAPn     => sl_SLAPn,
+		I_SLAPn     => slv_ROMn(4),
 		I_MA18n     => sl_MA18n,
 		I_MADDR     => slv_MADDR, -- raw addr from CPU
 

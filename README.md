@@ -1,9 +1,11 @@
 # Atari System-1 FPGA Arcade  
 
 ## Work In Progress  
-Indiana Jones and Peter Pack Rat are playable now without any visual issues.  
-Need to check if the sound in Indy works properly, have not played it long enough, seemed to me like some sounds get cut off.  
-Road Blasters and Road Runner do not currently work and need more work done.  
+* Indiana Jones - Playable without any visual issues but sounds sometimes are cut off prematurely.  
+* Peter Pack Rat - Playable, no obvious issues.  
+* Marble Madness - Not playable due to missing trackball controls.  
+* Road Runner - Not playable, boots, can coin up but has sprite issues, also controls not fully functional.  
+* Road Blasters - Not playable, fails to boot due to bank switch error.  
 
 ## About  
 FPGA implementation of Atari's System 1 (LSI version) arcade platform from 1984.  

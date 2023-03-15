@@ -36,8 +36,7 @@ entity MAIN is
 		O_BW_Rn     : out std_logic;
 		O_MA18n     : out std_logic;
 		O_BLDS      : out std_logic;
-		O_SLAP      : out std_logic;
-		O_ROMn      : out std_logic_vector( 3 downto 0);
+		O_ROMn      : out std_logic_vector( 4 downto 0);
 		O_CRAMWRn   : out std_logic;
 		O_VRAMWR    : out std_logic;
 		O_CRAMn     : out std_logic;
@@ -122,7 +121,6 @@ architecture RTL of MAIN is
 		sl_R_Wn,
 		sl_RD68Kn,
 		sl_SELFTESTn,
-		sl_SLAPn,
 --		sl_SNDBUFn,
 		sl_SNDINTn,
 		sl_SNDNMIn,
@@ -162,13 +160,13 @@ architecture RTL of MAIN is
 		slv_IPL
 								: std_logic_vector( 2 downto 0) := (others=>'U');
 	signal
-		slv_ROMn,
 		slv_7Ka_Y,
 		slv_7Kb_Y,
 		ctr_11C,
 		ctr_10L
 								: std_logic_vector( 3 downto 0) := (others=>'U');
 	signal
+		slv_ROMn,
 		slv_12F_Y
 								: std_logic_vector( 4 downto 0) := (others=>'U');
 	signal
@@ -202,7 +200,6 @@ begin
 	O_BW_Rn      <= sl_BW_Rn;
 	O_MA18n      <= not slv_cpu_ad(18);
 	O_BLDS       <= sl_BLDS;
-	O_SLAP       <= sl_SLAPn;
 	O_ROMn       <= slv_ROMn;
 	O_BASn       <= sl_ASn;
 	O_VBUSn      <= sl_VBUSn;
@@ -248,8 +245,8 @@ begin
 	slv_cpu_di <=
 		slv_12K_data & slv_12L_data when sl_R_Wn = '1' and sl_RAM0   = '1' else
 		slv_13K_data & slv_13L_data when sl_R_Wn = '1' and sl_RAM1   = '1' else
-								slv_MEXTD when sl_R_Wn = '1' and (slv_ROMn /= "1111" or sl_SLAPn = '0') else
-								slv_VBUSD when sl_R_Wn = '1' and sl_VBUSn   = '0' else
+								slv_MEXTD when sl_R_Wn = '1' and slv_ROMn /= "11111" else
+								slv_VBUSD when sl_R_Wn = '1' and sl_VBUSn  = '0' else
 				 x"FF" & slv_ADC_DATA when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RAJS    = '1' else
 				 x"FF" & slv_SBDI     when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_SNDRDn  = '0' else
 				 x"FF" & slv_LETADB   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RLETAn  = '0' else
@@ -452,11 +449,7 @@ begin
 	sl_VSCRLDn   <= slv_8J_Y(1);
 	sl_HSCRLDn   <= slv_8J_Y(0);
 
-	sl_SLAPn     <= slv_12F_Y(4);
-	slv_ROMn(3)  <= slv_12F_Y(3);
-	slv_ROMn(2)  <= slv_12F_Y(2);
-	slv_ROMn(1)  <= slv_12F_Y(1);
-	slv_ROMn(0)  <= slv_12F_Y(0);
+	slv_ROMn     <= slv_12F_Y(4 downto 0);
 
 	-------------
 	-- sheet 3 --

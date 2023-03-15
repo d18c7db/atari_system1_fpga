@@ -371,52 +371,50 @@ assign ioctl_wait = ~(pll_locked && sdram_ready);
 
 //wire gp_wr;
 wire sl_wr_SROM0, sl_wr_SROM1, sl_wr_SROM2;
-wire sl_wr_ROM0, sl_wr_ROM1, sl_wr_ROM2, sl_wr_ROM5, sl_wr_ROM6, sl_wr_ROM7, sl_wr_ROM3;
-wire sl_wr_2B, sl_wr_5A , sl_wr_7A, sl_SLAPn, sl_wr_SLAP;
+wire sl_wr_ROM0, sl_wr_ROM1, sl_wr_ROM2, sl_wr_ROM5, sl_wr_ROM6, sl_wr_ROM7;
+wire sl_wr_2B, sl_wr_5A , sl_wr_7A, sl_wr_SLAP, sl_MA18n;
 
 wire [15:1] slv_MADEC;
 wire [15:0] slv_MDATA;
-wire [15:0] slv_ROM0, slv_ROM1, slv_ROM2, slv_ROM5, slv_ROM6, slv_ROM7, slv_ROM_SLAP, slv_ROM3;
+wire [15:0] slv_ROM0, slv_ROM1, slv_ROM2, slv_ROM5, slv_ROM6, slv_ROM7, slv_ROM_SLAP;
 wire [13:0] slv_SBA;
 wire [12:0] slv_PA2B;
 wire [ 8:0] slv_PADDR;
 wire [ 7:0] slv_SROM0, slv_SROM1, slv_SROM2, slv_ROM_5A, slv_ROM_7A;
 wire [ 7:0] slv_SDATA, slv_PD4A, slv_PD7A, slv_PD2B;
-wire [ 3:0] slv_ROMn;
+wire [ 4:0] slv_ROMn;
 wire [ 2:0] slv_SROMn;
 
-// TODO: REMAP ALL ROMS IN DIFFERENT ORDER AND REDO RBF FILES
-// COMMENTS SHOW NEW LINEAR ADDRESS FOR RBF LOADER
 // 0x000000 (32 planes of 0x8000 = 0x100000)
-//assign gp_wr       = (ioctl_wr && !ioctl_index && ioctl_addr[24:17] < 8'h03  && ioctl_addr[1:0]==2'b11) ? 1'b1 : 1'b0;
+//assign gp_wr       = (ioctl_wr && !ioctl_index && ioctl_addr[24:20]== 5'h00  && ioctl_addr[1:0]==2'b11) ? 1'b1 : 1'b0;
 // 0x100000 - 0x107fff
-assign sl_wr_ROM0    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h16  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_ROM0    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h20  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
 // 0x110000 - 0x11ffff
-assign sl_wr_ROM1    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h08  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+assign sl_wr_ROM1    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h11  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
 // 0x120000 - 0x12ffff
-assign sl_wr_ROM2    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h09  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+assign sl_wr_ROM2    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h12  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
 // 0x130000 - 0x137fff
-assign sl_wr_ROM3    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h14  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
+//assign sl_wr_ROM3  = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h14  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
 // 0x150000 - 0x15ffff
-//assign sl_wr_ROM5  = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]==        && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+assign sl_wr_ROM5    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h15  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
 // 0x160000 - 0x16ffff
-//assign sl_wr_ROM6  = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]==        && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+assign sl_wr_ROM6    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h16  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
 // 0x170000 - 0x17ffff
-//assign sl_wr_ROM7  = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]==        && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+assign sl_wr_ROM7    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h17  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
 // 0x180000 - 0x187fff
-assign sl_wr_SLAP    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h15  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_SLAP    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h30  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
 // 0x188000 - 0x18bfff
-assign sl_wr_SROM0   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h2E ) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_SROM0   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h62 ) ? 1'b1 : 1'b0; // x4000
 // 0x18C000 - 0x18ffff
-assign sl_wr_SROM1   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h2F ) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_SROM1   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h63 ) ? 1'b1 : 1'b0; // x4000
 // 0x190000 - 0x193fff
-assign sl_wr_SROM2   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h30 ) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_SROM2   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h64 ) ? 1'b1 : 1'b0; // x4000
 // 0x194000 - 0x195fff
-assign sl_wr_2B      = (ioctl_wr && !ioctl_index && ioctl_addr[24:13]==12'h62 ) ? 1'b1 : 1'b0; // x2000
+assign sl_wr_2B      = (ioctl_wr && !ioctl_index && ioctl_addr[24:13]==12'hCA ) ? 1'b1 : 1'b0; // x2000
 // 0x196000 - 0x1961ff
-assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h630) ? 1'b1 : 1'b0; // x200
+assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB0) ? 1'b1 : 1'b0; // x200
 // 0x196200 - 0x1963ff
-assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) ? 1'b1 : 1'b0; // x200
+assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB1) ? 1'b1 : 1'b0; // x200
 //0x196400
 
 `ifndef MODELSIM
@@ -515,9 +513,27 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) 
 
 	// 16 M10K blocks
 	// ROM3 0x30000, 0x04000 INDIANA JONES only region, remap unused 0x070000 here instead.
-	dpram #(14,16) mp_rom3
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM3 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM3     ));
+//	dpram #(14,16) mp_rom3
+//	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM3 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
+//	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM3     ));
+
+	// 32 M10K blocks
+	// ROM5 0x50000, 0x08000
+	dpram #(15,16) mp_rom5
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM5 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM5     ));
+
+	// 32 M10K blocks
+	// ROM6 0x60000, 0x08000
+	dpram #(15,16) mp_rom6
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM6 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM6     ));
+
+	// 32 M10K blocks
+	// ROM7 0x70000, 0x08000
+	dpram #(15,16) mp_rom7
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM7 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM7     ));
 
 	// 16 M10K blocks
 	// Slapstic 0x80000, 0x04000
@@ -584,13 +600,18 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) 
 
 `endif
 
+// Caution: to save mem we remap ROM3 into ROM7 place. Tweak .mra file accordingly.
+// ROM3 region is only used by Indy
 assign slv_MDATA =
-	(~slv_ROMn[0])?slv_ROM0:
-	(~slv_ROMn[1])?slv_ROM1:
-	(~slv_ROMn[2])?slv_ROM2:
-	(~slv_ROMn[3])?slv_ROM3:
+	(~slv_ROMn[0] &  sl_MA18n)?slv_ROM0:
+	(~slv_ROMn[1] &  sl_MA18n)?slv_ROM1:
+	(~slv_ROMn[2] &  sl_MA18n)?slv_ROM2:
+	(~slv_ROMn[3] &  sl_MA18n)?slv_ROM7:
 
-	(~sl_SLAPn   )?slv_ROM_SLAP:
+	(~slv_ROMn[1] & ~sl_MA18n)?slv_ROM5:
+	(~slv_ROMn[2] & ~sl_MA18n)?slv_ROM6:
+	(~slv_ROMn[3] & ~sl_MA18n)?slv_ROM7:
+	(~slv_ROMn[4]            )?slv_ROM_SLAP:
 	16'h0;
 
 assign slv_SDATA =
@@ -621,11 +642,13 @@ assign inputs =
 	// for Indy (105) shift inputs by one (000UDLR0) else default to (0000UDLR)
 	(slap_type==105)?({3'b0, (p1[7:4] | joystick_0[3:0]), 1'b0}) :
                     ({4'b0, (p1[7:4] | joystick_0[3:0])      });
+
 wire [7:0] switches;
 // NC, NC, Jump (NC), Whip2/Start2, Whip1/Start1
 assign switches = 
-	// for Peter (107) NC NC Jump NC Throw
+	// for Peter Pack Rat (107) NC NC Jump NC Throw
 	(slap_type==107)?({2'b11,    ~(p1[0] | joystick_0[4]), 1'b1, ~(p1[1] | joystick_0[5])}) :
+	// else for Marble Madness (103), Road Runner (108), default to NC NC NC Action Action
                      ({3'b111,   ~(p1[0] | joystick_0[4]),       ~(p1[1] | joystick_0[5])});
 
 FPGA_ATARISYS1 atarisys1
@@ -666,8 +689,8 @@ FPGA_ATARISYS1 atarisys1
 	.I_DATA2B    (slv_PD2B),
 
 	// CART interface
-	.O_SLAPn     (sl_SLAPn),
 	.O_ROMn      (slv_ROMn),  // maincpu ROM selects
+	.O_MA18n     (sl_MA18n),
 	.I_MDATA     (slv_MDATA),
 	.O_SROMn     (slv_SROMn), // sound ROM selects
 	.O_SBA       (slv_SBA),
