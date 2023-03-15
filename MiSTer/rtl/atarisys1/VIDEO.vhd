@@ -502,19 +502,17 @@ begin
 
 	-- 6E, 7E, 8E, 6D, 7D, 8D selectors create video RAM address
 	slv_VRA <=
-		slv_MA(12 downto 1)                         when slv_VRAC(1 downto 0) = "11" else -- c3
-		'1' & slv_V(7 downto 3) & slv_H(8 downto 3) when slv_VRAC(1 downto 0) = "10" else -- c2
-		'0' & slv_MPBS & sl_4HDL & sl_H01n & slv_MN when slv_VRAC(1 downto 0) = "01" else -- c1
 		slv_PFV(8 downto 3) & slv_PFH(8 downto 3)   when slv_VRAC(1 downto 0) = "00" else -- c0
-		(others=>'Z'); -- never reached, avoids latches
+		'0' & slv_MPBS & sl_4HDL & sl_H01n & slv_MN when slv_VRAC(1 downto 0) = "01" else -- c1
+		'1' & slv_V(7 downto 3) & slv_H(8 downto 3) when slv_VRAC(1 downto 0) = "10" else -- c2
+		slv_MA(12 downto 1);                     -- when slv_VRAC(1 downto 0) = "11" else -- c3
 
 	-- chip 4C 8:1 encoder
 	sl_4C_Y   <=
-		slv_MA(13) when slv_VRAC(1 downto 0) = "11" else
-		'1'        when slv_VRAC(1 downto 0) = "10" else
-		'1'        when slv_VRAC(1 downto 0) = "01" else
-		'0'        when slv_VRAC(1 downto 0) = "00" else
-		'Z'; -- not reached
+		'0'            when slv_VRAC(1 downto 0) = "00" else
+		'1'            when slv_VRAC(1 downto 0) = "01" else
+		'1'            when slv_VRAC(1 downto 0) = "10" else
+		slv_MA(13); -- when slv_VRAC(1 downto 0) = "11" else
 
 	-- gate 12E
 	sl_VRAMWEn <= not (slv_VRAC(2) and sl_VRAMWR); -- and (not I_MCKR)); -- MCKR is VRAM clock

@@ -59,7 +59,7 @@ begin
 	mem_proc : process
 	begin
 		wait until rising_edge(CLK);
-		DO <= (others=>'Z');
+		DO <= (others=>'0');
 		if CEn = '0' then
 			if OEn = '0' then
 				DO <= RAM(to_integer(unsigned(AD)));

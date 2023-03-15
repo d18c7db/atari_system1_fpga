@@ -57,51 +57,48 @@ entity FPGA_ATARISYS1 is
 		O_VSYNC    : out std_logic;
 		O_CSYNC    : out std_logic;
 
-		O_HBLANK   : out	std_logic;
-		O_VBLANK   : out	std_logic;
+		O_HBLANK   : out std_logic;
+		O_VBLANK   : out std_logic;
 
 		O_ADDR2B   : out std_logic_vector(12 downto 0);
 		I_DATA2B   : in  std_logic_vector( 7 downto 0);
 
 		-- CART interface
 		O_SLAPn    : out std_logic;
-		O_MEXTn    : out std_logic;
-		O_BLDSn    : out std_logic;
-		O_BASn     : out std_logic;
-		O_BW_Rn    : out std_logic;
-		I_INT1n    : in  std_logic;
-		I_INT3n    : in  std_logic;
-		I_WAITn    : in  std_logic;
 
 		O_ROMn     : out std_logic_vector( 3 downto 0);
-		O_MA18n    : out std_logic;
-		O_MADDR    : out std_logic_vector(15 downto 1);
+		O_MADEC    : out std_logic_vector(15 downto 1);
 		I_MDATA    : in  std_logic_vector(15 downto 0);
 
 		O_SROMn    : out std_logic_vector( 2 downto 0);
-		O_SMD      : out std_logic_vector( 7 downto 0);
-		I_SMD      : in  std_logic_vector( 7 downto 0);
 		O_SBA      : out std_logic_vector(13 downto 0);
 
-		O_MGRA     : out std_logic_vector(19 downto 1);
-		O_MATCHn   : out std_logic;
-		O_MGHF     : out std_logic;
-		O_GLDn     : out std_logic;
-		O_MO_PFn   : out std_logic;
-		O_SNDEXTn  : out std_logic;
-		O_SNDRSTn  : out std_logic;
-		O_SNDBW_Rn : out std_logic;
-		O_B02      : out std_logic;
+		O_PADDR    : out std_logic_vector( 8 downto 0);
+		I_PD4A     : in  std_logic_vector( 7 downto 0);
+		I_PD7A     : in  std_logic_vector( 7 downto 0);
+		I_SDATA    : in  std_logic_vector( 7 downto 0);
 
-		I_MOSR     : in std_logic_vector( 6 downto 0);
-		I_PFSR     : in std_logic_vector( 7 downto 0);
-
-		I_SND      : in signed(13 downto 0)
+		O_VADDR    : out std_logic_vector(16 downto 0);
+		I_VDATA    : in  std_logic_vector(31 downto 0)
 	);
 end FPGA_ATARISYS1;
 
 architecture RTL of FPGA_ATARISYS1 is
 	signal
+		sl_BASn,
+		sl_INT1n,
+		sl_INT3n,
+		sl_WAITn,
+		sl_MA18n,
+		sl_MATCHn,
+		sl_MGHF,
+		sl_GLDn,
+		sl_MO_PFn,
+		sl_SNDEXTn,
+		sl_SNDBW_Rn,
+		sl_B02,
+		sl_SLAPn,
+
 		sl_adc_eoc,
 		sl_adc_soc,
 		sl_adc_soc_last,
@@ -111,7 +108,7 @@ architecture RTL of FPGA_ATARISYS1 is
 		sl_2H,
 		sl_4H,
 		sl_8H,
-		sl_W_Rn,
+		sl_BW_Rn,
 		sl_WR68Kn,
 		sl_RD68Kn,
 		sl_SNDNMIn,
@@ -139,15 +136,26 @@ architecture RTL of FPGA_ATARISYS1 is
 								: std_logic_vector( 2 downto 0) := (others=>'0');
 	signal
 		s_POK_out
-								: signed( 5 downto 0) := (others => '0');
+								:           signed( 5 downto 0) := (others=>'0');
+	signal
+		slv_MOSR
+								: std_logic_vector( 6 downto 0) := (others=>'0');
 	signal
 		slv_SBDI,
 		slv_SBDO,
+		slv_PFSR,
+		slv_SMD,
 		slv_adc_data
 								: std_logic_vector( 7 downto 0) := (others=>'0');
 	signal
 		slv_adc_ctr
 								: std_logic_vector( 8 downto 0) := (others=>'0');
+	signal
+		slv_SBA
+								: std_logic_vector(13 downto 0) := (others=>'0');
+	signal
+		s_snd
+								:           signed(13 downto 0) := (others=>'0');
 	signal
 		slv_VBUSD,
 		slv_MDO
@@ -160,7 +168,10 @@ architecture RTL of FPGA_ATARISYS1 is
 		s_chan_r,
 		s_audio_YML,
 		s_audio_YMR
-								: signed(15 downto 0) := (others => '0');
+								:           signed(15 downto 0) := (others=>'0');
+	signal
+		slv_MGRA
+								: std_logic_vector(19 downto 1) := (others=>'0');
 begin
 	-- fake ADC0809 reads inputs for player controls
 	-- J102 1-11 (+5 U2 D2 L2 R1 R2 L1 U1 D1 KEY GND)
@@ -188,10 +199,8 @@ begin
 
 	O_HBLANK  <= sl_HBLANKn;
 	O_VBLANK  <= sl_VBLANKn;
-	O_SNDRSTn <= sl_SNDRESn;
-	O_SMD     <= slv_SBDO;
-	O_BW_Rn   <= sl_W_Rn;
-	O_MADDR   <= slv_MADDR;
+	O_SLAPn   <= sl_SLAPn;
+	O_SBA     <= slv_SBA;
 
 	u_main : entity work.MAIN
 	port map (
@@ -203,16 +212,16 @@ begin
 
 		I_4H        => sl_4H,
 		I_8H        => sl_8H,
-		I_INT1n     => I_INT1n,
-		I_INT3n     => I_INT3n,
-		I_WAITn     => I_WAITn,
+		I_INT1n     => sl_INT1n,
+		I_INT3n     => sl_INT3n,
+		I_WAITn     => sl_WAITn,
 		I_VRAC2     => sl_VRAC2,
 		I_WR68Kn    => sl_WR68Kn,
 		I_RD68Kn    => sl_RD68Kn,
 
 		I_SNDRESn   => sl_SNDRESn,
 
-		O_BW_Rn     => sl_W_Rn,
+		O_BW_Rn     => sl_BW_Rn,
 		O_CRAMn     => sl_CRAMn,
 		O_CRAMWRn   => sl_CRAMWRn,
 		O_VRAMWR    => sl_VRAMWR,
@@ -249,12 +258,12 @@ begin
 		I_LETA_RES  => sl_TBRESn,
 
 		-- to game cartridge
-		O_MA18n     => O_MA18n,
-		O_BLDS      => O_BLDSn,
-		O_SLAP      => O_SLAPn,
+		O_MA18n     => sl_MA18n,
+		O_BLDS      => open,
+		O_SLAP      => sl_SLAPn,
 		O_ROMn      => O_ROMn,
-		O_BASn      => O_BASn,
-		O_MEXTn     => O_MEXTn,
+		O_BASn      => sl_BASn,
+		O_MEXTn     => open,
 		O_MADDR     => slv_MADDR,
 		O_MDATA     => slv_MDO,
 		I_VBUSD     => slv_VBUSD,
@@ -271,15 +280,15 @@ begin
 		I_CRAMWRn   => sl_CRAMWRn,
 		I_VRAMWR    => sl_VRAMWR,
 
-		I_BW_Rn     => sl_W_Rn,
+		I_BW_Rn     => sl_BW_Rn,
 		I_VBUSn     => sl_VBUSn,
 		I_MISCn     => sl_MISCn,
 		I_PFSPCn    => sl_PFSPCn,
 		I_VSCRLDn   => sl_VSCRLDn,
 		I_HSCRLDn   => sl_HSCRLDn,
 		I_VBKACKn   => sl_VBKACKn,
-		I_MOSR      => I_MOSR,
-		I_PFSR      => I_PFSR,
+		I_MOSR      => slv_MOSR,
+		I_PFSR      => slv_PFSR,
 		I_CPU_A     => slv_MADDR(13 downto 1),
 		I_CPU_D     => slv_MDO,
 		O_CPU_D     => slv_VBUSD,
@@ -288,12 +297,12 @@ begin
 		I_DATA2B    => I_DATA2B,
 
 		O_SNDRESn   => sl_SNDRESn,
-		O_MGHF      => O_MGHF,
-		O_GLDn      => O_GLDn,
-		O_MO_PFn    => O_MO_PFn,
-		O_MATCHn    => O_MATCHn,
+		O_MGHF      => sl_MGHF,
+		O_GLDn      => sl_GLDn,
+		O_MO_PFn    => sl_MO_PFn,
+		O_MATCHn    => sl_MATCHn,
 		O_VBKINTn   => sl_VBKINTn,
-		O_MGRA      => O_MGRA,
+		O_MGRA      => slv_MGRA,
 		O_VRAC2     => sl_VRAC2,
 		O_1H        => sl_1H,
 		O_2H        => sl_2H,
@@ -318,12 +327,12 @@ begin
 		I_MCKR      => I_CLK_7M,
 		I_1H        => sl_1H,
 		I_2H        => sl_2H,
-		O_B02       => O_B02,
+		O_B02       => sl_B02,
 
 		I_SNDNMIn   => sl_SNDNMIn,
 		I_SNDRSTn   => sl_SNDRESn,
 		I_SNDINTn   => sl_SNDINTn,
-		O_SNDBW_Rn  => O_SNDBW_Rn,
+		O_SNDBW_Rn  => sl_SNDBW_Rn,
 		O_WR68Kn    => sl_WR68Kn,
 		O_RD68Kn    => sl_RD68Kn,
 
@@ -339,20 +348,70 @@ begin
 		O_PKS       => s_POK_out,
 
 		O_SROMn     => O_SROMn,
-		O_SNDEXTn   => O_SNDEXTn,
-		O_SBA       => O_SBA,
+		O_SNDEXTn   => sl_SNDEXTn,
+		O_SBA       => slv_SBA,
 		O_SBD       => slv_SBDO,
-		I_SMD       => I_SMD,
+		I_SMD       => slv_SMD,
 --		O_SMD       => slv_SMDO,
 		I_SBD       => slv_SBDI
 	);
+
+	u_cart : entity work.ATARI_CART
+	port map (
+		I_SLAP_TYPE => I_SLAP_TYPE,
+		I_MCKR      => I_CLK_7M,
+		I_XCKR      => I_CLK_14M,
+
+		I_BASn      => sl_BASn,
+		O_INT1n     => sl_INT1n,
+		O_INT3n     => sl_INT3n,
+		O_WAITn     => sl_WAITn,
+		I_SLAPn     => sl_SLAPn,
+		I_MA18n     => sl_MA18n,
+		I_MADDR     => slv_MADDR, -- raw addr from CPU
+
+		I_SMD       => slv_SBDO, -- to VIA in
+		O_SMD       => slv_SMD,  -- sound ROM data out
+		I_SBA       => slv_SBA,
+
+		I_MGRA      => slv_MGRA,
+		I_MATCHn    => sl_MATCHn,
+		I_MGHF      => sl_MGHF,
+		I_GLDn      => sl_GLDn,
+		I_MO_PFn    => sl_MO_PFn,
+		I_SNDEXTn   => sl_SNDEXTn,
+		I_SNDRSTn   => sl_SNDRESn,
+		I_SNDBW_Rn  => sl_SNDBW_Rn,
+		I_B02       => sl_B02,
+
+		-- video shifters
+		O_MOSR      => slv_MOSR,
+		O_PFSR      => slv_PFSR,
+
+		-- sound L and R are the same
+		O_SND       => s_snd,
+
+		O_MADEC     => O_MADEC, -- addr decoded by slapstic
+
+		-- PROMs to outside
+		O_PADDR     => O_PADDR,
+		I_PD4A      => I_PD4A,
+		I_PD7A      => I_PD7A,
+
+		-- sound ROMs to outside
+		I_SDATA     => I_SDATA,
+
+		-- video ROMs to outside
+		O_VADDR     => O_VADDR,
+		I_VDATA     => I_VDATA
+);
 
 	p_volmux : process
 	begin
 		wait until rising_edge(I_CLK_7M);
 		-- add signed outputs together, already have extra spare bits for overflow
-		s_chan_l <= ( ((I_SND & "00") + s_audio_YML) + (s_POK_out(s_POK_out'left) & s_POK_out & "000000000") );
-		s_chan_r <= ( ((I_SND & "00") + s_audio_YMR) + (s_POK_out(s_POK_out'left) & s_POK_out & "000000000") );
+		s_chan_l <= ( ((s_snd & "00") + s_audio_YML) + (s_POK_out(s_POK_out'left) & s_POK_out & "000000000") );
+		s_chan_r <= ( ((s_snd & "00") + s_audio_YMR) + (s_POK_out(s_POK_out'left) & s_POK_out & "000000000") );
 
 		-- convert to unsigned slv for DAC usage
 		O_AUDIO_L <= std_logic_vector(s_chan_l + 16383);

@@ -32,9 +32,7 @@ port(
 	I_MCKR       : in  std_logic;
 	I_XCKR       : in  std_logic;
 
-	I_BLDSn      : in  std_logic;
 	I_BASn       : in  std_logic;
-	I_BW_Rn      : in  std_logic;
 	O_INT1n      : out std_logic;
 	O_INT3n      : out std_logic;
 	O_WAITn      : out std_logic;
@@ -67,7 +65,7 @@ port(
 	O_SND        : out signed(13 downto 0);
 
 	-- CPU address to ROMs after Slapstic decoding
-	O_MADDR      : out std_logic_vector(15 downto 1);
+	O_MADEC      : out std_logic_vector(15 downto 1);
 
 	-- PROMs
 	O_PADDR      : out std_logic_vector( 8 downto 0);
@@ -92,12 +90,7 @@ architecture logic of ATARI_CART is
 		sl_GD7P4,
 		sl_BASn,
 		sl_SLAPn,
-		sl_BLDSn,
-		sl_BW_Rn,
-		sl_GBA15n,
-		sl_INT1n,
-		sl_INT3n,
-		sl_WAITn,
+--		sl_GBA15n,
 		sl_BMO_PFn,
 		sl_MATCHn,
 		sl_MGHF,
@@ -165,9 +158,7 @@ begin
 		(others=>'1');
 
 	sl_SLAPn    <= I_SLAPn;
-	sl_BLDSn    <= I_BLDSn;
 	sl_BASn     <= I_BASn;
-	sl_BW_Rn    <= I_BW_Rn;
 	sl_MATCHn   <= I_MATCHn;
 	sl_MGHF     <= I_MGHF;
 	sl_GLDn     <= I_GLDn;
@@ -187,9 +178,9 @@ begin
 
 	O_MOSR      <= slv_MOSR;
 	O_PFSR      <= slv_PFSR;
-	O_INT1n     <= sl_INT1n;
-	O_INT3n     <= sl_INT3n;
-	O_WAITn     <= sl_WAITn;
+	O_INT1n     <= '1';
+	O_INT3n     <= '1';
+	O_WAITn     <= '1';
 
 	----------------------------------------
 	-- sheet 2 SP-282 -- (sheet 8 SP-280) --
@@ -207,7 +198,7 @@ begin
 
 	-- Main CPU ROMs
 	-- if slapstic selected use descrambled addresses else use normal addresses
-	O_MADDR <= slv_MADDR(15 downto 1) when sl_SLAPn = '1' else '0' & slv_BS & slv_MADDR(12 downto 1);
+	O_MADEC <= slv_MADDR(15 downto 1) when sl_SLAPn = '1' else '0' & slv_BS & slv_MADDR(12 downto 1);
 
 	----------------------------------------
 	-- sheet 4 SP-282 -- (sheet 2 SP-280) --
@@ -337,7 +328,7 @@ begin
 	slv_GBA(11 downto  1) <= slv_MGRA(11 downto 1);
 
 	-- gate 9A
-	sl_GBA15n <= not slv_GBA(15);
+--	sl_GBA15n <= not slv_GBA(15);
 
 	----------------------------------------
 	-- sheet 5 SP-282 -- (sheet 4 SP-280) --

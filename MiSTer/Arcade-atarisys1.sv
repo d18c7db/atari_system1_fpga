@@ -342,7 +342,7 @@ RGBI BCONV (.ADDR({gvid_I,gvid_B}), .DATA(b));
 wire [16:0] slv_VADDR;
 wire [31:0] slv_VDATA;
 wire [22:0] sdram_addr;
-reg  [22:0] addr_new;
+reg  [22:0] addr_new=0;
 reg  [31:0] sdram_data=0;
 reg         sdram_we=0;
 wire        sdram_ready;
@@ -371,26 +371,19 @@ assign ioctl_wait = ~(pll_locked && sdram_ready);
 
 //wire gp_wr;
 wire sl_wr_SROM0, sl_wr_SROM1, sl_wr_SROM2;
-wire sl_wr_ROM0, sl_wr_ROM1, sl_wr_ROM2, sl_wr_ROM5, sl_wr_ROM6, sl_wr_ROM7, sl_wr_SLAP, sl_wr_ROM3;
-wire sl_wr_2B, sl_wr_5A , sl_wr_7A;
+wire sl_wr_ROM0, sl_wr_ROM1, sl_wr_ROM2, sl_wr_ROM5, sl_wr_ROM6, sl_wr_ROM7, sl_wr_ROM3;
+wire sl_wr_2B, sl_wr_5A , sl_wr_7A, sl_SLAPn, sl_wr_SLAP;
 
-wire [19:1] slv_MGRA;
-wire [15:1] slv_MA;
-wire [15:1] slv_MADDR;
+wire [15:1] slv_MADEC;
 wire [15:0] slv_MDATA;
 wire [15:0] slv_ROM0, slv_ROM1, slv_ROM2, slv_ROM5, slv_ROM6, slv_ROM7, slv_ROM_SLAP, slv_ROM3;
 wire [13:0] slv_SBA;
-wire [13:0] s_snd;
 wire [12:0] slv_PA2B;
 wire [ 8:0] slv_PADDR;
-wire [ 7:0] slv_SDATA, slv_SROM0, slv_SROM1, slv_SROM2, slv_ROM_5A, slv_ROM_7A;
-wire [ 7:0] slv_PD4A, slv_PD7A, slv_PD2B, slv_SMDO, slv_SMDI, slv_PFSR;
-wire [ 6:0] slv_MOSR;
+wire [ 7:0] slv_SROM0, slv_SROM1, slv_SROM2, slv_ROM_5A, slv_ROM_7A;
+wire [ 7:0] slv_SDATA, slv_PD4A, slv_PD7A, slv_PD2B;
 wire [ 3:0] slv_ROMn;
 wire [ 2:0] slv_SROMn;
-
-wire sl_SLAPn, sl_BLDSn, sl_BASn, sl_BW_Rn, sl_INT1n, sl_INT3n, sl_WAITn, sl_MA18n;
-wire sl_MATCHn, sl_MGHF, sl_GLDn, sl_MO_PFn, sl_SNDEXTn, sl_SNDRSTn, sl_SNDBW_Rn, sl_B02;
 
 // TODO: REMAP ALL ROMS IN DIFFERENT ORDER AND REDO RBF FILES
 // COMMENTS SHOW NEW LINEAR ADDRESS FOR RBF LOADER
@@ -502,35 +495,35 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h631) 
 //	(.clock_a(clk_sys    ), .enable_a(), .wren_a(gp_wr      ), .address_a(ioctl_addr[17:2]), .data_a({acc_bytes[23:0],ioctl_dout}), .q_a(             ),
 //	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_VADDR[15:0]), .data_b(                            ), .q_b(slv_VDATA    ));
 
+	// 16 M10K blocks
+	// ROM0 BIOS 0x000000, 0x4000
+	dpram #(14,16) mp_rom0
+	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM0 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM0     ));
+
 	// 32 M10K blocks
 	// ROM1 0x10000, 0x08000
 	dpram #(15,16) mp_rom1
 	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM1 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADDR[15:1]), .data_b(                            ), .q_b(slv_ROM1     ));
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM1     ));
 
 	// 32 M10K blocks
 	// ROM2 0x20000, 0x08000
 	dpram #(15,16) mp_rom2
 	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM2 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADDR[15:1]), .data_b(                            ), .q_b(slv_ROM2     ));
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM2     ));
 
 	// 16 M10K blocks
 	// ROM3 0x30000, 0x04000 INDIANA JONES only region, remap unused 0x070000 here instead.
 	dpram #(14,16) mp_rom3
 	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM3 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM3     ));
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM3     ));
 
 	// 16 M10K blocks
 	// Slapstic 0x80000, 0x04000
 	dpram #(14,16) mp_rom_slap
 	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_SLAP ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM_SLAP ));
-
-	// 16 M10K blocks
-	// ROM0 BIOS 0x000000, 0x4000
-	dpram #(14,16) mp_rom0
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM0 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADDR[14:1]), .data_b(                            ), .q_b(slv_ROM0     ));
+	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM_SLAP ));
 
 	// 16 M10K blocks
 	// Audiocpu 0x4000, 0x4000
@@ -631,134 +624,66 @@ assign inputs =
 wire [7:0] switches;
 // NC, NC, Jump (NC), Whip2/Start2, Whip1/Start1
 assign switches = 
-                    ({3'b111,   ~(p1[0] | joystick_0[4]),   ~(p1[1] | joystick_0[5])});
+	// for Peter (107) NC NC Jump NC Throw
+	(slap_type==107)?({2'b11,    ~(p1[0] | joystick_0[4]), 1'b1, ~(p1[1] | joystick_0[5])}) :
+                     ({3'b111,   ~(p1[0] | joystick_0[4]),       ~(p1[1] | joystick_0[5])});
 
 FPGA_ATARISYS1 atarisys1
 (
-	.I_SLAP_TYPE(slap_type),
-	.I_CLK_7M(clk_7M),
-	.I_CLK_14M(clk_14M),
+	.I_SLAP_TYPE (slap_type),
+	.I_CLK_7M    (clk_7M),
+	.I_CLK_14M   (clk_14M),
 
-	.I_RESET(sl_reset),
+	.I_RESET     (sl_reset),
 
 	// SELFTEST, COIN_AUX, COIN_L, COIN_R, SW[5:1] active low
-	.I_SELFTESTn(~m_service),
-	.I_COIN({~m_coin_aux, ~(m_coin_r), ~(m_coin_l | joystick_0[8])}),
+	.I_SELFTESTn (~m_service),
+	.I_COIN      ({~m_coin_aux, ~(m_coin_r), ~(m_coin_l | joystick_0[8])}),
 	// J106 SW5,4,3,2,1 = NC, NC, Jump (NC), Whip2/Start2, Whip1/Start1
-	.I_PB(switches),
+	.I_PB        (switches),
 	// J102 2,3,4,6,8,9,7,5 = P2-U,D,L,R P1-U,D,L,R active high
-	.I_JOY(inputs),
+	.I_JOY       (inputs),
 	// P103 LETA trackball inputs active low
-	.I_CLK(4'b1111), // HCLK2,VCLK2,HCLK1,VCLK1
-	.I_DIR(4'b1111), // HDIR2,VDIR2,HDIR1,VDIR1
+	.I_CLK       (4'b1111), // HCLK2,VCLK2,HCLK1,VCLK1
+	.I_DIR       (4'b1111), // HDIR2,VDIR2,HDIR1,VDIR1
 
-	.O_LEDS(),
+	.O_LEDS      (),
 
-	.O_AUDIO_L(aud_l),
-	.O_AUDIO_R(aud_r),
+	.O_AUDIO_L   (aud_l),
+	.O_AUDIO_R   (aud_r),
 
-	.O_VIDEO_I(gvid_I),
-	.O_VIDEO_R(gvid_R),
-	.O_VIDEO_G(gvid_G),
-	.O_VIDEO_B(gvid_B),
-	.O_HSYNC(hs),
-	.O_VSYNC(vs),
-	.O_CSYNC(),
-	.O_HBLANK(hblank),
-	.O_VBLANK(vblank),
+	.O_VIDEO_I   (gvid_I),
+	.O_VIDEO_R   (gvid_R),
+	.O_VIDEO_G   (gvid_G),
+	.O_VIDEO_B   (gvid_B),
+	.O_HSYNC     (hs),
+	.O_VSYNC     (vs),
+	.O_CSYNC     (),
+	.O_HBLANK    (hblank),
+	.O_VBLANK    (vblank),
 
-	.O_ADDR2B(slv_PA2B),
-	.I_DATA2B(slv_PD2B),
+	.O_ADDR2B    (slv_PA2B),
+	.I_DATA2B    (slv_PD2B),
 
 	// CART interface
 	.O_SLAPn     (sl_SLAPn),
-	.O_MEXTn     (),
-	.O_BLDSn     (sl_BLDSn),
-	.O_BASn      (sl_BASn),
-	.O_BW_Rn     (sl_BW_Rn),
-	.I_INT1n     (sl_INT1n),
-	.I_INT3n     (sl_INT3n),
-	.I_WAITn     (sl_WAITn),
-
-	.O_ROMn      (slv_ROMn), // maincpu ROM selects
-	.O_MA18n     (sl_MA18n),
-	.O_MADDR     (slv_MA), // addr from CPU
+	.O_ROMn      (slv_ROMn),  // maincpu ROM selects
 	.I_MDATA     (slv_MDATA),
-
 	.O_SROMn     (slv_SROMn), // sound ROM selects
-	.O_SMD       (slv_SMDO),
-	.I_SMD       (slv_SMDI),
 	.O_SBA       (slv_SBA),
-
-	.O_MGRA      (slv_MGRA),
-	.O_MATCHn    (sl_MATCHn),
-	.O_MGHF      (sl_MGHF),
-	.O_GLDn      (sl_GLDn),
-	.O_MO_PFn    (sl_MO_PFn),
-	.O_SNDEXTn   (sl_SNDEXTn),
-	.O_SNDRSTn   (sl_SNDRSTn),
-	.O_SNDBW_Rn  (sl_SNDBW_Rn),
-	.O_B02       (sl_B02),
-
-	// from video shifters
-	.I_MOSR      (slv_MOSR),
-	.I_PFSR      (slv_PFSR),
-
-	// sound L and R are the same
-	.I_SND       (s_snd)
-);
-
-ATARI_CART u_cart
-(
-	.I_SLAP_TYPE (slap_type),
-	.I_MCKR      (clk_7M),
-	.I_XCKR      (clk_14M),
-
-	.I_BLDSn     (sl_BLDSn),
-	.I_BASn      (sl_BASn),
-	.I_BW_Rn     (sl_BW_Rn),
-	.O_INT1n     (sl_INT1n),
-	.O_INT3n     (sl_INT3n),
-	.O_WAITn     (sl_WAITn),
-
-	.I_SLAPn     (sl_SLAPn),
-	.I_MA18n     (sl_MA18n),
-	.I_MADDR     (slv_MA), // addr from CPU
-
-	.I_SMD       (slv_SMDO),
-	.O_SMD       (slv_SMDI),
-	.I_SBA       (slv_SBA),
-
-	.I_MGRA      (slv_MGRA),
-	.I_MATCHn    (sl_MATCHn),
-	.I_MGHF      (sl_MGHF),
-	.I_GLDn      (sl_GLDn),
-	.I_MO_PFn    (sl_MO_PFn),
-	.I_SNDEXTn   (sl_SNDEXTn),
-	.I_SNDRSTn   (sl_SNDRSTn),
-	.I_SNDBW_Rn  (sl_SNDBW_Rn),
-	.I_B02       (sl_B02),
-
-	// video shifters
-	.O_MOSR      (slv_MOSR),
-	.O_PFSR      (slv_PFSR),
-
-	// sound L and R are the same
-	.O_SND       (s_snd),
-
-	.O_MADDR(slv_MADDR), // addr after slapstic
+	.O_MADEC     (slv_MADEC), // SLAPSTIC decoded mem addr
 
 	// PROMs
-	.O_PADDR(slv_PADDR),
-	.I_PD4A(slv_PD4A),
-	.I_PD7A(slv_PD7A),
+	.O_PADDR     (slv_PADDR),
+	.I_PD4A      (slv_PD4A),
+	.I_PD7A      (slv_PD7A),
 
 	// sound ROMs
-	.I_SDATA(slv_SDATA),
+	.I_SDATA     (slv_SDATA),
 
 	// video ROMs
-	.O_VADDR(slv_VADDR),
-	.I_VDATA(slv_VDATA)
+	.O_VADDR     (slv_VADDR),
+	.I_VDATA     (slv_VDATA)
 );
 
 // pragma translate_off

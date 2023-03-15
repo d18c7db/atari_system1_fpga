@@ -206,7 +206,7 @@ end process;
 process( cs, count_register, ad, test,dirs, clks )
 begin
 	if ( cs = '1' ) then
-		db <= "ZZZZZZZZ";
+		db <= (others=>'0');
 	else
 		if ( test = '0' ) then
 

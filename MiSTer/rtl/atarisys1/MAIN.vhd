@@ -255,7 +255,7 @@ begin
 				 x"FF" & slv_LETADB   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RLETAn  = '0' else
 				 x"FF" & slv_EEPROM   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_E2PROMn = '0' else
 				 x"FF" & slv_INPUTS   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_INPUTn  = '0' else
-		(others=>'Z');
+		(others=>'0');
 
 	-------------
 	-- sheet 2 --

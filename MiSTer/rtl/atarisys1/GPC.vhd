@@ -59,7 +59,7 @@ architecture RTL of GPC is
 								: std_logic_vector(7 downto 0) := (others=>'1');
 begin
 	-- 8D tristate buffers
-	O_CA <= I_MA & "ZZZZZZZZ" when I_SEL = '0' else slv_CRAS & slv_9D;
+	O_CA <= I_MA & "00000000" when I_SEL = '0' else slv_CRAS & slv_9D;
 
 	-- gate 8C output  6 (PFX7..3)
 	sl_8C6  <= (not (I_P(7) or I_P(6) or I_P(5) or I_P(4) or I_P(3)));
