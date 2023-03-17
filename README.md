@@ -5,7 +5,7 @@
 * Peter Pack Rat - Playable, no obvious issues.  
 * Marble Madness - Not playable due to missing trackball controls.  
 * Road Runner - Not playable, boots, can coin up but has sprite issues, also controls not fully functional.  
-* Road Blasters - Not playable, fails to boot due to bank switch error.  
+* Road Blasters - Not playable, boots, can coin up but has sprite issues, also controls not fully functional.  
 
 ## About  
 FPGA implementation of Atari's System 1 (LSI version) arcade platform from 1984.  
