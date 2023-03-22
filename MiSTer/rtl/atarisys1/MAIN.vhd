@@ -554,16 +554,17 @@ begin
 	);
 
 	-- 12C LETA trackball controller
-	p_LETA	: entity work.LETA_REP
+	p_LETA	: entity work.LETA
 	port map (
-		db      => slv_LETADB,
-		cs      => sl_RLETAn,
+		clk     => I_MCKR,
 		ck      => I_8H,
+		resn    => I_LETA_RES,
+		cs      => sl_RLETAn,
+		test    => I_LETA_TST,
 		ad      => slv_cpu_ad( 2 downto 1),
 		clks    => I_LETA_CLK,
 		dirs    => I_LETA_DIR,
-		test    => I_LETA_TST,
-		resoln  => I_LETA_RES
+		db      => slv_LETADB
 	);
 
 end RTL;

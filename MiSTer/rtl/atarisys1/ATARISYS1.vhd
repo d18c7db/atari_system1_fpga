@@ -39,7 +39,7 @@ entity FPGA_ATARISYS1 is
 		I_DIR      : in  std_logic_vector(3 downto 0); -- HDIR2,VDIR2,HDIR1,VDIR1
 		-- System inputs active low
 		I_SELFTESTn: in  std_logic;                    -- SELFTEST
-		I_PB       : in  std_logic_vector(5 downto 1); -- SW[5:1]
+		I_SW       : in  std_logic_vector(5 downto 1); -- SW[5:1]
 		I_COIN     : in  std_logic_vector(2 downto 0); -- COIN_AUX, COIN_R, COIN_L
 
 		O_LEDS     : out std_logic_vector(2 downto 1);
@@ -243,7 +243,7 @@ begin
 
 		-- J106 (+5 N/C LED2 LED1 KEY PB5 PB2 PB4 PB1 PB3 GND) push buttons 5-1 and SELFTEST
 		-- PB5=N/C, PB4=N/C, PB3=Jump (not used for Indiana Jones cart), PB2 = Start2/Whip/Throw, PB1=Start1/Whip/Throw
-		I_PB        => I_PB(5 downto 1),
+		I_PB        => I_SW(5 downto 1),
 		I_SELFTESTn => I_SELFTESTn,
 
 		-- interface to extenal ADC0809 chip

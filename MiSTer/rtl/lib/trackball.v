@@ -18,22 +18,21 @@
 ===========================================================================*/
 
 `timescale 1 ps / 1 ps
-`default_nettype none
+//`default_nettype none
 
 module trackball(
-	input			clk,
-	input			flip,
+	input				clk,
+	input				flip,
 	input  [3:0]	joystick,
 	input [15:0]	joystick_analog,
-	input			joystick_mode, // 0 = digital, 1 = analog
-	input			joystick_sensitivity,
+	input				joystick_mode, // 0 = digital, 1 = analog
+	input				joystick_sensitivity,
 	input  [1:0]	mouse_speed,
 	input [24:0]	ps2_mouse,
-	output reg		v_dir,
-	output reg		v_clk,
-	output reg		h_dir,
-	output reg		h_clk
-
+	output reg		v_dir=0,
+	output reg		v_clk=0,
+	output reg		h_dir=0,
+	output reg		h_clk=0
 );
 
 wire [7:0] joystick_speed = joystick_sensitivity ? 8'd32 : 8'd16;
@@ -48,12 +47,12 @@ reg [analog_divider_width-1:0] analog_divider = analog_divider_max;
 
 // Trackball movement
 localparam trackball_falloff_width = 11;
-reg [trackball_falloff_width-1:0] trackball_falloff;
+reg [trackball_falloff_width-1:0] trackball_falloff=0;
 
 localparam analog_falloff_max = 1;
 
-reg [7:0] mouse_mag_x /* synthesis preserve noprune */;
-reg [7:0] mouse_mag_y /* synthesis preserve noprune */;
+reg [7:0] mouse_mag_x=0 /* synthesis preserve noprune */;
+reg [7:0] mouse_mag_y=0 /* synthesis preserve noprune */;
 
 wire mouse_clock /* synthesis keep */ = ps2_mouse[24];
 wire mouse_sign_x = /* synthesis preserve noprune */ ps2_mouse[4];
@@ -65,11 +64,11 @@ reg [15:0] h_clock_counter;
 reg [15:0] h_clock_max = 0;
 reg [15:0] v_clock_counter;
 reg [15:0] v_clock_max = 0;
+reg	old_mstate;
 
 // Trackball movement
 always @(posedge clk)
 begin
-	reg	old_mstate;
 
 	if(joystick_mode == 1'b0)
 	begin

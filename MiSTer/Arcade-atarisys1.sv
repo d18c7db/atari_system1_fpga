@@ -189,7 +189,7 @@ assign USER_OUT = '1;
 assign {UART_RTS, UART_TXD, UART_DTR} = 0;
 assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
 assign {SDRAM_DQ, SDRAM_A, SDRAM_BA, SDRAM_CLK, SDRAM_CKE, SDRAM_DQML, SDRAM_DQMH, SDRAM_nWE, SDRAM_nCAS, SDRAM_nRAS, SDRAM_nCS} = 'Z;
-assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;  
+assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;
 
 //assign VGA_SL = 0;
 assign VGA_F1 = 0;
@@ -203,26 +203,26 @@ assign HDMI_FREEZE = 0;
 // Slapstic Types: marble=103 (x67), indytemp=105 (x69), peterpak=107 (x6B), roadrunn=108 (x6C), roadb109=109 (x6D), roadb110=110 (x6E)
 integer     slap_type = 105;
 
-wire        clk_7M;
-wire        clk_14M;
-wire        clk_sys;
-wire        clk_vid;
-reg         ce_pix;
-wire        pll_locked;
-wire        hblank, vblank;
-wire        hs, vs;
-wire [ 3:0] r,g,b, gvid_I, gvid_R, gvid_G, gvid_B;
-wire [15:0] aud_l, aud_r;
+wire         clk_7M;
+wire         clk_14M;
+wire         clk_sys;
+wire         clk_vid;
+reg          ce_pix;
+wire         pll_locked;
+wire         hblank, vblank;
+wire         hs, vs;
+wire [  3:0] r,g,b, gvid_I, gvid_R, gvid_G, gvid_B;
+wire [ 15:0] aud_l, aud_r;
 wire [127:0] status;
-wire [ 1:0] buttons;
-wire        forced_scandoubler;
-wire        direct_video;
-wire        ioctl_download;
-wire        ioctl_wr;
-wire        ioctl_wait;
-wire [ 7:0] ioctl_index;
-wire [24:0] ioctl_addr;
-wire [ 7:0] ioctl_dout;
+wire [  1:0] buttons;
+wire         forced_scandoubler;
+wire         direct_video;
+wire         ioctl_download;
+wire         ioctl_wr;
+wire         ioctl_wait;
+wire  [ 7:0] ioctl_index;
+wire  [24:0] ioctl_addr;
+wire  [ 7:0] ioctl_dout;
 
 assign AUDIO_S = 1'b1; // signed samples
 assign AUDIO_L = aud_l;
@@ -235,27 +235,29 @@ assign LED_POWER = 0;
 assign BUTTONS = 0;
 
 wire [31:0] joystick_0;
-wire [31:0] joystick_1;
-wire [31:0] joystick_2;
-wire [31:0] joystick_3;
+wire [15:0] joystick_l_analog_0;
+wire [15:0] joystick_r_analog_0;
 
 wire [10:0] ps2_key;
+wire [24:0]	ps2_mouse;
+reg mouse_L = 1'b0; // left
+reg mouse_R = 1'b0; // right
 
 wire [21:0] gamma_bus;
 wire sl_reset = RESET | status[0] | buttons[1] | ioctl_download;
 
-reg [7:0]   p1 = 8'h0;
-//reg [7:0]   p2 = 8'h0;
+reg [7:0] kbd1 = 8'h0;
+reg [7:0] kbd2 = 8'h0;
 
 reg  m_coin_aux = 1'b0;
 reg  m_coin_l   = 1'b0;
 reg  m_coin_r   = 1'b0;
 
-wire m_service = status[7];
+wire m_service = status[13];
 
 //assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
 
-wire [1:0] ar = status[9:8];
+wire [1:0] ar = status[7:6];
 
 assign VIDEO_ARX = (!ar) ? 12'd4 : (ar - 1'd1);
 assign VIDEO_ARY = (!ar) ? 12'd3 : 12'd0;
@@ -264,13 +266,17 @@ assign VIDEO_ARY = (!ar) ? 12'd3 : 12'd0;
 localparam CONF_STR = {
 	"A.ATARISYS1;;",
 	"-;",
-	"O89,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
+	"O67,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"-;",
-	"DIP;",
+	"O8,Mouse Buttons,Normal,Swapped;",
+	"O9A,Mouse speed,25%,50%,100%,200%;",
+	"OB,Joystick mode,Digital,Analog;",
+	"OC,Joystick speed,High,Low;",
 	"-;",
-	"O7,Service,Off,On;",
+	"OD,Service,Off,On;",
 	"R0,Reset;",
+	"-;",
 	"J1,Button1,Button2,Button3,Button4,Coin,VStart;",
 	"jn,A,B,X,Y,R,Start;",
 	"V,v",`BUILD_DATE
@@ -301,25 +307,45 @@ always @(posedge clk_sys) begin
 	if(old_state != ps2_key[10]) begin
 		casex(ps2_key[8:0])
 			// Default MAME Controls Assignment
-			'h175: p1[7]        <= pressed; // up         (up_arrow)
-			'h172: p1[6]        <= pressed; // down       (down_arrow)
-			'h16B: p1[5]        <= pressed; // left       (left_arrow)
-			'h174: p1[4]        <= pressed; // right      (right_arrow)
-			'h014: p1[1]        <= pressed; // start/whip (left ctrl)
-			'h011: p1[0]        <= pressed; // jump       (left alt)
+			'h175: kbd1[7]        <= pressed; // up         (up_arrow)
+			'h172: kbd1[6]        <= pressed; // down       (down_arrow)
+			'h16B: kbd1[5]        <= pressed; // left       (left_arrow)
+			'h174: kbd1[4]        <= pressed; // right      (right_arrow)
+			'h014: kbd1[1]        <= pressed; // start/whip (left ctrl)
+			'h011: kbd1[0]        <= pressed; // jump       (left alt)
 
-//			'h02D: p2[7]        <= pressed; // up         (R)
-//			'h02B: p2[6]        <= pressed; // down       (F)
-//			'h023: p2[5]        <= pressed; // left       (D)
-//			'h034: p2[4]        <= pressed; // right      (G)
-//			'h01C: p2[1]        <= pressed; // start/whip (A)
-//			'h01B: p2[0]        <= pressed; // jump       (S)
+			'h02D: kbd2[7]        <= pressed; // up         (R)
+			'h02B: kbd2[6]        <= pressed; // down       (F)
+			'h023: kbd2[5]        <= pressed; // left       (D)
+			'h034: kbd2[4]        <= pressed; // right      (G)
+			'h01C: kbd2[1]        <= pressed; // start/whip (A)
+			'h01B: kbd2[0]        <= pressed; // jump       (S)
 
 			'h02E: m_coin_l     <= pressed; // coin_l     (5)
 			'h036: m_coin_r     <= pressed; // coin_r     (6)
 			'h03D: m_coin_aux   <= pressed; // coin_aux   (7)
 		endcase
 	end
+end
+
+// ps2_mouse(0)=1 L button pressed
+// ps2_mouse(1)=1 R buttin pressed
+// ps2_mouse(2)=1 M button pressed
+// mouse controls - allow remap of mouse button order
+always @(posedge clk_sys)
+begin
+	case(status[8])
+	1'b0: // normal
+	begin
+		mouse_L <= ps2_mouse[0];
+		mouse_R <= ps2_mouse[1];
+	end
+	1'b1: // swap
+	begin
+		mouse_R <= ps2_mouse[0];
+		mouse_L <= ps2_mouse[1];
+	end
+	endcase
 end
 
 ///////////////////////////////////////////////////
@@ -380,7 +406,7 @@ wire [15:0] slv_ROM0, slv_ROM1, slv_ROM2, slv_ROM5, slv_ROM6, slv_ROM7, slv_ROM_
 wire [13:0] slv_SBA;
 wire [12:0] slv_PA2B;
 wire [ 8:0] slv_PADDR;
-wire [ 7:0] slv_SROM0, slv_SROM1, slv_SROM2, slv_ROM_5A, slv_ROM_7A;
+wire [ 7:0] slv_SROM0, slv_SROM1, slv_SROM2;
 wire [ 7:0] slv_SDATA, slv_PD4A, slv_PD7A, slv_PD2B;
 wire [ 4:0] slv_ROMn;
 wire [ 2:0] slv_SROMn;
@@ -394,7 +420,7 @@ assign sl_wr_ROM1    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h11  &
 // 0x120000 - 0x12ffff
 assign sl_wr_ROM2    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h12  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
 // 0x130000 - 0x137fff
-//assign sl_wr_ROM3  = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h14  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
+//assign sl_wr_ROM3  = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h26  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
 // 0x150000 - 0x15ffff
 assign sl_wr_ROM5    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h15  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
 // 0x160000 - 0x16ffff
@@ -415,7 +441,7 @@ assign sl_wr_2B      = (ioctl_wr && !ioctl_index && ioctl_addr[24:13]==12'hCA ) 
 assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB0) ? 1'b1 : 1'b0; // x200
 // 0x196200 - 0x1963ff
 assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB1) ? 1'b1 : 1'b0; // x200
-//0x196400
+// 0x196400
 
 `ifndef MODELSIM
 	arcade_video #(.WIDTH(320), .DW(12)) arcade_video
@@ -456,12 +482,13 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB1) 
 		.ioctl_wait(ioctl_wait),
 
 		.joystick_0(joystick_0),
-		.joystick_1(joystick_1),
-		.joystick_2(joystick_2),
-		.joystick_3(joystick_3),
+		.joystick_l_analog_0(joystick_l_analog_0),
+		.joystick_r_analog_0(joystick_r_analog_0),
+		.ps2_mouse(ps2_mouse),
 		.ps2_key(ps2_key)
 	);
 
+	// 1536 M10K blocks gp_rom (6 x 32K x 64bits not used, replaced with sdram above due to size constraints)
 	sdram #(.tCK_ns(1000/93.06817)) sdram
 	(
 		.I_RST(~pll_locked),
@@ -488,82 +515,77 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB1) 
 		.SDRAM_nWE(SDRAM_nWE)
 	);
 
-//	 256 M10K blocks (not used, replaced with sdram above due to size constraints)
-//	dpram #(16,32) gp_rom
-//	(.clock_a(clk_sys    ), .enable_a(), .wren_a(gp_wr      ), .address_a(ioctl_addr[17:2]), .data_a({acc_bytes[23:0],ioctl_dout}), .q_a(             ),
-//	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_VADDR[15:0]), .data_b(                            ), .q_b(slv_VDATA    ));
-
-	// 16 M10K blocks
+	// 32 M10K blocks
 	// ROM0 BIOS 0x000000, 0x4000
 	dpram #(14,16) mp_rom0
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM0 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM0     ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM0 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM0    ));
 
-	// 32 M10K blocks
+	// 64 M10K blocks
 	// ROM1 0x10000, 0x08000
 	dpram #(15,16) mp_rom1
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM1 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM1     ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM1 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM1    ));
 
-	// 32 M10K blocks
+	// 64 M10K blocks
 	// ROM2 0x20000, 0x08000
 	dpram #(15,16) mp_rom2
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM2 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM2     ));
-
-	// 16 M10K blocks
-	// ROM3 0x30000, 0x04000 INDIANA JONES only region, remap unused 0x070000 here instead.
-//	dpram #(14,16) mp_rom3
-//	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM3 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-//	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM3     ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM2 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM2    ));
 
 	// 32 M10K blocks
+	// ROM3 0x30000, INDIANA JONES only region, remapped to 0x070000 instead.
+//	dpram #(14,16) mp_rom3
+//	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM3 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
+//	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM3    ));
+
+	// 64 M10K blocks
 	// ROM5 0x50000, 0x08000
 	dpram #(15,16) mp_rom5
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM5 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM5     ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM5 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM5    ));
 
-	// 32 M10K blocks
+	// 64 M10K blocks
 	// ROM6 0x60000, 0x08000
 	dpram #(15,16) mp_rom6
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM6 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM6     ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM6 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM6    ));
 
-	// 32 M10K blocks
+	// 64 M10K blocks
 	// ROM7 0x70000, 0x08000
 	dpram #(15,16) mp_rom7
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_ROM7 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM7     ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM7 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM7    ));
 
-	// 16 M10K blocks
+	// 32 M10K blocks
 	// Slapstic 0x80000, 0x04000
 	dpram #(14,16) mp_rom_slap
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_SLAP ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(             ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM_SLAP ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SLAP ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM_SLAP));
 
 	// 16 M10K blocks
 	// Audiocpu 0x4000, 0x4000
 	dpram #(14, 8) ap_srom0
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_SROM0), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_SROM0      ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SROM0), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_SROM0   ));
 
 	// 16 M10K blocks
 	// Audiocpu 0x8000, 0x4000
 	dpram #(14, 8) ap_srom1
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_SROM1), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_SROM1    ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SROM1), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_SROM1   ));
 
 	// 16 M10K blocks
 	// Audiocpu 0xC000, 0x4000
 	dpram #(14, 8) ap_srom2
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_SROM2), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(               ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_SROM2    ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SROM2), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_SROM2   ));
 
 	// 8 M10K blocks
 	// Alphanumerics ROM
 	dpram  #(13,8) al_rom_2B
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_2B   ), .address_a(ioctl_addr[12:0]), .data_a(                 ioctl_dout ), .q_a(               ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b(  slv_PA2B[12:0]), .data_b(                            ), .q_b(slv_PD2B       ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_2B   ), .address_a(ioctl_addr[12:0]), .data_a(                 ioctl_dout ), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(  slv_PA2B[12:0]), .data_b(                            ), .q_b(slv_PD2B    ));
 
 	// 1 M10K blocks
 	// Color PROM
@@ -587,9 +609,6 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB1) 
 	assign ioctl_dout = 0;
 	assign ioctl_index = 0;
 	assign joystick_0 = 0;
-	assign joystick_1 = 0;
-	assign joystick_2 = 0;
-	assign joystick_3 = 0;
 	assign ps2_key = 0;
 	assign gamma_bus = 0;
 	assign forced_scandoubler = 0;
@@ -600,8 +619,8 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB1) 
 
 `endif
 
-// Caution: to save mem we remap ROM3 into ROM7 place. Tweak .mra file accordingly.
-// ROM3 region is only used by Indy
+// Note: to save mem we remap ROM3 into ROM7 region. Tweak .mra file accordingly.
+// ROM3 region is only used by Indy while ROM7 is unused by Indy.
 assign slv_MDATA =
 	(~slv_ROMn[0] &  sl_MA18n)?slv_ROM0:
 	(~slv_ROMn[1] &  sl_MA18n)?slv_ROM1:
@@ -640,16 +659,50 @@ assign slv_SDATA =
 wire [7:0] inputs;
 assign inputs =
 	// for Indy (105) shift inputs by one (000UDLR0) else default to (0000UDLR)
-	(slap_type==105)?({3'b0, (p1[7:4] | joystick_0[3:0]), 1'b0}) :
-                    ({4'b0, (p1[7:4] | joystick_0[3:0])      });
+	(slap_type==105)?({3'b0, (kbd1[7:4] | joystick_0[3:0]), 1'b0}) :
+                    ({4'b0, (kbd1[7:4] | joystick_0[3:0])      });
 
 wire [7:0] switches;
 // NC, NC, Jump (NC), Whip2/Start2, Whip1/Start1
-assign switches = 
+assign switches =
 	// for Peter Pack Rat (107) NC NC Jump NC Throw
-	(slap_type==107)?({2'b11,    ~(p1[0] | joystick_0[4]), 1'b1, ~(p1[1] | joystick_0[5])}) :
-	// else for Marble Madness (103), Road Runner (108), default to NC NC NC Action Action
-                     ({3'b111,   ~(p1[0] | joystick_0[4]),       ~(p1[1] | joystick_0[5])});
+	(slap_type==107)?({2'b11,  ~(kbd1[0] | joystick_0[4] | mouse_L), 1'b1, ~(kbd1[1] | joystick_0[5] | mouse_R)}) :
+	// else for Indy (105), Marble Madness (103), Road Runner (108), default to NC NC NC Action Action
+                    ({3'b111, ~(kbd1[0] | joystick_0[4] | mouse_L),       ~(kbd1[1] | joystick_0[5] | mouse_R)}) ;
+
+wire [3:0]	clks, dirs;
+
+trackball tb1
+(
+	.clk                  (clk_7M),
+	.flip                 (), // unused
+	.ps2_mouse            (ps2_mouse),
+	.mouse_speed          ( status[10:9]), // 00=25%, 01=50%, 10=100%, 11=200%
+	.joystick_mode        ( status[11]),   // 0 = digital, 1 = analog
+	.joystick_sensitivity (~status[12]),   // 0 = low, 1 = high
+	.joystick_analog      (joystick_l_analog_0),
+	.joystick             (inputs[3:0]),   // UDLR active high
+	.v_dir                (dirs[0]), // v dir 1
+	.v_clk                (clks[0]), // v clk 1
+	.h_dir                (dirs[1]), // h dir 1
+	.h_clk                (clks[1])  // h clk 1
+);
+
+trackball tb2
+(
+	.clk                  (clk_7M),
+	.flip                 (), // unused
+	.ps2_mouse            (),
+	.mouse_speed          ( status[10:9]), // 00=25%, 01=50%, 10=100%, 11=200%
+	.joystick_mode        ( status[11]),   // 0 = digital, 1 = analog
+	.joystick_sensitivity (~status[12]),   // 0 = low, 1 = high
+	.joystick_analog      (joystick_r_analog_0),
+	.joystick             (kbd2[7:4]), // UDLR active high
+	.v_dir                (dirs[2]), // v dir 2
+	.v_clk                (clks[2]), // v clk 2
+	.h_dir                (dirs[3]), // h dir 2
+	.h_clk                (clks[3])  // h clk 2
+);
 
 FPGA_ATARISYS1 atarisys1
 (
@@ -663,12 +716,12 @@ FPGA_ATARISYS1 atarisys1
 	.I_SELFTESTn (~m_service),
 	.I_COIN      ({~m_coin_aux, ~(m_coin_r), ~(m_coin_l | joystick_0[8])}),
 	// J106 SW5,4,3,2,1 = NC, NC, Jump (NC), Whip2/Start2, Whip1/Start1
-	.I_PB        (switches),
+	.I_SW        (switches),
 	// J102 2,3,4,6,8,9,7,5 = P2-U,D,L,R P1-U,D,L,R active high
 	.I_JOY       (inputs),
 	// P103 LETA trackball inputs active low
-	.I_CLK       (4'b1111), // HCLK2,VCLK2,HCLK1,VCLK1
-	.I_DIR       (4'b1111), // HDIR2,VDIR2,HDIR1,VDIR1
+	.I_CLK(clks), // HCLK2,VCLK2,HCLK1,VCLK1
+	.I_DIR(dirs), // HDIR2,VDIR2,HDIR1,VDIR1
 
 	.O_LEDS      (),
 
@@ -688,7 +741,7 @@ FPGA_ATARISYS1 atarisys1
 	.O_ADDR2B    (slv_PA2B),
 	.I_DATA2B    (slv_PD2B),
 
-	// CART interface
+	// CART memory interface
 	.O_ROMn      (slv_ROMn),  // maincpu ROM selects
 	.O_MA18n     (sl_MA18n),
 	.I_MDATA     (slv_MDATA),
