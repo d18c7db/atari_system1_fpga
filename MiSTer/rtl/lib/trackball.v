@@ -153,20 +153,20 @@ begin
 		mouse_mag_x = mouse_sign_x ? -ps2_mouse[15:8] : ps2_mouse[15:8];
 		mouse_mag_y = mouse_sign_y ? -ps2_mouse[23:16] : ps2_mouse[23:16];
 
-		if(mouse_speed == 2'd0) // 25% speed
-		begin
-			mouse_mag_x = mouse_mag_x >> 2;
-			mouse_mag_y = mouse_mag_y >> 2;
-		end
-		else if(mouse_speed == 2'd1) // 50% speed
-		begin
-			mouse_mag_x = mouse_mag_x >> 1;
-			mouse_mag_y = mouse_mag_y >> 1;
-		end
-		else if(mouse_speed == 2'd3) // 200% speed
+		if(mouse_speed == 2'd1) // 200% speed
 		begin
 			mouse_mag_x = mouse_mag_x << 1;
 			mouse_mag_y = mouse_mag_y << 1;
+		end
+		else if(mouse_speed == 2'd2) // 400% speed
+		begin
+			mouse_mag_x = mouse_mag_x << 2;
+			mouse_mag_y = mouse_mag_y << 2;
+		end
+		else if(mouse_speed == 2'd3) // 800% speed
+		begin
+			mouse_mag_x = mouse_mag_x << 4;
+			mouse_mag_y = mouse_mag_y << 4;
 		end
 
 		trackball_falloff <= {trackball_falloff_width{1'b1}};

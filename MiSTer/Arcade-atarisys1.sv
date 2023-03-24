@@ -270,7 +270,7 @@ localparam CONF_STR = {
 	"O67,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"-;",
 	"O8,Mouse Buttons,Normal,Swapped;",
-	"O9A,Mouse speed,25%,50%,100%,200%;",
+	"O9A,Mouse speed,100%,200%,400%,800%;",
 	"OB,Joystick mode,Digital,Analog;",
 	"OC,Joystick speed,High,Low;",
 	"-;",
@@ -677,7 +677,7 @@ trackball tb1
 	.clk                  (clk_7M),
 	.flip                 (), // unused
 	.ps2_mouse            (ps2_mouse),
-	.mouse_speed          ( status[10:9]), // 00=25%, 01=50%, 10=100%, 11=200%
+	.mouse_speed          ( status[10:9]), // 00=100%, 01=200%, 10=400%, 11=800%
 	.joystick_mode        ( status[11]),   // 0 = digital, 1 = analog
 	.joystick_sensitivity (~status[12]),   // 0 = low, 1 = high
 	.joystick_analog      (joystick_l_analog_0),
@@ -693,7 +693,7 @@ trackball tb2
 	.clk                  (clk_7M),
 	.flip                 (), // unused
 	.ps2_mouse            (),
-	.mouse_speed          ( status[10:9]), // 00=25%, 01=50%, 10=100%, 11=200%
+	.mouse_speed          ( status[10:9]), // 00=100%, 01=200%, 10=400%, 11=800%
 	.joystick_mode        ( status[11]),   // 0 = digital, 1 = analog
 	.joystick_sensitivity (~status[12]),   // 0 = low, 1 = high
 	.joystick_analog      (joystick_r_analog_0),
