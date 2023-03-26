@@ -16,7 +16,7 @@ library ieee;
 	use ieee.std_logic_unsigned.all;
 	use ieee.math_real.all;
 
--- Controller for AS4C32M16SB / MT48LC16M16A2 – 4 Meg x 16 x 4 banks
+-- Controller for AS4C32M16SB / MT48LC32M16A2 – 4 banks x 8 Meg x 16
 -- 100.0MHz clock (10.0ns CL=2)
 entity sdram is
 	generic (
@@ -36,9 +36,11 @@ entity sdram is
 		I_CLK         : in    std_logic; -- tCK above MUST match this clock!
 		I_RST         : in    std_logic; -- active high reset
 
-		I_ADDR        : in    std_logic_vector(22 downto 0); -- max 8M address by 32 bits (chip is 16M x16)
-		I_DATA        : in    std_logic_vector(31 downto 0);
-		O_DATA        : out   std_logic_vector(31 downto 0);
+		I_ADDR        : in    std_logic_vector(22 downto 0); -- max 8M address by 64 bits (chip is 32M x16)
+--		I_DATA        : in    std_logic_vector(31 downto 0);
+		I_DATA        : in    std_logic_vector(63 downto 0);
+--		O_DATA        : out   std_logic_vector(31 downto 0);
+		O_DATA        : out   std_logic_vector(63 downto 0);
 		I_WE          : in    std_logic; -- active high write enable
 		O_RDY         : out   std_logic; -- active high ready, indicates chip is ready to RD/WR
 
@@ -64,18 +66,19 @@ architecture rtl of sdram is
     "00"  & -- Op Mode 00=standard operation
     "010" & -- CAS Latency 011 above 133MHz else 010
     '0'   & -- burst type 0=sequential 1=interleaved
-    "001"   -- burst length 000=1 001=2 010=4 011=8 111=full page when burst type=0
+--    "001"   -- burst length 000=1 001=2 010=4 011=8 111=full page when burst type=0
+    "010"   -- burst length 000=1 001=2 010=4 011=8 111=full page when burst type=0
   );
 
 	-- delays in clock cycles rounded up to nearest integer
 	constant tINIT         : integer := integer(ceil(tINIT_ns/tCK_ns));
 	constant tRFC          : integer := integer(ceil( tRFC_ns/tCK_ns));
-	constant tRP           : integer := integer(ceil(  tRP_ns/tCK_ns));
-	constant tCASL         : integer := integer(ceil(    CAS_Latency));
-	constant tRC           : integer := integer(ceil(  tRC_ns/tCK_ns));
 	constant tRCD          : integer := integer(ceil( tRCD_ns/tCK_ns));
 	constant tREF          : integer := integer(ceil( tREF_ns/tCK_ns));
 	constant tMRD          : integer := integer(ceil( tMRD_ns/tCK_ns));
+	constant tRP           : integer := integer(ceil(  tRP_ns/tCK_ns));
+	constant tRC           : integer := integer(ceil(  tRC_ns/tCK_ns));
+	constant tCASL         : integer := integer(ceil(    CAS_Latency));
 
 	-- SDRAM commands drive pins /CS /RAS /CAS /WE
 	constant CMD_LMR       : std_logic_vector(3 downto 0) := "0000";
@@ -93,7 +96,8 @@ architecture rtl of sdram is
 	signal we_last, dq_write : std_logic := '0';
 	signal cmd             : std_logic_vector( 3 downto 0) := CMD_NOP;
 	signal addr_last       : std_logic_vector(22 downto 0) := (others=>'1');
-	signal dq_data         : std_logic_vector(31 downto 0) := (others=>'0');
+--	signal dq_data         : std_logic_vector(31 downto 0) := (others=>'0');
+	signal dq_data         : std_logic_vector(63 downto 0) := (others=>'0');
 
 	-- NOTE: ranges _must_ be large enough for longest possible delay at highest clock freq
 	signal cycl_ctr        : integer range 0 to 32767 := 0; -- 200us @160MHz 32000 cycles
@@ -110,26 +114,30 @@ begin
 	SDRAM_BA   <= I_ADDR(22 downto 21) when (state=ACTV) or (state=RDWR) else (others => '0');
 	(SDRAM_nCS, SDRAM_nRAS, SDRAM_nCAS, SDRAM_nWE) <= cmd; -- drive chip command lines
 
--- 48LC16M16 4M x 16 x 4 banks, row=A12:0 col=A8:0
--- AS4C32M16 8M x 16 x 4 banks, row=A12:0 col=A9:0
+	-- 4 banks x 8M x 16, banks=4 (BA1:0), rows=8K (A12:0) cols=1K (A9:0)
 	SDRAM_A    <=
 		"0010000000000"                   when state = INIT else
 		MODE_REG                          when state = MODE else
 		I_ADDR(20 downto 8)               when state = ACTV else
-		"0010" & I_ADDR(7 downto 0) & '0' when state = RDWR else
+--		"0010" & I_ADDR(7 downto 0) & '0' when state = RDWR else
+		"001" & I_ADDR(7 downto 0) & "00" when state = RDWR else
 		(others => '0');
 
 	SDRAM_DQ   <=
-		dq_data(31 downto 16) when (dq_write = '1') and (state = RDWR) and (cycl_ctr = 0 ) else
-		dq_data(15 downto  0) when (dq_write = '1') and (state = RDWR) and (cycl_ctr = 1 ) else
+		dq_data(63 downto 48) when (dq_write = '1') and (state = RDWR) and (cycl_ctr = 0 ) else
+		dq_data(47 downto 32) when (dq_write = '1') and (state = RDWR) and (cycl_ctr = 1 ) else
+		dq_data(31 downto 16) when (dq_write = '1') and (state = RDWR) and (cycl_ctr = 2 ) else
+		dq_data(15 downto  0) when (dq_write = '1') and (state = RDWR) and (cycl_ctr = 3 ) else
 		(others=>'Z');
 
 	p_read : process
 	begin
 		wait until rising_edge(I_CLK);
 		if (dq_write = '0') and (state_last = RDWR) then
-			   if (cycl_ctr = tCASL  ) then O_DATA(31 downto 16) <= SDRAM_DQ;
-			elsif (cycl_ctr = tCASL+1) then O_DATA(15 downto  0) <= SDRAM_DQ;
+			   if (cycl_ctr = tCASL  ) then O_DATA(63 downto 48) <= SDRAM_DQ;
+			elsif (cycl_ctr = tCASL+1) then O_DATA(47 downto 32) <= SDRAM_DQ;
+			elsif (cycl_ctr = tCASL+2) then O_DATA(31 downto 16) <= SDRAM_DQ;
+			elsif (cycl_ctr = tCASL+3) then O_DATA(15 downto  0) <= SDRAM_DQ;
 			end if;
 		end if;
 	end process;
@@ -137,8 +145,7 @@ begin
 	p_refresh : process
 	begin
 		wait until rising_edge(I_CLK);
-		state_last <= state;
-		if (I_RST = '1') or (state = INIT) or ((state_last /= state) and (state = RFSH)) then
+		if (I_RST = '1') or (state = INIT) or ((state = RFSH) and (state_last /= RFSH)) then
 			rfsh_ctr <= 0;
 		else
 			if (rfsh_ctr < 2047) then rfsh_ctr <= rfsh_ctr + 1; end if;
@@ -149,6 +156,7 @@ begin
 	p_state : process
 	begin
 		wait until rising_edge(I_CLK);
+		state_last <= state;
 
 		if (I_RST = '1') then
 			cmd <= CMD_NOP;

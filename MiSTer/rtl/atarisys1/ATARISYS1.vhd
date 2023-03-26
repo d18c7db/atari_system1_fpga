@@ -77,8 +77,8 @@ entity FPGA_ATARISYS1 is
 		I_PD7A     : in  std_logic_vector( 7 downto 0);
 		I_SDATA    : in  std_logic_vector( 7 downto 0);
 
-		O_VADDR    : out std_logic_vector(16 downto 0);
-		I_VDATA    : in  std_logic_vector(31 downto 0)
+		O_VADDR    : out std_logic_vector(18 downto 0);
+		I_VDATA    : in  std_logic_vector(63 downto 0)
 	);
 end FPGA_ATARISYS1;
 

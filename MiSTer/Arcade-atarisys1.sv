@@ -365,34 +365,34 @@ RGBI BCONV (.ADDR({gvid_I,gvid_B}), .DATA(b));
 // # This section loads the ROM files through HPS_IO #
 // ###################################################
 
-wire [16:0] slv_VADDR;
-wire [31:0] slv_VDATA;
+wire [17:0] slv_VADDR;
+wire [63:0] slv_VDATA;
 wire [22:0] sdram_addr;
-reg  [22:0] addr_new=0;
-reg  [31:0] sdram_data=0;
+reg  [21:0] addr_new=0;
+reg  [63:0] sdram_data=0;
 reg         sdram_we=0;
 wire        sdram_ready;
 
 // the order in which the files are listed in the .mra file determines the order in which they appear here on the HPS bus
 // some files are interleaved as DWORD, some are interleaved as WORD and some are not interleaved and appear as BYTE
 // acc_bytes collects previous bytes so that when a WORD or DWORD is complete it is written to the RAM as appropriate
-reg [23:0] acc_bytes = 0;
+reg [55:0] acc_bytes = 0;
 always @(posedge clk_sys)
 	if (ioctl_wr && (!ioctl_index) && ioctl_download )
-		acc_bytes<={acc_bytes[15:0],ioctl_dout}; // accumulate previous bytes
+		acc_bytes<={acc_bytes[47:0],ioctl_dout}; // accumulate previous bytes
 
 always @(posedge clk_sys)
 begin
 	sdram_we <= 1'b0;
-	if (ioctl_wr && (!ioctl_index) && ioctl_download && ioctl_addr[1] && ioctl_addr[0])
+	if (ioctl_wr && (!ioctl_index) && ioctl_download && ioctl_addr[2] && ioctl_addr[1] && ioctl_addr[0])
 	begin
 		sdram_data <= {acc_bytes,ioctl_dout};
-		addr_new <= ioctl_addr[24:2];
+		addr_new <= ioctl_addr[24:3];
 		sdram_we <= 1'b1;
 	end
 end
 
-assign sdram_addr = ioctl_download?addr_new:{6'd0,slv_VADDR};
+assign sdram_addr = ioctl_download?{1'b0,addr_new}:{5'd0,slv_VADDR};
 assign ioctl_wait = ~(pll_locked && sdram_ready);
 
 //wire gp_wr;
@@ -402,7 +402,7 @@ wire sl_wr_2B, sl_wr_5A , sl_wr_7A, sl_wr_SLAP, sl_MA18n;
 
 wire [15:1] slv_MADEC;
 wire [15:0] slv_MDATA;
-wire [15:0] slv_ROM0, slv_ROM1, slv_ROM2, slv_ROM5, slv_ROM6, slv_ROM7, slv_ROM_SLAP;
+wire [15:0] slv_ROM0, slv_ROM1, slv_ROM2, slv_ROM5, slv_ROM6, slv_ROM7, slv_SLAP;
 wire [13:0] slv_SBA;
 wire [12:0] slv_PA2B;
 wire [ 8:0] slv_PADDR;
@@ -411,37 +411,37 @@ wire [ 7:0] slv_SDATA, slv_PD4A, slv_PD7A, slv_PD2B;
 wire [ 4:0] slv_ROMn;
 wire [ 2:0] slv_SROMn;
 
-// 0x000000 (32 planes of 0x8000 = 0x100000)
-//assign gp_wr       = (ioctl_wr && !ioctl_index && ioctl_addr[24:20]== 5'h00  && ioctl_addr[1:0]==2'b11) ? 1'b1 : 1'b0;
-// 0x100000 - 0x107fff
-assign sl_wr_ROM0    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h20  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
-// 0x110000 - 0x11ffff
-assign sl_wr_ROM1    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h11  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
-// 0x120000 - 0x12ffff
-assign sl_wr_ROM2    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h12  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
-// 0x130000 - 0x137fff
-//assign sl_wr_ROM3  = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h26  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
-// 0x150000 - 0x15ffff
-assign sl_wr_ROM5    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h15  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
-// 0x160000 - 0x16ffff
-assign sl_wr_ROM6    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h16  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
-// 0x170000 - 0x17ffff
-assign sl_wr_ROM7    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h17  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
-// 0x180000 - 0x187fff
-assign sl_wr_SLAP    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h30  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
-// 0x188000 - 0x18bfff
-assign sl_wr_SROM0   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h62 ) ? 1'b1 : 1'b0; // x4000
-// 0x18C000 - 0x18ffff
-assign sl_wr_SROM1   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h63 ) ? 1'b1 : 1'b0; // x4000
-// 0x190000 - 0x193fff
-assign sl_wr_SROM2   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h64 ) ? 1'b1 : 1'b0; // x4000
-// 0x194000 - 0x195fff
-assign sl_wr_2B      = (ioctl_wr && !ioctl_index && ioctl_addr[24:13]==12'hCA ) ? 1'b1 : 1'b0; // x2000
-// 0x196000 - 0x1961ff
-assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB0) ? 1'b1 : 1'b0; // x200
-// 0x196200 - 0x1963ff
-assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB1) ? 1'b1 : 1'b0; // x200
-// 0x196400
+// 0x000000 [24:21]=4'b0   8 banks [20:18] X 64KB [17:2] x 8 planes [1:0] = 0x400000
+//assign gp_wr       = (ioctl_wr && !ioctl_index && ioctl_addr[24:21]== 4'h00  && ioctl_addr[1:0]==2'b11) ? 1'b1 : 1'b0;
+// 0x400000 - 0x407fff
+assign sl_wr_ROM0    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h80  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
+// 0x410000 - 0x41ffff
+assign sl_wr_ROM1    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h41  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+// 0x420000 - 0x42ffff
+assign sl_wr_ROM2    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h42  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+// 0x430000 - 0x437fff
+//assign sl_wr_ROM3  = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h86  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
+// 0x450000 - 0x45ffff
+assign sl_wr_ROM5    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h45  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+// 0x460000 - 0x46ffff
+assign sl_wr_ROM6    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h46  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+// 0x470000 - 0x47ffff
+assign sl_wr_ROM7    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h47  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+// 0x480000 - 0x487fff
+assign sl_wr_SLAP    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h90  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
+// 0x488000 - 0x48bfff
+assign sl_wr_SROM0   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h122  ) ? 1'b1 : 1'b0; // x4000
+// 0x48C000 - 0x48ffff
+assign sl_wr_SROM1   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h123  ) ? 1'b1 : 1'b0; // x4000
+// 0x490000 - 0x493fff
+assign sl_wr_SROM2   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h124  ) ? 1'b1 : 1'b0; // x4000
+// 0x494000 - 0x495fff
+assign sl_wr_2B      = (ioctl_wr && !ioctl_index && ioctl_addr[24:13]==12'h24A ) ? 1'b1 : 1'b0; // x2000
+// 0x496000 - 0x4961ff
+assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h24B0) ? 1'b1 : 1'b0; // x200
+// 0x496200 - 0x4963ff
+assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h24B1) ? 1'b1 : 1'b0; // x200
+// 0x496400
 
 `ifndef MODELSIM
 	arcade_video #(.WIDTH(320), .DW(12)) arcade_video
@@ -561,7 +561,7 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB1) 
 	// Slapstic 0x80000, 0x04000
 	dpram #(14,16) mp_rom_slap
 	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SLAP ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM_SLAP));
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_SLAP    ));
 
 	// 16 M10K blocks
 	// Audiocpu 0x4000, 0x4000
@@ -619,8 +619,9 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'hCB1) 
 
 `endif
 
-// Note: to save mem we remap ROM3 into ROM7 region. Tweak .mra file accordingly.
-// ROM3 region is only used by Indy while ROM7 is unused by Indy.
+// Note: to save some memory we alias ROM3 with ROM7.
+// Tweak .mra file accordingly and upload ROM3 into ROM7 slot.
+// ROM3 is only used by Indy and nothing else while ROM7 region is unused by Indy.
 assign slv_MDATA =
 	(~slv_ROMn[0] &  sl_MA18n)?slv_ROM0:
 	(~slv_ROMn[1] &  sl_MA18n)?slv_ROM1:
@@ -630,7 +631,7 @@ assign slv_MDATA =
 	(~slv_ROMn[1] & ~sl_MA18n)?slv_ROM5:
 	(~slv_ROMn[2] & ~sl_MA18n)?slv_ROM6:
 	(~slv_ROMn[3] & ~sl_MA18n)?slv_ROM7:
-	(~slv_ROMn[4]            )?slv_ROM_SLAP:
+	(~slv_ROMn[4]            )?slv_SLAP:
 	16'h0;
 
 assign slv_SDATA =

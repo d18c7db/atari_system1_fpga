@@ -76,33 +76,28 @@ port(
 	I_SDATA      : in  std_logic_vector( 7 downto 0);
 
 	-- video ROMs
-	O_VADDR      : out std_logic_vector(16 downto 0);
-	I_VDATA      : in  std_logic_vector(31 downto 0)
+	O_VADDR      : out std_logic_vector(18 downto 0);
+	I_VDATA      : in  std_logic_vector(63 downto 0)
 );
 end ATARI_CART;
 
 architecture logic of ATARI_CART is
 	signal
+		sl_GD7P7, sl_NOROM7n,
+		sl_GD7P6, sl_NOROM6n,
+		sl_GD7P5, sl_NOROM5n,
+		sl_GD7P4, sl_NOROM4n,
+		sl_GD7P3, sl_NOROM3n,
 		sl_MCKF,
-		sl_GD7P7,
-		sl_GD7P6,
-		sl_GD7P5,
-		sl_GD7P4,
 		sl_BASn,
 		sl_SLAPn,
---		sl_GBA15n,
 		sl_BMO_PFn,
-		sl_MATCHn,
 		sl_MGHF,
 		sl_GLDn,
 		sl_SNDEXTn,
 		sl_SNDRSTn,
 		sl_SNDBR_Wn,
 		sl_B02,
-		sl_NOROM7n,
-		sl_NOROM6n,
-		sl_NOROM5n,
-		sl_NOROM4n,
 		sl_TMS_EN,
 		sl_TMS_RDYn,
 		sl_TMS_INTn
@@ -110,9 +105,6 @@ architecture logic of ATARI_CART is
 	signal
 		slv_BS
 								: std_logic_vector( 1 downto 0):=(others=>'0');
-	signal
-		slv_GCSn
-								: std_logic_vector( 4 downto 1):=(others=>'1');
 	signal
 		slv_14S
 								: std_logic_vector( 3 downto 0):=(others=>'1');
@@ -144,22 +136,17 @@ architecture logic of ATARI_CART is
 								: std_logic_vector(15 downto 1):=(others=>'0');
 	signal
 		slv_GBA
-								: std_logic_vector(15 downto 1):=(others=>'0');
+								: std_logic_vector(19 downto 1):=(others=>'0');
 	signal
 		slv_MGRA
 								: std_logic_vector(19 downto 1):=(others=>'0');
+	signal
+		slv_VDATA
+								: std_logic_vector(63 downto 0):=(others=>'0');
 begin
-	O_VADDR(14 downto 0) <= slv_GBA;
-	O_VADDR(16 downto 15) <=
-		"00" when slv_GCSn(1) = '0' else
-		"01" when slv_GCSn(2) = '0' else
-		"10" when slv_GCSn(3) = '0' else
-		"11" when slv_GCSn(4) = '0' else
-		(others=>'1');
-
+	O_VADDR     <= slv_GBA;
 	sl_SLAPn    <= I_SLAPn;
 	sl_BASn     <= I_BASn;
-	sl_MATCHn   <= I_MATCHn;
 	sl_MGHF     <= I_MGHF;
 	sl_GLDn     <= I_GLDn;
 	sl_BMO_PFn  <= I_MO_PFn;
@@ -306,29 +293,102 @@ begin
 	-- sound ROMs
 	slv_SMDO <= slv_VIA_DO when (sl_SNDEXTn = '0') else I_SDATA;
 
-	--	PROMs
+	----------------------------------------
+	-- schematic variation between games
+	-- sheet 4 SP-282 vs sheet 12 SP-299
+	----------------------------------------
+
+	--	common address for PROMs 4/5A, 7A on SP-282 or 2D, 1/2D on SP-299
 	O_PADDR <= sl_BMO_PFn & slv_MGRA(19 downto 12);
 
-	-- implement pullups
-	sl_NOROM7n <= I_PD4A(7) when sl_MATCHn = '0' else '1';
-	sl_NOROM6n <= I_PD4A(6) when sl_MATCHn = '0' else '1';
-	sl_NOROM5n <= I_PD4A(5) when sl_MATCHn = '0' else '1';
-	sl_NOROM4n <= I_PD4A(4) when sl_MATCHn = '0' else '1';
+	process (I_SLAP_TYPE, I_MATCHn)
+	begin
+		if (I_SLAP_TYPE = 109) or (I_SLAP_TYPE = 110) then
+			-- if Roadblasters use variation SP-298 / SP-299
 
-	sl_GD7P7   <= I_PD4A(3) when sl_MATCHn = '0' else '1';
-	sl_GD7P6   <= I_PD4A(2) when sl_MATCHn = '0' else '1';
-	sl_GD7P5   <= I_PD4A(1) when sl_MATCHn = '0' else '1';
-	sl_GD7P4   <= I_PD4A(0) when sl_MATCHn = '0' else '1';
-	--(sl_NOROM7n,sl_NOROM6n,sl_NOROM5n,sl_NOROM4n,sl_GD7P7,sl_GD7P6,sl_GD7P5,sl_GD7P4) <= I_PD4A when sl_MATCHn = '0' else (others=>'1');
+			-- PROM 2D on SP-299
+			if I_MATCHn = '0' then
+				sl_NOROM7n <= '0';
+				sl_NOROM6n <= '0';
+				sl_NOROM5n <= I_PD4A(5);
+				sl_NOROM4n <= I_PD4A(4);
+				sl_NOROM3n <= I_PD4A(7);
+				sl_GD7P7   <= I_PD4A(3);
+				sl_GD7P6   <= I_PD4A(2);
+				sl_GD7P5   <= I_PD4A(1);
+				sl_GD7P4   <= I_PD4A(0);
+				sl_GD7P3   <= I_PD4A(6);
+			else
+				sl_NOROM7n <= '1';
+				sl_NOROM6n <= '1';
+				sl_NOROM5n <= '1';
+				sl_NOROM4n <= '1';
+				sl_NOROM3n <= '1';
+				sl_GD7P7   <= '1';
+				sl_GD7P6   <= '1';
+				sl_GD7P5   <= '1';
+				sl_GD7P4   <= '1';
+				sl_GD7P3   <= '1';
+			end if;
 
-	-- buffers 3A, 6A
-	--(slv_GCSn,slv_GBA(15 downto 12)) <= I_PD7A when sl_MATCHn = '0' else (others=>'1');
-	slv_GCSn <= I_PD7A(7 downto 4) when sl_MATCHn = '0' else (others=>'1');
-	slv_GBA(15 downto 12) <= I_PD7A(3 downto 0)  when sl_MATCHn = '0' else (others=>'1'); -- FIXME what happens to these lines when PROM /CS is inactive?
-	slv_GBA(11 downto  1) <= slv_MGRA(11 downto 1);
+			-- PROM 1/2D , decoder 1D, buffers 2H, 3H, 4H on SP-299
+			slv_GBA <=  I_PD7A & slv_MGRA(11 downto 1);
+		else
+			-- else if others default to SP-282
 
-	-- gate 9A
---	sl_GBA15n <= not slv_GBA(15);
+			-- PROM 4/5A on SP-282
+			if I_MATCHn = '0' then
+				sl_NOROM7n <= I_PD4A(7);
+				sl_NOROM6n <= I_PD4A(6);
+				sl_NOROM5n <= I_PD4A(5);
+				sl_NOROM4n <= I_PD4A(4);
+				sl_NOROM3n <= '1';
+				sl_GD7P7   <= I_PD4A(3);
+				sl_GD7P6   <= I_PD4A(2);
+				sl_GD7P5   <= I_PD4A(1);
+				sl_GD7P4   <= I_PD4A(0);
+				sl_GD7P3   <= '1';
+			else
+				sl_NOROM7n <= '1';
+				sl_NOROM6n <= '1';
+				sl_NOROM5n <= '1';
+				sl_NOROM4n <= '1';
+				sl_NOROM3n <= '1';
+				sl_GD7P7   <= '1';
+				sl_GD7P6   <= '1';
+				sl_GD7P5   <= '1';
+				sl_GD7P4   <= '1';
+				sl_GD7P3   <= '1';
+			end if;
+
+			-- PROM 7A on SP-282
+			-- convert ROM selects back into an address vector
+			   if I_PD7A(4) = '0' then slv_GBA(19 downto 16) <= "0000";
+			elsif I_PD7A(5) = '0' then slv_GBA(19 downto 16) <= "0010";
+			elsif I_PD7A(6) = '0' then slv_GBA(19 downto 16) <= "0100";
+			elsif I_PD7A(7) = '0' then slv_GBA(19 downto 16) <= "0110";
+			else                       slv_GBA(19 downto 16) <= (others=>'1');
+			end if;
+
+			-- buffers 3A, 6A
+			slv_GBA(15 downto 1) <= I_PD7A(3 downto 0) & slv_MGRA(11 downto 1);
+		end if;
+	end process;
+
+	-- the intended effect of /MATCH when not asserted is all ROMs chip selects are also not asserted so databus pullups take over
+	slv_VDATA <= I_VDATA when I_MATCHn = '0' else (others=>'1');
+
+	-- if no ROMs fitted on PCB
+	slv_5B_DB <=                                                 slv_VDATA(63 downto 56); -- plane 0
+	slv_5B_DA <=                                                 slv_VDATA(55 downto 48); -- plane 1
+	slv_5C_DB <=                                                 slv_VDATA(47 downto 40); -- plane 2
+	slv_5C_DA <= sl_GD7P3 & "1111111" when sl_NOROM3n = '0' else slv_VDATA(39 downto 32); -- plane 3
+	slv_5D_DB <= sl_GD7P4 & "1111111" when sl_NOROM4n = '0' else slv_VDATA(31 downto 24); -- plane 4
+	slv_5D_DA <= sl_GD7P5 & "1111111" when sl_NOROM5n = '0' else slv_VDATA(23 downto 16); -- plane 5
+	slv_5E_DB <= sl_GD7P6 & "1111111" when sl_NOROM6n = '0' else slv_VDATA(15 downto  8); -- plane 6
+	slv_5E_DA <= sl_GD7P7 & "1111111" when sl_NOROM7n = '0' else slv_VDATA( 7 downto  0); -- plane 7
+
+	-- gate 9A "not slv_GBA(15)" not used anywhere
 
 	----------------------------------------
 	-- sheet 5 SP-282 -- (sheet 4 SP-280) --
@@ -352,9 +412,6 @@ begin
 		O_MODB     => slv_MOSR(0)
 	);
 
-	slv_5B_DB <= I_VDATA(31 downto 24);
-	slv_5B_DA <= I_VDATA(23 downto 16);
-
 	----------------------------------------
 	-- sheet 6 SP-282 -- (sheet 5 SP-280) --
 	----------------------------------------
@@ -366,7 +423,7 @@ begin
 		I_B        => slv_5C_DB,
 		I_A        => slv_5C_DA,
 		I_HLDBn    => '1',
-		I_HLDAn    => '1',
+		I_HLDAn    => sl_NOROM3n,
 		I_FLP      => sl_MGHF,
 		I_MO_PFn   => sl_BMO_PFn,
 		I_LDn      => sl_GLDn,
@@ -376,9 +433,6 @@ begin
 		O_MODA     => slv_MOSR(3),
 		O_MODB     => slv_MOSR(2)
 	);
-
-	slv_5C_DB <= I_VDATA(15 downto 8);
-	slv_5C_DA <= I_VDATA( 7 downto 0);
 
 	----------------------------------------
 	-- sheet 7 SP-282 -- (sheet 6 SP-280) --
@@ -401,10 +455,6 @@ begin
 		O_MODB          => slv_MOSR(4)
 	);
 
-	-- for if no ROMs fitted on PCB
-	slv_5D_DB <= sl_GD7P4 & "1111111" when sl_NOROM4n = '0' else I_VDATA(31 downto 24);
-	slv_5D_DA <= sl_GD7P5 & "1111111" when sl_NOROM5n = '0' else I_VDATA(23 downto 16);
-
 	----------------------------------------
 	-- sheet 8 SP-282 -- (sheet 3 SP-280) --
 	----------------------------------------
@@ -425,9 +475,4 @@ begin
 		O_MODA          => open,
 		O_MODB          => slv_MOSR(6)
 	);
-
-	-- for if no ROMs fitted on PCB
-	slv_5E_DB <= sl_GD7P6 & "1111111" when sl_NOROM6n = '0' else I_VDATA(15 downto 8);
-	slv_5E_DA <= sl_GD7P7 & "1111111" when sl_NOROM7n = '0' else I_VDATA( 7 downto 0);
-
 end;
