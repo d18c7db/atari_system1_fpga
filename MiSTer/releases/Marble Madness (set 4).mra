@@ -1,7 +1,7 @@
 <misterromdescription>
-	<name>Marble Madness (set 1)</name>
+	<name>Marble Madness (set 4)</name>
 	<mameversion>0252</mameversion>
-	<setname>marble</setname>
+	<setname>marble4</setname>
 	<mratimestamp>20230303000000</mratimestamp>
 	<year>1984</year>
 	<manufacturer>Atari Games</manufacturer>
@@ -16,7 +16,7 @@
 		<part>67</part>
 	</rom>
 
-	<rom index="0" zip="marble.zip" md5="none">
+	<rom index="0" zip="marble4.zip" md5="none">
 		<!-- TILE ROMs Bank 1 Plane 7, 6, 5, 4, 3, 2, 1, 0 (0x070000, 0x060000, 0x050000, 0x040000, 0x030000, 0x020000, 0x010000, 0x000000) 16Kx64 -->
 		<interleave output="64">
 			<part crc="7a45f5c1" map="00000001" name="136033.137"/>
@@ -87,26 +87,26 @@
 
 		<!-- 0x10000 - 0x17FFF MAINCPU ROMs 16Kx16 -->
 		<interleave output="16">
-			<part crc="284ed2e9" name="136033.623" map="01"/>"
-			<part crc="d541b021" name="136033.624" map="10"/>"
+			<part crc="4dc2987a" name="136033.323" map="01"/>"
+			<part crc="e22e6e11" name="136033.324" map="10"/>"
 		</interleave>
 
 		<!-- 0x18000 - 0x1FFFF MAINCPU ROMs  16Kx16 -->
 		<interleave output="16">
-			<part crc="563755c7" name="136033.625" map="01"/>"
-			<part crc="860feeb3" name="136033.626" map="10"/>"
+			<part crc="743f6c5c" name="136033.225" map="01"/>"
+			<part crc="aeb711e3" name="136033.226" map="10"/>"
 		</interleave>
 
 		<!-- 0x20000 - 0x27FFF MAINCPU ROMs  16Kx16 -->
 		<interleave output="16">
-			<part crc="d1dbd439" name="136033.627" map="01"/>"
-			<part crc="957d6801" name="136033.628" map="10"/>"
+			<part crc="d06d2c22" name="136033.227" map="01"/>"
+			<part crc="e69cec16" name="136033.228" map="10"/>"
 		</interleave>
 
 		<!-- 0x28000 - 0x2FFFF MAINCPU ROMs 16Kx16 -->
 		<interleave output="16">
 			<part crc="c81d5c14" name="136033.229" map="01"/>"
-			<part crc="687a09f7" name="136033.630" map="10"/>"
+			<part crc="526ce8ad" name="136033.230" map="10"/>"
 		</interleave>
 		<!-- 0x30000 - 0x3FFFF Filler 32Kx16 -->
 		<part repeat="65536">FF</part>
@@ -132,9 +132,9 @@
 		<!-- AUDIOCPU ROM 0x4000 - 0x7FFF 16Kx8 -->
 		<part repeat="16384">00</part>
 		<!-- AUDIOCPU ROM 0x8000 - 0xBFFF 16Kx8 -->
-		<part crc="78153dc3" name="136033.421"/>
+		<part crc="2e2e0df8" name="136033.257"/>
 		<!-- AUDIOCPU ROM 0xC000 - 0xFFFF 16Kx8 -->
-		<part crc="2e66300e" name="136033.422"/>
+		<part crc="1b9655cd" name="136033.258"/>
 
 		<!-- PROMs -->
 		<part crc="7a29dc07" name="136032.104.b2" zip="atarisy1.zip"/>

@@ -1,7 +1,7 @@
 <misterromdescription>
-	<name>Road Blasters (cockpit, rev 2)</name>
+	<name>Road Blasters (upright, rev 1)</name>
 	<mameversion>0252</mameversion>
-	<setname>roadblstc</setname>
+	<setname>roadblst1</setname>
 	<mratimestamp>20230303000000</mratimestamp>
 	<year>1987</year>
 	<manufacturer>Atari Games</manufacturer>
@@ -13,10 +13,10 @@
 
 	<!-- Slapstic type -->
 	<rom index="1">
-		<part>6E</part>
+		<part>6D</part>
 	</rom>
 
-	<rom index="0" zip="roadblstc.zip" md5="none">
+	<rom index="0" zip="roadblst1.zip" md5="none">
 		<!-- TILE ROMs Bank 1 Plane 7, 6, 5, 4, 3, 2, 1, 0 (0x070000, 0x060000, 0x050000, 0x040000, 0x030000, 0x020000, 0x010000, 0x000000) 32Kx64 -->
 		<interleave output="64">
 			<part crc="fe342d27" map="00000001" name="136048-1101.2s"/>
@@ -123,14 +123,14 @@
 
 		<!-- 0x10000 - 0x1FFFF MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
-			<part crc="ef448f96" name="136048-1179.7p" map="01"/>"
-			<part crc="bdb368d5" name="136048-1180.8p" map="10"/>"
+			<part crc="ea6b3060" name="136048-2151.11c" map="01" offset="0x0000" length="0x8000"/>"
+			<part crc="f5c1fbe0" name="136048-2152.11a" map="10" offset="0x0000" length="0x8000"/>"
 		</interleave>
 
 		<!-- 0x20000 - 0x2FFFF MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
-			<part crc="d52581da" name="136048-1181.7r" map="01"/>"
-			<part crc="847788c4" name="136048-1182.8r" map="10"/>"
+			<part crc="11c41698" name="136048-2153.13c" map="01" offset="0x0000" length="0x8000"/>"
+			<part crc="7b947d64" name="136048-2154.13a" map="10" offset="0x0000" length="0x8000"/>"
 		</interleave>
 
 		<!-- 0x30000 - 0x3FFFF Filler 32Kx16 -->
@@ -143,14 +143,14 @@
 
 		<!-- 0x50000 - 0x5FFFF MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
-			<part crc="054273b2" name="136048-2141.7l" map="01"/>"
-			<part crc="49181bec" name="136048-2142.8l" map="10"/>"
+			<part crc="ea6b3060" name="136048-2151.11c" map="01" offset="0x8000" length="0x8000"/>"
+			<part crc="f5c1fbe0" name="136048-2152.11a" map="10" offset="0x8000" length="0x8000"/>"
 		</interleave>
 
 		<!-- 0x60000 - 0x6FFFF MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
-			<part crc="f63dc29a" name="136048-2143.7m" map="01"/>"
-			<part crc="b1fc5955" name="136048-2144.8m" map="10"/>"
+			<part crc="11c41698" name="136048-2153.13c" map="01" offset="0x8000" length="0x8000"/>"
+			<part crc="7b947d64" name="136048-2154.13a" map="10" offset="0x8000" length="0x8000"/>"
 		</interleave>
 
 		<!-- 0x70000 - 7FFFF MAINCPU ROMs 32Kx16 -->

@@ -1,7 +1,7 @@
 <misterromdescription>
-	<name>Indiana Jones (set 1)</name>
+	<name>Indiana Jones (set 3)</name>
 	<mameversion>0252</mameversion>
-	<setname>indytemp</setname>
+	<setname>indytemp3</setname>
 	<mratimestamp>20230303000000</mratimestamp>
 	<year>1985</year>
 	<manufacturer>Atari Games</manufacturer>
@@ -16,7 +16,7 @@
 		<part>69</part>
 	</rom>
 
-	<rom index="0" zip="indytemp.zip" md5="none">
+	<rom index="0" zip="indytemp3.zip" md5="none">
 		<!-- TILE ROMs Bank 1 Plane 7, 6, 5, 4, 3, 2, 1, 0 (0x070000, 0x060000, 0x050000, 0x040000, 0x030000, 0x020000, 0x010000, 0x000000) 64Kx64 -->
 		<interleave output="64">
 			<part crc="ffa8749c" map="00000001" name="136036.135"/>
@@ -92,14 +92,14 @@
 
 		<!-- 0x10000 - 0x1FFFF MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
-			<part crc="d888cdf1" name="136036.432" map="01"/>"
-			<part crc="b7ac7431" name="136036.431" map="10"/>"
+			<part crc="1e80108f" name="232.10b" map="01"/>"
+			<part crc="8ae54c0c" name="231.10a" map="10"/>"
 		</interleave>
 
 		<!-- 0x20000 - 0x2FFFF MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
-			<part crc="802495fd" name="136036.434" map="01"/>"
-			<part crc="3a914e5c" name="136036.433" map="10"/>"
+			<part crc="86be7e07" name="234.12b" map="01"/>"
+			<part crc="bfcea7ae" name="233.12a" map="10"/>"
 		</interleave>
 
 		<!-- 0x30000 - 0x3FFFF Filler 32Kx16 -->
@@ -116,8 +116,8 @@
 
 		<!-- 0x70000 - 0x77FFF MAINCPU ROMs 0x30000 16Kx16 remapped here -->
 		<interleave output="16">
-			<part crc="ec146b09" name="136036.456" map="01"/>"
-			<part crc="6628de01" name="136036.457" map="10"/>"
+			<part crc="3a076fd2" name="256.15b" map="01"/>"
+			<part crc="15293606" name="257.15a" map="10"/>"
 		</interleave>
 
 		<!-- 0x78000 - 0x7FFFF Filler 16Kx16 -->
@@ -125,8 +125,8 @@
 
 		<!-- 0x80000 - 0x87FFF SLAPSTIC ROMs 16Kx16 -->
 		<interleave output="16">
-			<part crc="d9351106" name="136036.358" map="01"/>"
-			<part crc="e731caea" name="136036.359" map="10"/>"
+			<part crc="10372888" name="158.16b" map="01"/>"
+			<part crc="50f890a8" name="159.16a" map="10"/>"
 		</interleave>
 
 		<!-- AUDIOCPU ROM 0x4000 - 0x7FFF 16Kx8 -->

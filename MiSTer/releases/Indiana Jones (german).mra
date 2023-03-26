@@ -1,7 +1,7 @@
 <misterromdescription>
-	<name>Indiana Jones (set 1)</name>
+	<name>Indiana Jones (german)</name>
 	<mameversion>0252</mameversion>
-	<setname>indytemp</setname>
+	<setname>indytempd</setname>
 	<mratimestamp>20230303000000</mratimestamp>
 	<year>1985</year>
 	<manufacturer>Atari Games</manufacturer>
@@ -16,7 +16,7 @@
 		<part>69</part>
 	</rom>
 
-	<rom index="0" zip="indytemp.zip" md5="none">
+	<rom index="0" zip="indytempd.zip" md5="none">
 		<!-- TILE ROMs Bank 1 Plane 7, 6, 5, 4, 3, 2, 1, 0 (0x070000, 0x060000, 0x050000, 0x040000, 0x030000, 0x020000, 0x010000, 0x000000) 64Kx64 -->
 		<interleave output="64">
 			<part crc="ffa8749c" map="00000001" name="136036.135"/>
@@ -92,14 +92,14 @@
 
 		<!-- 0x10000 - 0x1FFFF MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
-			<part crc="d888cdf1" name="136036.432" map="01"/>"
-			<part crc="b7ac7431" name="136036.431" map="10"/>"
+			<part crc="317dc430" name="136036.462" map="01"/>"
+			<part crc="8c73f974" name="136036.461" map="10"/>"
 		</interleave>
 
 		<!-- 0x20000 - 0x2FFFF MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
-			<part crc="802495fd" name="136036.434" map="01"/>"
-			<part crc="3a914e5c" name="136036.433" map="10"/>"
+			<part crc="3fcb199f" name="136036.464" map="01"/>"
+			<part crc="d6bda19a" name="136036.463" map="10"/>"
 		</interleave>
 
 		<!-- 0x30000 - 0x3FFFF Filler 32Kx16 -->
@@ -116,8 +116,8 @@
 
 		<!-- 0x70000 - 0x77FFF MAINCPU ROMs 0x30000 16Kx16 remapped here -->
 		<interleave output="16">
-			<part crc="ec146b09" name="136036.456" map="01"/>"
-			<part crc="6628de01" name="136036.457" map="10"/>"
+			<part crc="faa7f23a" name="136036.466" map="01"/>"
+			<part crc="ee9fd91a" name="136036.467" map="10"/>"
 		</interleave>
 
 		<!-- 0x78000 - 0x7FFFF Filler 16Kx16 -->

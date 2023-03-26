@@ -3,7 +3,7 @@
 ## Work In Progress  
 * Indiana Jones - Playable without any visual issues but sounds sometimes are cut off prematurely.  
 * Peter Pack Rat - Playable, no obvious issues.  
-* Marble Madness - Not playable due to missing trackball controls.  
+* Marble Madness - Playable with joystick as trackball control.  
 * Road Runner - Not playable, boots, can coin up but has sprite issues, also controls not fully functional.  
 * Road Blasters - Not playable, boots, can coin up but has sprite issues, also controls not fully functional.  
 
