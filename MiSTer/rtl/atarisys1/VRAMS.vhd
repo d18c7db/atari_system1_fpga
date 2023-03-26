@@ -27,18 +27,23 @@ end VRAMS;
 
 architecture RTL of VRAMS is
 	type RAM_ARRAY_8Kx16 is array (0 to 8191) of std_logic_vector(15 downto 0);
-	signal VRAM : RAM_ARRAY_8Kx16:=(others=>(others=>'0'));
-	-- Tell synthesis to use block RAMs if possible
+	signal RAM : RAM_ARRAY_8Kx16:=(others=>(others=>'0'));
+
+	-- Ask Xilinx synthesis to use block RAMs if possible
 	attribute ram_style : string;
-	attribute ram_style of VRAM : signal is "block";
+	attribute ram_style of RAM : signal is "block";
+	-- Ask Quartus synthesis to use block RAMs if possible
+	attribute ramstyle : string;
+	attribute ramstyle of RAM : signal is "M10K";
+
 begin
 	p_VRAM : process
 	begin
 		wait until rising_edge(I_MCKR);
 		if I_WEn = '0' then
-			VRAM(to_integer(unsigned(I_VRA))) <= I_VRD;
+			RAM(to_integer(unsigned(I_VRA))) <= I_VRD;
 		else
-			O_VRD <= VRAM(to_integer(unsigned(I_VRA)));
+			O_VRD <= RAM(to_integer(unsigned(I_VRA)));
 		end if;
 	end process;
 end RTL;

@@ -53,8 +53,13 @@ architecture RTL of EEPROM is
 		x"EA",x"E9",x"0C",x"01",x"5A",x"48",x"84",x"67",x"4F",x"4C",x"00",x"F2",x"94",x"79",x"1C",x"89", -- 0x01E0
 		x"B0",x"7A",x"01",x"C0",x"B6",x"AC",x"67",x"D1",x"32",x"01",x"5F",x"5E",x"0D",x"EE",x"FF",x"FF"  -- 0x01F0
 	);
+	-- Ask Xilinx synthesis to use block RAMs if possible
 	attribute ram_style : string;
 	attribute ram_style of RAM : signal is "block";
+	-- Ask Quartus synthesis to use block RAMs if possible
+	attribute ramstyle : string;
+	attribute ramstyle of RAM : signal is "M10K";
+
 begin
 	mem_proc : process
 	begin

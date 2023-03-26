@@ -12,7 +12,7 @@
 
     You should have received a copy of the GNU General Public License
     along with JT51.  If not, see <http://www.gnu.org/licenses/>.
-    
+
     Author: Jose Tejada Gomez. Twitter: @topapate
     Version: 1.0
     Date: 27-10-2016
@@ -27,7 +27,7 @@ module jt51_sh #(parameter width=5, stages=32, rstval=1'b0 ) (
     output      [width-1:0]         drop
 );
 
-reg [stages-1:0] bits[width-1:0];
+reg [stages-1:0] bits[width-1:0] /* synthesis ramstyle = "MLAB" */;
 
 genvar i;
 generate

@@ -27,18 +27,22 @@ end CRAMS;
 
 architecture RTL of CRAMS is
 	type RAM_ARRAY_1Kx16 is array (0 to 1023) of std_logic_vector(15 downto 0);
-	signal CRAM : RAM_ARRAY_1Kx16:=(others=>(others=>'0'));
-	-- Tell synthesis to use block RAMs if possible
+	signal RAM : RAM_ARRAY_1Kx16:=(others=>(others=>'0'));
+	-- Ask Xilinx synthesis to use block RAMs if possible
 	attribute ram_style : string;
-	attribute ram_style of CRAM : signal is "block";
+	attribute ram_style of RAM : signal is "block";
+	-- Ask Quartus synthesis to use block RAMs if possible
+	attribute ramstyle : string;
+	attribute ramstyle of RAM : signal is "M10K";
+
 begin
 	p_CRAM : process
 	begin
 		wait until rising_edge(I_MCKR);
 		if I_WEn = '0' then
-			CRAM(to_integer(unsigned(I_CRA))) <= I_CRD;
+			RAM(to_integer(unsigned(I_CRA))) <= I_CRD;
 		else
-			O_CRD <= CRAM(to_integer(unsigned(I_CRA)));
+			O_CRD <= RAM(to_integer(unsigned(I_CRA)));
 		end if;
 	end process;
 end RTL;
