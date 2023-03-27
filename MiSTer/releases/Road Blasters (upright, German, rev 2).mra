@@ -15,8 +15,8 @@
 	<rom index="1">
 		<part>6E</part>
 	</rom>
-
-	<rom index="0" zip="roadblstg2.zip" md5="none">
+roadblst.zip|
+	<rom index="0" zip="roadblst.zip|roadblstg2.zip" md5="none">
 		<!-- TILE ROMs Bank 1 Plane 7, 6, 5, 4, 3, 2, 1, 0 (0x070000, 0x060000, 0x050000, 0x040000, 0x030000, 0x020000, 0x010000, 0x000000) 32Kx64 -->
 		<interleave output="64">
 			<part crc="fe342d27" map="00000001" name="136048-1101.2s"/>
