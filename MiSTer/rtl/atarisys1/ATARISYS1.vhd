@@ -32,8 +32,10 @@ entity FPGA_ATARISYS1 is
 		-- Active high reset
 		I_RESET    : in  std_logic;
 
-		-- Player controls, active high
-		I_JOY      : in  std_logic_vector(7 downto 0); -- U2,D2,L2,R2,U1,D1,L1,R1
+		-- Bit 7 and bit 6 for the eight ADC inputs, the other bits are assumed 1
+		I_ADCB7    : in  std_logic_vector( 7 downto 0);
+		I_ADCB6    : in  std_logic_vector( 7 downto 0);
+
 		-- Trackball inputs active low:
 		I_CLK      : in  std_logic_vector(3 downto 0); -- HCLK2,VCLK2,HCLK1,VCLK1
 		I_DIR      : in  std_logic_vector(3 downto 0); -- HDIR2,VDIR2,HDIR1,VDIR1
@@ -150,7 +152,7 @@ architecture RTL of FPGA_ATARISYS1 is
 								: std_logic_vector( 7 downto 0) := (others=>'0');
 	signal
 		slv_adc_ctr
-								: std_logic_vector( 8 downto 0) := (others=>'0');
+								: std_logic_vector( 9 downto 0) := (others=>'0');
 	signal
 		slv_SBA
 								: std_logic_vector(13 downto 0) := (others=>'0');
@@ -174,27 +176,38 @@ architecture RTL of FPGA_ATARISYS1 is
 		slv_MGRA
 								: std_logic_vector(19 downto 1) := (others=>'0');
 begin
-	-- fake ADC0809 reads inputs for player controls
-	-- J102 1-11 (+5 U2 D2 L2 R1 R2 L1 U1 D1 KEY GND)
-	-- I_JOY 7-0 joystick: U2,D2,L2,R2,U1,D1,L1,R1
-	-- 512 clock cycles ADC conversion delay
+	-- ADC0809 converts analog player control inputs with a 100uS conversion delay
+	-- the channel data already comes to us digitised so here we just route it to the data bus
 	p_adc0809 : process
 	begin
 		wait until rising_edge(I_CLK_7M);
 		sl_adc_soc_last <= sl_adc_soc;
 		if sl_adc_soc_last = '0' and sl_adc_soc = '1' then
-			slv_adc_ctr <=  (others=>'1');
-			slv_adc_data <= (others=>'1');
+			slv_adc_ctr <=  (others=>'0');
 			sl_adc_eoc <= '0';
-			-- when button is pressed ADC value goes full scale, else ADC value is VCC/2
-			-- we present 0xFF for button press and 0x7F for button release
-			-- game reads ADC value and checks if it's above or below threshold
-			slv_adc_data(7) <= I_JOY(to_integer(unsigned(slv_adc_addr)));
-		elsif slv_adc_ctr = 0 then
+
+			-- Some  games use one ADC channel as up/idle/down or left/idle/right control (0xFF / 0x80 / 0x00)
+			-- Other games use one ADC channel as a simple on/off (0xFF / 0x00)
+			-- So with just the top two bits we can present the following values to each ADC channel
+			-- 11_111111 (0xFF) on value
+			-- 10_000000 (0x80) idle / center
+			-- 01_111111 (0x7F) idle / center
+			-- 00_000000 (0x00) off value
+			slv_adc_data(7) <= I_ADCB7(to_integer(unsigned(slv_adc_addr)));
+			-- extend value of bit 6 to all lower bits
+			slv_adc_data(6) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
+			slv_adc_data(5) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
+			slv_adc_data(4) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
+			slv_adc_data(3) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
+			slv_adc_data(2) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
+			slv_adc_data(1) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
+			slv_adc_data(0) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
+
+		-- fake a 100uS conversion delay, may not be needed but it's as per datasheet
+		elsif slv_adc_ctr > "1011001011" then -- after 715 cycles of 140ns = 100uS
 			sl_adc_eoc <= '1';
 		else
-		-- implement a fake "conversion delay", may not be needed but it's more realistic
-			slv_adc_ctr <= slv_adc_ctr - 1;
+			slv_adc_ctr <= slv_adc_ctr + 1;
 		end if;
 	end process;
 

@@ -182,7 +182,7 @@ module emu
 	input         OSD_STATUS
 );
 
-///////// Default values for ports not used in this core /////////
+///////// Default values for all ports not used in this core /////////
 
 assign ADC_BUS  = 'Z;
 assign USER_OUT = '1;
@@ -640,7 +640,7 @@ assign slv_SDATA =
 	(~slv_SROMn[2])?slv_SROM2:
 	8'h0;
 
-// ##################################################################################
+// SP-282 ##################################################################################
 // J102         J103        P104            P105               J106
 //  1 +5         1 +5        1 +5           1 Self Test         1 +5
 //  2 P2 Up      2 H_CLK2    2 Coin Ctr 1   2 Right Audio GND   2 N/C
@@ -656,20 +656,112 @@ assign slv_SDATA =
 
 // Slapstic Types: marble=103 (x67), indytemp=105 (x69), peterpak=107 (x6B), roadrunn=108 (x6C), roadb109=109 (x6D), roadb110=110 (x6E)
 
-// direction control inputs
 wire [7:0] inputs;
+wire [7:0] adc_bit7, adc_bit6;
+wire [7:0] switches;
+
+// direction control inputs
+// J102 2,3,4,6,8,9,7,5 = P2-U,D,L,R P1-U,D,L,R active high
 assign inputs =
-	// for Indy (105) shift inputs by one (000UDLR0) else default to (0000UDLR)
+	// for Indy (105) shift them by one (000UDLR0) else default to (0000UDLR)
 	(slap_type==105)?({3'b0, (kbd1[7:4] | joystick_0[3:0]), 1'b0}) :
                     ({4'b0, (kbd1[7:4] | joystick_0[3:0])      });
 
-wire [7:0] switches;
-// NC, NC, Jump (NC), Whip2/Start2, Whip1/Start1
-assign switches =
-	// for Peter Pack Rat (107) NC NC Jump NC Throw
-	(slap_type==107)?({2'b11,  ~(kbd1[0] | joystick_0[4] | mouse_L), 1'b1, ~(kbd1[1] | joystick_0[5] | mouse_R)}) :
-	// else for Indy (105), Marble Madness (103), Road Runner (108), default to NC NC NC Action Action
-                    ({3'b111, ~(kbd1[0] | joystick_0[4] | mouse_L),       ~(kbd1[1] | joystick_0[5] | mouse_R)}) ;
+always @(posedge clk_sys) begin
+	// default state of ADC inputs at VCC/2
+	adc_bit7 = 8'd255;
+	adc_bit6 = 8'd0;
+	// ########################################
+	// marblemad ##############################
+	// ########################################
+	if (slap_type==103)
+	begin
+		// NC NC NC Action Action
+		switches = ({3'b111, ~(kbd1[0] | joystick_0[4] | mouse_L), ~(kbd1[1] | joystick_0[5] | mouse_R)});
+	end
+	// ########################################
+	// indytemp ###############################
+	// ########################################
+	if (slap_type==105)
+	begin
+		// on/off style control
+		adc_bit7 = inputs;
+		adc_bit6 = inputs;
+		// NC NC NC Whip Whip
+		switches = ({3'b111, ~(kbd1[0] | joystick_0[4]), ~(kbd1[1] | joystick_0[5])});
+	end
+	// ########################################
+	// peterpak ###############################
+	// ########################################
+	else if (slap_type==107)
+	begin
+		// on/off style control
+		adc_bit7 = inputs;
+		adc_bit6 = inputs;
+		// NC NC Jump NC Throw
+		switches = ({2'b11,  ~(kbd1[0] | joystick_0[4]), 1'b1, ~(kbd1[1] | joystick_0[5])});
+	end
+	// ########################################
+	// roadrunn ###############################
+	// ########################################
+	else if ( slap_type==108 )
+	begin
+		// NC NC NC Action Action
+		switches = ({3'b111, ~(kbd1[0] | joystick_0[4]), ~(kbd1[1] | joystick_0[5])});
+
+		// tristate type of control
+		// -128 10_000000 max negative movement
+		//   -1 11_111111 on  value
+		//    0 00_000000 off value / idle / center of range
+		//  127 01_111111 max positive movement
+		if (inputs[2]) // Down
+		begin
+			adc_bit7[7] = 1;
+			adc_bit6[7] = 1;
+		end
+		else if (inputs[3]) // Up
+		begin
+			adc_bit7[7] = 0;
+			adc_bit6[7] = 0;
+		end
+		else // center
+		begin
+			adc_bit7[7] = 1;
+			adc_bit6[7] = 0;
+		end
+
+		if (inputs[0]) // Right
+		begin
+			adc_bit7[0] = 0;
+			adc_bit6[0] = 0;
+		end
+		else if (inputs[1]) // Left
+		begin
+			adc_bit7[0] = 1;
+			adc_bit6[0] = 1;
+		end
+		else // center
+		begin
+			adc_bit7[0] = 1;
+			adc_bit6[0] = 0;
+		end
+
+	end
+	// ########################################
+	// roadblasters ###########################
+	// ########################################
+	else if ( (slap_type==109) || (slap_type==110) )
+	begin
+		// NC NC NC Fire NC
+		switches = ({3'b111, ~(kbd1[0] | joystick_0[4]), 1'b1}) ;
+
+		// uses trackball X for L R
+
+		// throttle
+		adc_bit7[3] = 0;
+		adc_bit6[3] = (kbd1[1] | joystick_0[5]);
+	end
+end
 
 wire [3:0]	clks, dirs;
 
@@ -718,8 +810,22 @@ FPGA_ATARISYS1 atarisys1
 	.I_COIN      ({~m_coin_aux, ~(m_coin_r), ~(m_coin_l | joystick_0[8])}),
 	// J106 SW5,4,3,2,1 = NC, NC, Jump (NC), Whip2/Start2, Whip1/Start1
 	.I_SW        (switches),
-	// J102 2,3,4,6,8,9,7,5 = P2-U,D,L,R P1-U,D,L,R active high
-	.I_JOY       (inputs),
+
+// when button is pressed ADC value goes full scale, else ADC value is VCC/2
+// we present 0xFF for button press and 0x7F for button release
+
+	// Each ADC input is biased to VCC/2 with resistors and can be pulled high or low or any value in between for analog controllers
+
+	// Some  games use an ADC channel as up/idle/down or left/idle/right control (0xF0 / 0x80 / 0x00)
+	// Other games use an ADC channel as a simple on/off (0xFF / 0x00)
+	// So with just the top two bits we can present the following values to each ADC channel
+	// -128 10_000000 max negative movement
+	//   -1 11_111111 on  value
+	//    0 00_000000 off value / idle / center of range
+	//  127 01_111111 max positive movement
+	.I_ADCB7     (adc_bit7),
+	.I_ADCB6     (adc_bit6),
+
 	// P103 LETA trackball inputs active low
 	.I_CLK(clks), // HCLK2,VCLK2,HCLK1,VCLK1
 	.I_DIR(dirs), // HDIR2,VDIR2,HDIR1,VDIR1
