@@ -301,7 +301,7 @@ begin
 	--	common address for PROMs 4/5A, 7A on SP-282 or 2D, 1/2D on SP-299
 	O_PADDR <= sl_BMO_PFn & slv_MGRA(19 downto 12);
 
-	process (I_SLAP_TYPE, I_MATCHn)
+	process (I_SLAP_TYPE, I_MATCHn, I_PD4A, I_PD7A)
 	begin
 		if (I_SLAP_TYPE = 109) or (I_SLAP_TYPE = 110) then
 			-- if Roadblasters use variation SP-298 / SP-299

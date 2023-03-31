@@ -2,7 +2,7 @@
 //  Arcade: Atari System-1
 //
 //  Port to MiSTer
-//  Copyright (C) 2020 d18c7db
+//  Copyright (C) 2023 d18c7db
 //
 //  This program is free software; you can redistribute it and/or modify it
 //  under the terms of the GNU General Public License as published by the Free
@@ -59,15 +59,14 @@ module emu
 	output        VGA_F1,
 	output [1:0]  VGA_SL,
 	output        VGA_SCALER, // Force VGA scaler
-`ifndef MISTER_DUAL_SDRAM
-	output        VGA_DISABLE,
-`endif
+	output        VGA_DISABLE, // analog out is off
+
 	input  [11:0] HDMI_WIDTH,
 	input  [11:0] HDMI_HEIGHT,
 	output        HDMI_FREEZE,
 
 `ifdef MISTER_FB
-	// Use framebuffer in DDRAM (USE_FB=1 in qsf)
+	// Use framebuffer in DDRAM
 	// FB_FORMAT:
 	//    [2:0] : 011=8bpp(palette) 100=16bpp 101=24bpp 110=32bpp
 	//    [3]   : 0=16bits 565 1=16bits 1555
@@ -182,23 +181,19 @@ module emu
 	input         OSD_STATUS
 );
 
-///////// Default values for all ports not used in this core /////////
+///////// Default values for ports not used in this core /////////
 
 assign ADC_BUS  = 'Z;
 assign USER_OUT = '1;
 assign {UART_RTS, UART_TXD, UART_DTR} = 0;
 assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
 assign {SDRAM_DQ, SDRAM_A, SDRAM_BA, SDRAM_CLK, SDRAM_CKE, SDRAM_DQML, SDRAM_DQMH, SDRAM_nWE, SDRAM_nCAS, SDRAM_nRAS, SDRAM_nCS} = 'Z;
-assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;
+assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;  
 
-//assign VGA_SL = 0;
 assign VGA_F1 = 0;
-assign VGA_SCALER = 0;
+assign VGA_SCALER  = 0;
+assign VGA_DISABLE = 0;
 assign HDMI_FREEZE = 0;
-
-`ifndef MISTER_DUAL_SDRAM
-	assign VGA_DISABLE = 0;
-`endif
 
 // Slapstic Types: marble=103 (x67), indytemp=105 (x69), peterpak=107 (x6B), roadrunn=108 (x6C), roadb109=109 (x6D), roadb110=110 (x6E)
 integer     slap_type = 105;
@@ -206,12 +201,13 @@ integer     slap_type = 105;
 wire         clk_7M;
 wire         clk_14M;
 wire         clk_sys;
-wire         clk_vid;
+wire         clk_video;
 reg          ce_pix;
 wire         pll_locked;
-wire         hblank, vblank;
-wire         hs, vs;
-wire [  3:0] r,g,b, gvid_I, gvid_R, gvid_G, gvid_B;
+wire         HBlank, VBlank;
+wire         HSync, VSync;
+wire [ 11:0] RGB_in;
+wire [  3:0] gvid_I, gvid_R, gvid_G, gvid_B;
 wire [ 15:0] aud_l, aud_r;
 wire [127:0] status;
 wire [  1:0] buttons;
@@ -254,28 +250,30 @@ reg  m_coin_l   = 1'b0;
 reg  m_coin_r   = 1'b0;
 
 wire m_service = status[13];
+wire [2:0] fx  = status[5:3];
 
 //assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
+//////////////////////////////////////////////////////////////////
 
-wire [1:0] ar = status[7:6];
+wire [1:0] ar = status[122:121];
 
 assign VIDEO_ARX = (!ar) ? 12'd4 : (ar - 1'd1);
 assign VIDEO_ARY = (!ar) ? 12'd3 : 12'd0;
 
-`include "build_id.v"
+`include "build_id.v" 
 localparam CONF_STR = {
 	"A.ATARISYS1;;",
 	"-;",
-	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
-	"O67,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
+	"O[122:121],Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
+	"O[5:3],Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
-	"O8,Mouse Buttons,Normal,Swapped;",
-	"O9A,Mouse speed,100%,200%,400%,800%;",
-	"OB,Joystick mode,Digital,Analog;",
-	"OC,Joystick speed,High,Low;",
+	"O[8],Mouse Buttons,Normal,Swapped;",
+	"O[10:9],Mouse speed,100%,200%,400%,800%;",
+	"O[11],Joystick mode,Digital,Analog;",
+	"O[12],Joystick speed,High,Low;",
 	"-;",
-	"OD,Service,Off,On;",
-	"R0,Reset;",
+	"O[13],Service,Off,On;",
+	"R[0],Reset;",
 	"-;",
 	"J1,Button1,Button2,Button3,Button4,Coin,VStart;",
 	"jn,A,B,X,Y,R,Start;",
@@ -289,7 +287,7 @@ pll pll
 	.rst(1'b0),
 	.outclk_0(clk_7M),    //  7.15909 MHz
 	.outclk_1(clk_14M),   // 14.31818 MHz
-	.outclk_2(clk_vid),   // 57.27272 MHz
+	.outclk_2(clk_video), // 57.27272 MHz
 	.outclk_3(clk_sys),   // 93.06817 MHz
 	.outclk_4(SDRAM_CLK), // 93.06817 MHz
 	.locked(pll_locked)
@@ -349,7 +347,7 @@ begin
 end
 
 ///////////////////////////////////////////////////
-always @(posedge clk_vid) begin
+always @(posedge clk_video) begin
 	reg [2:0] div;
 
 	div <= div + 1'd1;
@@ -357,9 +355,9 @@ always @(posedge clk_vid) begin
 end
 
 // convert input video from 16bit IRGB to 12 bit RGB
-RGBI RCONV (.ADDR({gvid_I,gvid_R}), .DATA(r));
-RGBI GCONV (.ADDR({gvid_I,gvid_G}), .DATA(g));
-RGBI BCONV (.ADDR({gvid_I,gvid_B}), .DATA(b));
+RGBI RCONV (.ADDR({gvid_I,gvid_R}), .DATA(RGB_in[11:8]));
+RGBI GCONV (.ADDR({gvid_I,gvid_G}), .DATA(RGB_in[ 7:4]));
+RGBI BCONV (.ADDR({gvid_I,gvid_B}), .DATA(RGB_in[ 3:0]));
 
 // ###################################################
 // # This section loads the ROM files through HPS_IO #
@@ -445,19 +443,11 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h24B1)
 
 `ifndef MODELSIM
 	arcade_video #(.WIDTH(320), .DW(12)) arcade_video
-	(
-		.*,
-
-		.clk_video(clk_vid),
-		.ce_pix(ce_pix),
-
-		.RGB_in({r,g,b}),
-		.HBlank(~hblank),
-		.VBlank(~vblank),
-		.HSync(~hs),
-		.VSync(~vs),
-
-		.fx(status[5:3])
+	(	.*,
+		.HBlank(~HBlank),
+		.VBlank(~VBlank),
+		.HSync (~HSync ),
+		.VSync (~VSync )
 	);
 
 	hps_io #(.CONF_STR(CONF_STR)) hps_io
@@ -839,11 +829,11 @@ FPGA_ATARISYS1 atarisys1
 	.O_VIDEO_R   (gvid_R),
 	.O_VIDEO_G   (gvid_G),
 	.O_VIDEO_B   (gvid_B),
-	.O_HSYNC     (hs),
-	.O_VSYNC     (vs),
+	.O_HSYNC     (HSync),
+	.O_VSYNC     (VSync),
 	.O_CSYNC     (),
-	.O_HBLANK    (hblank),
-	.O_VBLANK    (vblank),
+	.O_HBLANK    (HBlank),
+	.O_VBLANK    (VBlank),
 
 	.O_ADDR2B    (slv_PA2B),
 	.I_DATA2B    (slv_PD2B),
@@ -869,13 +859,24 @@ FPGA_ATARISYS1 atarisys1
 	.I_VDATA     (slv_VDATA)
 );
 
+/* These are output by arcade_video module
+assign CLK_VIDEO = clk_sys;
+assign CE_PIXEL = ce_pix;
+assign VGA_SL = 0;
+assign VGA_DE = ~(HBlank | VBlank);
+assign VGA_HS = HSync;
+assign VGA_VS = VSync;
+assign VGA_G  = {g,4'd0};
+assign VGA_R  = {r,4'd0};
+assign VGA_B  = {b,4'd0};
+*/
 // pragma translate_off
 bmp_out #( "BI" ) bmp_out
 (
 	.clk_i(clk_7M),
 	.dat_i({r,4'b0,g,4'b0,b,4'b0}),
-	.hs_i(hs),
-	.vs_i(vs)
+	.hs_i(HSync),
+	.vs_i(VSync)
 );
 // pragma translate_on
 endmodule
