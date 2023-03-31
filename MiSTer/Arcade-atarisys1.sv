@@ -365,7 +365,7 @@ RGBI BCONV (.ADDR({gvid_I,gvid_B}), .DATA(b));
 // # This section loads the ROM files through HPS_IO #
 // ###################################################
 
-wire [17:0] slv_VADDR;
+wire [18:0] slv_VADDR;
 wire [63:0] slv_VDATA;
 wire [22:0] sdram_addr;
 reg  [21:0] addr_new=0;
@@ -392,7 +392,7 @@ begin
 	end
 end
 
-assign sdram_addr = ioctl_download?{1'b0,addr_new}:{5'd0,slv_VADDR};
+assign sdram_addr = ioctl_download?{1'b0,addr_new}:{4'd0,slv_VADDR};
 assign ioctl_wait = ~(pll_locked && sdram_ready);
 
 //wire gp_wr;

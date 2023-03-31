@@ -17,6 +17,9 @@
 	</rom>
 
 	<rom index="0" zip="indytemp.zip|indytempd.zip" md5="none">
+		<!-- Filler 64Kx64 -->
+		<part repeat="524288">FF</part>
+
 		<!-- TILE ROMs Bank 1 Plane 7, 6, 5, 4, 3, 2, 1, 0 (0x070000, 0x060000, 0x050000, 0x040000, 0x030000, 0x020000, 0x010000, 0x000000) 64Kx64 -->
 		<interleave output="64">
 			<part crc="ffa8749c" map="00000001" name="136036.135"/>
@@ -76,9 +79,6 @@
 		<part repeat="524288">FF</part>
 
 		<!-- TILE ROMs Bank 7 Plane 7, 6, 5, 4, 3, 2, 1, 0 (0x370000, 0x360000, 0x350000, 0x340000, 0x330000, 0x320000, 0x310000, 0x300000) 64Kx64 -->
-		<part repeat="524288">FF</part>
-
-		<!-- 0x380000 - 0x3FFFFF Filler 64Kx64 -->
 		<part repeat="524288">FF</part>
 
 		<!-- 0x00000 - 0x07FFF BIOS ROMs 16Kx16 -->

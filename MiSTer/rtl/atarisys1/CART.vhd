@@ -363,10 +363,10 @@ begin
 
 			-- PROM 7A on SP-282
 			-- convert ROM selects back into an address vector
-			   if I_PD7A(4) = '0' then slv_GBA(19 downto 16) <= "0000";
-			elsif I_PD7A(5) = '0' then slv_GBA(19 downto 16) <= "0010";
-			elsif I_PD7A(6) = '0' then slv_GBA(19 downto 16) <= "0100";
-			elsif I_PD7A(7) = '0' then slv_GBA(19 downto 16) <= "0110";
+			   if I_PD7A(4) = '0' then slv_GBA(19 downto 16) <= "0010"; -- GCS1
+			elsif I_PD7A(5) = '0' then slv_GBA(19 downto 16) <= "0100"; -- GCS2
+			elsif I_PD7A(6) = '0' then slv_GBA(19 downto 16) <= "0110"; -- GCS3
+			elsif I_PD7A(7) = '0' then slv_GBA(19 downto 16) <= "1000"; -- GCS4
 			else                       slv_GBA(19 downto 16) <= (others=>'1');
 			end if;
 
