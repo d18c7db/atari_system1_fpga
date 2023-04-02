@@ -72,6 +72,10 @@ entity MAIN is
 		I_LETA_TST  : in  std_logic;
 		I_LETA_RES  : in  std_logic;
 
+		-- EEPROM data bus
+		I_EEPDATA   : in  std_logic_vector( 7 downto 0);
+		O_EEPWR     : out std_logic;
+
 		-- to game cartridge
 		O_BASn      : out std_logic;
 		O_MEXTn     : out std_logic;
@@ -99,7 +103,7 @@ architecture RTL of MAIN is
 		sl_CRBUSn,
 		sl_DTACKn,
 		sl_E2PROMn,
-		sl_EEP_OEn,
+--		sl_EEP_OEn,
 		sl_HSCRLDn,
 		sl_IBUSn,
 		sl_INPUTn,
@@ -178,7 +182,7 @@ architecture RTL of MAIN is
 		slv_13K_data,
 		slv_13L_data,
 		slv_SBDI,
-		slv_EEPROM,
+--		slv_EEPROM,
 		slv_INPUTS,
 		slv_LETADB,
 		slv_ADC_data
@@ -221,7 +225,8 @@ begin
 	O_MADDR      <= slv_cpu_ad(15 downto 1);
 	O_MDATA      <= slv_cpu_do;
 	O_SYSRESn    <= sl_SYSRESn;
-
+	O_EEPWR      <= not (sl_WLn or sl_E2PROMn);
+	
 	slv_VBUSD    <= I_VBUSD;
 	slv_ADC_data <= I_ADC_DATA;
 	sl_AJSINTn   <= not (I_ADC_EOC and sl_8H8); --gate 15J
@@ -250,7 +255,7 @@ begin
 				 x"FF" & slv_ADC_DATA when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RAJS    = '1' else
 				 x"FF" & slv_SBDI     when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_SNDRDn  = '0' else
 				 x"FF" & slv_LETADB   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RLETAn  = '0' else
-				 x"FF" & slv_EEPROM   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_E2PROMn = '0' else
+				 x"FF" & I_EEPDATA    when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_E2PROMn = '0' else
 				 x"FF" & slv_INPUTS   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_INPUTn  = '0' else
 		(others=>'0');
 
@@ -539,19 +544,8 @@ begin
 		end if;
 	end process;
 
-	sl_EEP_OEn <= sl_8H5 and sl_SYSRESn;
-
-	-- 13E EEPROM
-	p_EEPROM	: entity work.EEPROM
-	port map (
-		CLK => I_XCKR,
-		WEn => sl_WLn,
-		CEn => sl_E2PROMn,
-		OEn => sl_EEP_OEn,
-		AD  => slv_cpu_ad( 9 downto 1),
-		DI  => slv_cpu_do( 7 downto 0),
-		DO  => slv_EEPROM
-	);
+-- 13E EEPROM loaded by top level
+--	sl_EEP_OEn <= sl_8H5 and sl_SYSRESn;
 
 	-- 12C LETA trackball controller
 	p_LETA	: entity work.LETA

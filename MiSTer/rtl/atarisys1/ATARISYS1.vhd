@@ -62,8 +62,13 @@ entity FPGA_ATARISYS1 is
 		O_HBLANK   : out std_logic;
 		O_VBLANK   : out std_logic;
 
-		O_ADDR2B   : out std_logic_vector(12 downto 0);
+		O_ADDR2B   : out std_logic_vector(13 downto 0);
 		I_DATA2B   : in  std_logic_vector( 7 downto 0);
+
+		-- EEPROM data bus
+		O_EEPDATA  : out std_logic_vector( 7 downto 0);
+		I_EEPDATA  : in  std_logic_vector( 7 downto 0);
+		O_EEPWR    : out std_logic;
 
 		-- CART interface
 		O_ROMn     : out std_logic_vector( 4 downto 0);
@@ -216,6 +221,7 @@ begin
 	O_SBA     <= slv_SBA;
 	O_MA18n   <= sl_MA18n;
 	O_ROMn    <= slv_ROMn;
+	O_EEPDATA <= slv_MDO(7 downto 0);
 
 	u_main : entity work.MAIN
 	port map (
@@ -271,6 +277,9 @@ begin
 		I_LETA_DIR  => I_DIR,
 		I_LETA_TST  => sl_TBTEST,
 		I_LETA_RES  => sl_TBRESn,
+
+		I_EEPDATA   => I_EEPDATA,
+		O_EEPWR     => O_EEPWR,
 
 		-- to game cartridge
 		O_MA18n     => sl_MA18n,

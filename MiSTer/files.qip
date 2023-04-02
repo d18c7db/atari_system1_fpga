@@ -41,7 +41,6 @@ set_global_assignment -name VHDL_FILE rtl/atarisys1/LETA.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/PROM_5E.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/LS299.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/RAM_2K8.vhd
-set_global_assignment -name VHDL_FILE rtl/atarisys1/EEPROM.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/CRAMS.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/VRAMS.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/GPC.vhd

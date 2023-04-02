@@ -396,15 +396,15 @@ assign ioctl_wait = ~(pll_locked && sdram_ready);
 //wire gp_wr;
 wire sl_wr_SROM0, sl_wr_SROM1, sl_wr_SROM2;
 wire sl_wr_ROM0, sl_wr_ROM1, sl_wr_ROM2, sl_wr_ROM5, sl_wr_ROM6, sl_wr_ROM7;
-wire sl_wr_2B, sl_wr_5A , sl_wr_7A, sl_wr_SLAP, sl_MA18n;
+wire sl_wr_2B, sl_wr_5A , sl_wr_7A, sl_wr_SLAP, sl_MA18n, sl_wr_ep1, sl_wr_ep2;
 
 wire [15:1] slv_MADEC;
 wire [15:0] slv_MDATA;
 wire [15:0] slv_ROM0, slv_ROM1, slv_ROM2, slv_ROM5, slv_ROM6, slv_ROM7, slv_SLAP;
 wire [13:0] slv_SBA;
-wire [12:0] slv_PA2B;
+wire [13:0] slv_PA2B;
 wire [ 8:0] slv_PADDR;
-wire [ 7:0] slv_SROM0, slv_SROM1, slv_SROM2;
+wire [ 7:0] slv_SROM0, slv_SROM1, slv_SROM2, slv_eprom_din, slv_eprom_dout;
 wire [ 7:0] slv_SDATA, slv_PD4A, slv_PD7A, slv_PD2B;
 wire [ 4:0] slv_ROMn;
 wire [ 2:0] slv_SROMn;
@@ -428,18 +428,20 @@ assign sl_wr_ROM7    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h47  &
 // 0x480000 - 0x487fff
 assign sl_wr_SLAP    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h90  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
 // 0x488000 - 0x48bfff
-assign sl_wr_SROM0   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h122  ) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_SROM0   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h122                       ) ? 1'b1 : 1'b0; // x4000
 // 0x48C000 - 0x48ffff
-assign sl_wr_SROM1   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h123  ) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_SROM1   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h123                       ) ? 1'b1 : 1'b0; // x4000
 // 0x490000 - 0x493fff
-assign sl_wr_SROM2   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h124  ) ? 1'b1 : 1'b0; // x4000
-// 0x494000 - 0x495fff
-assign sl_wr_2B      = (ioctl_wr && !ioctl_index && ioctl_addr[24:13]==12'h24A ) ? 1'b1 : 1'b0; // x2000
-// 0x496000 - 0x4961ff
-assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h24B0) ? 1'b1 : 1'b0; // x200
-// 0x496200 - 0x4963ff
-assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h24B1) ? 1'b1 : 1'b0; // x200
-// 0x496400
+assign sl_wr_SROM2   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h124                       ) ? 1'b1 : 1'b0; // x4000
+// 0x494000 - 0x497fff
+assign sl_wr_2B      = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h125                       ) ? 1'b1 : 1'b0; // x4000
+// 0x498000 - 0x4981ff
+assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_addr[24: 9]==16'h24C0                      ) ? 1'b1 : 1'b0; // x200
+// 0x498200 - 0x4983ff
+assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24: 9]==16'h24C1                      ) ? 1'b1 : 1'b0; // x200
+// 0x498400 - 0x4985ff
+assign sl_wr_ep1     = (ioctl_wr && !ioctl_index && ioctl_addr[24: 9]==16'h24C2                      ) ? 1'b1 : 1'b0; // x200
+// 0x498600
 
 `ifndef MODELSIM
 	arcade_video #(.WIDTH(320), .DW(12)) arcade_video
@@ -573,21 +575,27 @@ assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24:9] ==16'h24B1)
 
 	// 8 M10K blocks
 	// Alphanumerics ROM
-	dpram  #(13,8) al_rom_2B
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_2B   ), .address_a(ioctl_addr[12:0]), .data_a(                 ioctl_dout ), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(  slv_PA2B[12:0]), .data_b(                            ), .q_b(slv_PD2B    ));
+	dpram  #(14,8) al_rom_2B
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_2B   ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(            ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(  slv_PA2B[13:0]), .data_b(                            ), .q_b(slv_PD2B    ));
 
 	// 1 M10K blocks
 	// Color PROM
 	dpram  #(9,8) cp_rom_5A
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_5A   ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD4A       ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_5A   ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD4A       ));
 
 	// 1 M10K blocks
 	// Remap PROM
 	dpram  #(9,8) cp_rom_7A
-	(.clock_a(clk_sys    ), .enable_a(), .wren_a(sl_wr_7A   ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
-	 .clock_b(clk_sys    ), .enable_b(), .wren_b(           ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD7A       ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_7A   ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD7A       ));
+
+	// 1 M10K blocks
+	// EPROM
+	dpram  #(9,8) mp_eprom
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ep1  ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(sl_wr_ep2  ), .address_b( slv_MADEC[ 9:1]), .data_b(              slv_eprom_dout), .q_b(slv_eprom_din  ));
 `else
 	assign sdram_ready = 0;
 
@@ -837,6 +845,10 @@ FPGA_ATARISYS1 atarisys1
 
 	.O_ADDR2B    (slv_PA2B),
 	.I_DATA2B    (slv_PD2B),
+
+	.O_EEPDATA   (slv_eprom_dout),
+	.I_EEPDATA   (slv_eprom_din),
+	.O_EEPWR     (sl_wr_ep2),
 
 	// CART memory interface
 	.O_ROMn      (slv_ROMn),  // maincpu ROM selects
