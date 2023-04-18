@@ -147,30 +147,75 @@ REM 136040-124.6d                         32768 CRC(524d65f7) SHA1(3f2b0ee642fe7
 REM 136040-126.7a                           512 CRC(1713c0cd) SHA1(237ce1c53d8a17823df3341360f03b2b94cd91bb)
 REM 136040-125.5a                           512 CRC(a9ca8795) SHA1(77583510e7a7179493f313e0c0b25d029dd6e583)
 
+REM ROMs required for driver "roadblst".
+REM Name                                   Size Checksum
+REM 136048-1101.2s                        32768 CRC(fe342d27) SHA1(72deac16ab9b6b811f49d70d700d6bc3a904f9d5)
+REM 136048-1102.2r                        32768 CRC(17c7e780) SHA1(675a2fe5ac55c97d54153eacabf863a525e4b71f)
+REM 136048-1103.2n                        32768 CRC(39688e01) SHA1(1b273e26b48a2f69b0895c29c9b3e762c686661d)
+REM 136048-1104.2m                        32768 CRC(c8f9bd8e) SHA1(452194efafd5f9562434dafcb14b72f400fc4a49)
+REM 136048-1105.2k                        32768 CRC(c69e439e) SHA1(c933637820c04bdbc56990423adfb9067e09fad7)
+REM 136048-1106.2j                        32768 CRC(4ee55796) SHA1(045635cd4f80a5f2c378cb4c55996e09c21b5859)
+REM 136048-1107.3s                        32768 CRC(02117c58) SHA1(e68eb9fbdbd473f217883a96ad581a94f1df53d9)
+REM 136048-1108.2p                        32768 CRC(1e148525) SHA1(613c408b352d2d9bac8091bbd5a3c60d09f81084)
+REM 136048-1109.3n                        32768 CRC(110ce07e) SHA1(0d165e18bad935713efc44b8e609c7fa7093f5c8)
+REM 136048-1110.2l                        32768 CRC(c00aa0f4) SHA1(a95e2717e725721b59969499720a8da0cf208e36)
+REM 136048-1111.4s                        32768 CRC(c951d014) SHA1(596fd0315a5da3d3f6131883d44770724d8e46e3)
+REM 136048-1112.3r                        32768 CRC(95c5a006) SHA1(0492404c0f092c1bb6239078e3a9ef45fc153923)
+REM 136048-1113.4n                        32768 CRC(f61f2370) SHA1(9f4b2aa91ac5dc0e543e5dfe1151fdea3579c739)
+REM 136048-1114.3m                        32768 CRC(774a36a8) SHA1(ebcf4363174abd834f3e77b0f1a2e29497f470b4)
+REM 136048-1115.4r                        32768 CRC(a47bc79d) SHA1(367f21c355c0af55629d2c5746cd5cb06272abc0)
+REM 136048-1116.3p                        32768 CRC(b8a5c215) SHA1(2594f2a865fb73c8a7829e50ff19a6494a35c088)
+REM 136048-1117.4m                        32768 CRC(2d1c1f64) SHA1(66141b9a7ae8d6dd3f1315d60cf0e99cd802d2e5)
+REM 136048-1118.3l                        32768 CRC(be879b8e) SHA1(dc1d1f7bdb511e922b650fac88307a08ab37ac4c)
+REM 136048-1149.14e                       16384 CRC(2e54f95e) SHA1(5056ddec3c88384ada1d2ee9b1532b9ba9f34e08)
+REM 136048-1157.11c                       32768 CRC(6d9ad91e) SHA1(15815d3777be5377e053a39c1cef20eb101d9b92)
+REM 136048-1158.11a                       32768 CRC(7d4cf151) SHA1(979006149906638b942a3157b237112acc16183d)
+REM 136048-1159.13c                       32768 CRC(921c0e34) SHA1(bcc90a73baaecc551e1065037681a79e260905ff)
+REM 136048-1160.13a                       32768 CRC(8bf22f7d) SHA1(b20f68c037038259f60f7fb64da49780e9faf19f)
+REM 136048-1169.1516e                     16384 CRC(ee318052) SHA1(f66ff39499697b7439dc62567e727fec769c1505)
+REM 136048-1170.17e                       16384 CRC(75dfec33) SHA1(3092348b98419bb23181d21406733d5d21cd3d82)
+REM 136048-1173.2d                          512 CRC(c80574af) SHA1(9a3dc83f70e79915ce0db3e6e69b5dcfee3acb6f)
+REM 136048-1174.12d                         512 CRC(db4a4d53) SHA1(c5468f3585ec9bc23c9ee990b3ae3738b0309823)
+REM 136048-2141.7l                        32768 CRC(054273b2) SHA1(4c820c00d3b67825c361edc9615c89c2a9a1c6d3)
+REM 136048-2142.8l                        32768 CRC(49181bec) SHA1(79e042e4f079a9806ef12c5c8dfdc2e6e4f90011)
+REM 136048-2143.7m                        32768 CRC(f63dc29a) SHA1(e54637b9d0b271aa9b58e89a442ac03ec812e1eb)
+REM 136048-2144.8m                        32768 CRC(b1fc5955) SHA1(b860213a9b5ae7547c258812045e71795129598f)
+REM 136048-2145.7n                        32768 CRC(c6d30d6f) SHA1(acb552976b2dcfa585097ea246ca88034549c8ab)
+REM 136048-2146.8n                        32768 CRC(16951020) SHA1(5e5a6ad4ae87723060232c7ecb837f5fc2a9be68)
+REM 136048-2147.7k                        16384 CRC(5c1adf67) SHA1(53838a2f5059797991aa337a7bec32f7e694610a)
+REM 136048-2148.8k                        16384 CRC(d9ac8966) SHA1(7d056c1eb8184b4261c5713b0d5799b2fd8bde2a)
+
 SET rom_path_src0=..\roms\atarisy1
 SET rom_path_src1=..\roms\indytemp
 SET rom_path_src2=..\roms\marble
 SET rom_path_src3=..\roms\peterpak
 SET rom_path_src4=..\roms\roadrunn
+SET rom_path_src5=..\roms\roadblst
 
 SET rom_path_dst0=..\source\roms\atarisy1
 SET rom_path_dst1=..\source\roms\indytemp
 SET rom_path_dst2=..\source\roms\marble
 SET rom_path_dst3=..\source\roms\peterpak
 SET rom_path_dst4=..\source\roms\roadrunn
+SET rom_path_dst5=..\source\roms\roadblst
 
 MKDIR %rom_path_dst0%
 MKDIR %rom_path_dst1%
 MKDIR %rom_path_dst2%
 MKDIR %rom_path_dst3%
 MKDIR %rom_path_dst4%
+MKDIR %rom_path_dst5%
 
 REM BIOS ROMs common to all games
-genrom.py %rom_path_src0%\136032.101.e3        PROM_3E %rom_path_dst0%\PROM_3E.VHD
-genrom.py %rom_path_src0%\136032.102.e5        PROM_5E %rom_path_dst0%\PROM_5E.VHD
-genrom.py %rom_path_src0%\136032.104.f5        ROM_5F  %rom_path_dst0%\ROM_5F.VHD
-genrom.py %rom_path_src0%\136032.114.j11       ROM_11J %rom_path_dst0%\ROM_11J.VHD
-genrom.py %rom_path_src0%\136032.115.j10       ROM_10J %rom_path_dst0%\ROM_10J.VHD
+genrom.py %rom_path_src0%\136032.101.e3         PROM_3E %rom_path_dst0%\PROM_3E.VHD
+genrom.py %rom_path_src0%\136032.102.e5         PROM_5E %rom_path_dst0%\PROM_5E.VHD
+genrom.py %rom_path_src0%\136032.104.f5         ROM_5F  %rom_path_dst0%\ROM_5F.VHD
+genrom.py %rom_path_src0%\136032.205.l13        ROM_11J %rom_path_dst0%\BIOS.TTL.205.L13.VHD
+genrom.py %rom_path_src0%\136032.206.l12        ROM_10J %rom_path_dst0%\BIOS.TTL.206.L12.VHD
+genrom.py %rom_path_src0%\136032.105.l13        ROM_11J %rom_path_dst0%\BIOS.TTL.105.L13.VHD
+genrom.py %rom_path_src0%\136032.106.l12        ROM_10J %rom_path_dst0%\BIOS.TTL.106.L12.VHD
+genrom.py %rom_path_src0%\136032.114.j11        ROM_11J %rom_path_dst0%\BIOS.LSI.114.J11.VHD
+genrom.py %rom_path_src0%\136032.115.j10        ROM_10J %rom_path_dst0%\BIOS.LSI.115.J10.VHD
 
 REM ROMs required for driver "indytemp" A043307-02 assembly
 REM "maincpu"
@@ -306,6 +351,43 @@ genrom.py %rom_path_src4%\136040-118.1d         ROM_1D  %rom_path_dst4%\ROM_1D.V
 genrom.py %rom_path_src4%\136040-124.6d         ROM_6D  %rom_path_dst4%\ROM_6D.VHD
 genrom.py %rom_path_src4%\136040-126.7a         ROM_7A  %rom_path_dst4%\ROM_7A.VHD
 genrom.py %rom_path_src4%\136040-125.5a         ROM_5A  %rom_path_dst4%\ROM_5A.VHD
+
+REM ROMs required for driver "roadblst"
+genrom.py %rom_path_src5%\136048-1157.11c       ROM_11C %rom_path_dst5%\ROM_11C.VHD
+genrom.py %rom_path_src5%\136048-1158.11a       ROM_11A %rom_path_dst5%\ROM_11A.VHD
+genrom.py %rom_path_src5%\136048-1159.13c       ROM_13C %rom_path_dst5%\ROM_13C.VHD
+genrom.py %rom_path_src5%\136048-1160.13a       ROM_13A %rom_path_dst5%\ROM_13A.VHD
+genrom.py %rom_path_src5%\136048-2141.7l        ROM_7L  %rom_path_dst5%\ROM_7L.VHD
+genrom.py %rom_path_src5%\136048-2142.8l        ROM_8L  %rom_path_dst5%\ROM_8L.VHD
+genrom.py %rom_path_src5%\136048-2143.7m        ROM_7M  %rom_path_dst5%\ROM_7M.VHD
+genrom.py %rom_path_src5%\136048-2144.8m        ROM_8M  %rom_path_dst5%\ROM_8M.VHD
+genrom.py %rom_path_src5%\136048-2145.7n        ROM_7N  %rom_path_dst5%\ROM_7N.VHD
+genrom.py %rom_path_src5%\136048-2146.8n        ROM_8N  %rom_path_dst5%\ROM_8N.VHD
+genrom.py %rom_path_src5%\136048-2147.7k        ROM_7K  %rom_path_dst5%\ROM_7K.VHD
+genrom.py %rom_path_src5%\136048-2148.8k        ROM_8K  %rom_path_dst5%\ROM_8K.VHD
+genrom.py %rom_path_src5%\136048-1149.14e       ROM_14E %rom_path_dst5%\ROM_14E.VHD
+genrom.py %rom_path_src5%\136048-1169.1516e     ROM_15E %rom_path_dst5%\ROM_1516E.VHD
+genrom.py %rom_path_src5%\136048-1170.17e       ROM_17E %rom_path_dst5%\ROM_17E.VHD
+genrom.py %rom_path_src5%\136048-1101.2s        ROM_2S  %rom_path_dst5%\ROM_2S.VHD
+genrom.py %rom_path_src5%\136048-1102.2r        ROM_2R  %rom_path_dst5%\ROM_2R.VHD
+genrom.py %rom_path_src5%\136048-1103.2n        ROM_2N  %rom_path_dst5%\ROM_2N.VHD
+genrom.py %rom_path_src5%\136048-1104.2m        ROM_2M  %rom_path_dst5%\ROM_2M.VHD
+genrom.py %rom_path_src5%\136048-1105.2k        ROM_2K  %rom_path_dst5%\ROM_2K.VHD
+genrom.py %rom_path_src5%\136048-1106.2j        ROM_2J  %rom_path_dst5%\ROM_2J.VHD
+genrom.py %rom_path_src5%\136048-1107.3s        ROM_3S  %rom_path_dst5%\ROM_3S.VHD
+genrom.py %rom_path_src5%\136048-1108.2p        ROM_2P  %rom_path_dst5%\ROM_2P.VHD
+genrom.py %rom_path_src5%\136048-1109.3n        ROM_3N  %rom_path_dst5%\ROM_3N.VHD
+genrom.py %rom_path_src5%\136048-1110.2l        ROM_2L  %rom_path_dst5%\ROM_2L.VHD
+genrom.py %rom_path_src5%\136048-1111.4s        ROM_4S  %rom_path_dst5%\ROM_4S.VHD
+genrom.py %rom_path_src5%\136048-1112.3r        ROM_3R  %rom_path_dst5%\ROM_3R.VHD
+genrom.py %rom_path_src5%\136048-1113.4n        ROM_4N  %rom_path_dst5%\ROM_4N.VHD
+genrom.py %rom_path_src5%\136048-1114.3m        ROM_3M  %rom_path_dst5%\ROM_3M.VHD
+genrom.py %rom_path_src5%\136048-1115.4r        ROM_4R  %rom_path_dst5%\ROM_4R.VHD
+genrom.py %rom_path_src5%\136048-1116.3p        ROM_3P  %rom_path_dst5%\ROM_3P.VHD
+genrom.py %rom_path_src5%\136048-1117.4m        ROM_4M  %rom_path_dst5%\ROM_4M.VHD
+genrom.py %rom_path_src5%\136048-1118.3l        ROM_3L  %rom_path_dst5%\ROM_3L.VHD
+genrom.py %rom_path_src5%\136048-1174.12d       ROM_7A  %rom_path_dst5%\ROM_12D.VHD
+genrom.py %rom_path_src5%\136048-1173.2d        ROM_5A  %rom_path_dst5%\ROM_2D.VHD
 
 ECHO ##################################################
 ECHO # Remember these ROMs need to be manually adjusted
