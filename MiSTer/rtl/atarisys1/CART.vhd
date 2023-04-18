@@ -36,6 +36,7 @@ port(
 	O_INT1n      : out std_logic;
 	O_INT3n      : out std_logic;
 	O_WAITn      : out std_logic;
+	O_MD7        : out std_logic;
 
 	-- sound ROMs
 	I_SBA        : in  std_logic_vector(13 downto 0);
@@ -50,6 +51,9 @@ port(
 	I_MGRA       : in  std_logic_vector(19 downto 1);
 	I_MATCHn     : in  std_logic;
 	I_MGHF       : in  std_logic;
+	I_MEXTn      : in  std_logic;
+	I_BW_Rn      : in  std_logic;
+
 	I_GLDn       : in  std_logic;
 	I_MO_PFn     : in  std_logic;
 	I_SNDEXTn    : in  std_logic;
@@ -94,6 +98,10 @@ architecture logic of ATARI_CART is
 		sl_BMO_PFn,
 		sl_MGHF,
 		sl_GLDn,
+		sl_srq,
+		sl_45f_qa,
+		sl_GLDn_last,
+		sl_RD240Kn,
 		sl_SNDEXTn,
 		sl_SNDRSTn,
 		sl_SNDBR_Wn,
@@ -166,8 +174,40 @@ begin
 	O_MOSR      <= slv_MOSR;
 	O_PFSR      <= slv_PFSR;
 	O_INT1n     <= '1';
-	O_INT3n     <= '1';
+	O_INT3n     <= not (sl_srq and sl_45f_qa) when (I_SLAP_TYPE = 109 or I_SLAP_TYPE = 110) else '1';
 	O_WAITn     <= '1';
+	O_MD7       <= sl_45f_qa;
+
+	----------------------------------------
+	-- sheet 11 SP-299 INT3 schema        --
+	----------------------------------------
+	sl_RD240Kn <= I_MEXTn or I_MA18n or I_BW_Rn;
+
+	-- counter 4/5F is kept in "hold" mode (pins ENT, ENP grounded) so just (ab)used as a 1 bit latch
+	p_45F : process
+	begin
+		wait until rising_edge(I_MCKR);
+		sl_GLDn_last <= sl_GLDn;
+		if sl_GLDn_last = '0' and sl_GLDn = '1' then
+			-- if /LD asserted
+			if I_MATCHn = '0' and slv_MGRA(19 downto 4) = x"FFFF" then
+				sl_45f_qa <= not (slv_MGRA(3) or slv_MGRA(2) or slv_MGRA(1));
+			end if;
+		end if;
+	end process;
+
+	-- clocked S/R flip/flop
+	p_SRFF : process
+	begin
+		wait until rising_edge(I_MCKR);
+		-- set
+		if sl_RD240Kn = '0' then
+			sl_srq <= '1';
+		-- reset
+		elsif sl_SNDRSTn = '0'then
+			sl_srq <= '0';
+		end if;
+	end process;
 
 	----------------------------------------
 	-- sheet 2 SP-282 -- (sheet 8 SP-280) --
@@ -303,21 +343,22 @@ begin
 
 	process (I_SLAP_TYPE, I_MATCHn, I_PD4A, I_PD7A)
 	begin
-		if (I_SLAP_TYPE = 109) or (I_SLAP_TYPE = 110) then
-			-- if Roadblasters use variation SP-298 / SP-299
+		if (I_SLAP_TYPE = 108) or (I_SLAP_TYPE = 109) or (I_SLAP_TYPE = 110) then
 
-			-- PROM 2D on SP-299
+			-- if Roadrunner or Roadblasters use this variation
+			-- derived from MAME source code since schema SP-299 doesn't work
+
 			if I_MATCHn = '0' then
 				sl_NOROM7n <= '0';
 				sl_NOROM6n <= '0';
 				sl_NOROM5n <= I_PD4A(5);
 				sl_NOROM4n <= I_PD4A(4);
-				sl_NOROM3n <= I_PD4A(7);
+				sl_NOROM3n <= '1';
 				sl_GD7P7   <= I_PD4A(3);
 				sl_GD7P6   <= I_PD4A(2);
 				sl_GD7P5   <= I_PD4A(1);
 				sl_GD7P4   <= I_PD4A(0);
-				sl_GD7P3   <= I_PD4A(6);
+				sl_GD7P3   <= '1';
 			else
 				sl_NOROM7n <= '1';
 				sl_NOROM6n <= '1';
@@ -331,8 +372,18 @@ begin
 				sl_GD7P3   <= '1';
 			end if;
 
-			-- PROM 1/2D , decoder 1D, buffers 2H, 3H, 4H on SP-299
-			slv_GBA <=  I_PD7A & slv_MGRA(11 downto 1);
+			-- convert ROM selects back into an address vector
+			   if I_PD7A(4) = '0'                    then slv_GBA(19 downto 17) <= "001"; -- GCS1
+			elsif I_PD7A(5) = '0'                    then slv_GBA(19 downto 17) <= "010"; -- GCS2
+			elsif I_PD7A(6) = '0'                    then slv_GBA(19 downto 17) <= "011"; -- GCS3
+			elsif I_PD7A(7) = '0'                    then slv_GBA(19 downto 17) <= "100"; -- GCS4
+			elsif I_PD4A(6) = '0'                    then slv_GBA(19 downto 17) <= "101"; -- GCS5
+			elsif I_PD4A(7) = '0' and I_PD4A(3)= '1' then slv_GBA(19 downto 17) <= "110"; -- GCS6
+			elsif I_PD4A(7) = '0' and I_PD4A(3)= '0' then slv_GBA(19 downto 17) <= "111"; -- GCS7
+			else                                          slv_GBA(19 downto 17) <= (others=>'1');
+			end if;
+
+			slv_GBA(16 downto 1) <= '0' & I_PD7A(3 downto 0) & slv_MGRA(11 downto 1);
 		else
 			-- else if others default to SP-282
 
@@ -363,15 +414,18 @@ begin
 
 			-- PROM 7A on SP-282
 			-- convert ROM selects back into an address vector
-			   if I_PD7A(4) = '0' then slv_GBA(19 downto 16) <= "0010"; -- GCS1
-			elsif I_PD7A(5) = '0' then slv_GBA(19 downto 16) <= "0100"; -- GCS2
-			elsif I_PD7A(6) = '0' then slv_GBA(19 downto 16) <= "0110"; -- GCS3
-			elsif I_PD7A(7) = '0' then slv_GBA(19 downto 16) <= "1000"; -- GCS4
-			else                       slv_GBA(19 downto 16) <= (others=>'1');
+			   if I_PD7A(4) = '0'                    then slv_GBA(19 downto 17) <= "001"; -- GCS1
+			elsif I_PD7A(5) = '0'                    then slv_GBA(19 downto 17) <= "010"; -- GCS2
+			elsif I_PD7A(6) = '0'                    then slv_GBA(19 downto 17) <= "011"; -- GCS3
+			elsif I_PD7A(7) = '0'                    then slv_GBA(19 downto 17) <= "100"; -- GCS4
+
+
+
+			else                                          slv_GBA(19 downto 17) <= (others=>'1');
 			end if;
 
 			-- buffers 3A, 6A
-			slv_GBA(15 downto 1) <= I_PD7A(3 downto 0) & slv_MGRA(11 downto 1);
+			slv_GBA(16 downto 1) <= '0' & I_PD7A(3 downto 0) & slv_MGRA(11 downto 1);
 		end if;
 	end process;
 
@@ -440,19 +494,19 @@ begin
 	-- 5D Storage/Logic Array Graphics Shifter
 	u_5D : entity work.SLAGS
 	port map (
-		I_MCKR          => I_MCKR,
-		I_B             => slv_5D_DB,
-		I_A             => slv_5D_DA,
-		I_HLDBn         => sl_NOROM4n,
-		I_HLDAn         => sl_NOROM5n,
-		I_FLP           => sl_MGHF,
-		I_MO_PFn        => sl_BMO_PFn,
-		I_LDn           => sl_GLDn,
+		I_MCKR     => I_MCKR,
+		I_B        => slv_5D_DB,
+		I_A        => slv_5D_DA,
+		I_HLDBn    => sl_NOROM4n,
+		I_HLDAn    => sl_NOROM5n,
+		I_FLP      => sl_MGHF,
+		I_MO_PFn   => sl_BMO_PFn,
+		I_LDn      => sl_GLDn,
 
-		O_PFDA          => slv_PFSR(5),
-		O_PFDB          => slv_PFSR(4),
-		O_MODA          => slv_MOSR(5),
-		O_MODB          => slv_MOSR(4)
+		O_PFDA     => slv_PFSR(5),
+		O_PFDB     => slv_PFSR(4),
+		O_MODA     => slv_MOSR(5),
+		O_MODB     => slv_MOSR(4)
 	);
 
 	----------------------------------------
@@ -461,18 +515,18 @@ begin
 	-- 5E Storage/Logic Array Graphics Shifter
 	u_5E : entity work.SLAGS
 	port map (
-		I_MCKR          => I_MCKR,
-		I_B             => slv_5E_DB,
-		I_A             => slv_5E_DA,
-		I_HLDBn         => sl_NOROM6n,
-		I_HLDAn         => sl_NOROM7n,
-		I_FLP           => sl_MGHF,
-		I_MO_PFn        => sl_BMO_PFn,
-		I_LDn           => sl_GLDn,
+		I_MCKR     => I_MCKR,
+		I_B        => slv_5E_DB,
+		I_A        => slv_5E_DA,
+		I_HLDBn    => sl_NOROM6n,
+		I_HLDAn    => sl_NOROM7n,
+		I_FLP      => sl_MGHF,
+		I_MO_PFn   => sl_BMO_PFn,
+		I_LDn      => sl_GLDn,
 
-		O_PFDA          => slv_PFSR(7),
-		O_PFDB          => slv_PFSR(6),
-		O_MODA          => open,
-		O_MODB          => slv_MOSR(6)
+		O_PFDA     => slv_PFSR(7),
+		O_PFDB     => slv_PFSR(6),
+		O_MODA     => open,
+		O_MODB     => slv_MOSR(6)
 	);
 end;

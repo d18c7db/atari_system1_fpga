@@ -363,37 +363,23 @@ RGBI BCONV (.ADDR({gvid_I,gvid_B}), .DATA(RGB_in[ 3:0]));
 // # This section loads the ROM files through HPS_IO #
 // ###################################################
 
+reg  [55:0] acc_bytes = 0;
 wire [18:0] slv_VADDR;
 wire [63:0] slv_VDATA;
 wire [22:0] sdram_addr;
-reg  [21:0] addr_new=0;
-reg  [63:0] sdram_data=0;
-reg         sdram_we=0;
+wire        sdram_we;
 wire        sdram_ready;
 
 // the order in which the files are listed in the .mra file determines the order in which they appear here on the HPS bus
 // some files are interleaved as DWORD, some are interleaved as WORD and some are not interleaved and appear as BYTE
 // acc_bytes collects previous bytes so that when a WORD or DWORD is complete it is written to the RAM as appropriate
-reg [55:0] acc_bytes = 0;
 always @(posedge clk_sys)
 	if (ioctl_wr && (!ioctl_index) && ioctl_download )
 		acc_bytes<={acc_bytes[47:0],ioctl_dout}; // accumulate previous bytes
 
-always @(posedge clk_sys)
-begin
-	sdram_we <= 1'b0;
-	if (ioctl_wr && (!ioctl_index) && ioctl_download && ioctl_addr[2] && ioctl_addr[1] && ioctl_addr[0])
-	begin
-		sdram_data <= {acc_bytes,ioctl_dout};
-		addr_new <= ioctl_addr[24:3];
-		sdram_we <= 1'b1;
-	end
-end
-
-assign sdram_addr = ioctl_download?{1'b0,addr_new}:{4'd0,slv_VADDR};
+assign sdram_addr = ioctl_download?{1'b0,ioctl_addr[24:3]}:{4'd0,slv_VADDR};
 assign ioctl_wait = ~(pll_locked && sdram_ready);
 
-//wire gp_wr;
 wire sl_wr_SROM0, sl_wr_SROM1, sl_wr_SROM2;
 wire sl_wr_ROM0, sl_wr_ROM1, sl_wr_ROM2, sl_wr_ROM5, sl_wr_ROM6, sl_wr_ROM7;
 wire sl_wr_2B, sl_wr_5A , sl_wr_7A, sl_wr_SLAP, sl_MA18n, sl_wr_ep1, sl_wr_ep2;
@@ -409,38 +395,38 @@ wire [ 7:0] slv_SDATA, slv_PD4A, slv_PD7A, slv_PD2B;
 wire [ 4:0] slv_ROMn;
 wire [ 2:0] slv_SROMn;
 
-// 0x000000 [24:21]=4'b0   8 banks [20:18] X 64KB [17:2] x 8 planes [1:0] = 0x400000
-//assign gp_wr       = (ioctl_wr && !ioctl_index && ioctl_addr[24:21]== 4'h00  && ioctl_addr[1:0]==2'b11) ? 1'b1 : 1'b0;
+// 0x000000 - 0x3fffff [24:22]=3'b0,  8 banks [21:19] x 64KB [18:3] x 8 planes [2:0] = 0x400000 bytes or 0x80000 DWORDS
+assign sdram_we      = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:22]==3'h0     && ioctl_addr[2:0]==3'd7)?1'b1 : 1'b0; // 0x80000 x8
 // 0x400000 - 0x407fff
-assign sl_wr_ROM0    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h80  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_ROM0    = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:15]==10'h80   && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // 0x4000 x2
 // 0x410000 - 0x41ffff
-assign sl_wr_ROM1    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h41  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+assign sl_wr_ROM1    = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:16]== 9'h41   && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // 0x8000 x2
 // 0x420000 - 0x42ffff
-assign sl_wr_ROM2    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h42  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
-// 0x430000 - 0x437fff
-//assign sl_wr_ROM3  = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h86  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_ROM2    = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:16]== 9'h42   && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // 0x8000 x2
+// 0x430000 - 0x437fff - remapped to ROM7
+//assign sl_wr_ROM3  = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:15]==10'h86   && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // 0x4000 x2
 // 0x450000 - 0x45ffff
-assign sl_wr_ROM5    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h45  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+assign sl_wr_ROM5    = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:16]== 9'h45   && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // 0x8000 x2
 // 0x460000 - 0x46ffff
-assign sl_wr_ROM6    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h46  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+assign sl_wr_ROM6    = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:16]== 9'h46   && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // 0x8000 x2
 // 0x470000 - 0x47ffff
-assign sl_wr_ROM7    = (ioctl_wr && !ioctl_index && ioctl_addr[24:16]== 9'h47  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x8000
+assign sl_wr_ROM7    = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:16]== 9'h47   && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // 0x8000 x2
 // 0x480000 - 0x487fff
-assign sl_wr_SLAP    = (ioctl_wr && !ioctl_index && ioctl_addr[24:15]==10'h90  && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_SLAP    = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:15]==10'h90   && ioctl_addr[0]==1'b1) ? 1'b1 : 1'b0; // 0x4000 x2
 // 0x488000 - 0x48bfff
-assign sl_wr_SROM0   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h122                       ) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_SROM0   = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:14]==11'h122                        ) ? 1'b1 : 1'b0; // 0x4000 x1
 // 0x48C000 - 0x48ffff
-assign sl_wr_SROM1   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h123                       ) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_SROM1   = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:14]==11'h123                        ) ? 1'b1 : 1'b0; // 0x4000 x1
 // 0x490000 - 0x493fff
-assign sl_wr_SROM2   = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h124                       ) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_SROM2   = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:14]==11'h124                        ) ? 1'b1 : 1'b0; // 0x4000 x1
 // 0x494000 - 0x497fff
-assign sl_wr_2B      = (ioctl_wr && !ioctl_index && ioctl_addr[24:14]==11'h125                       ) ? 1'b1 : 1'b0; // x4000
+assign sl_wr_2B      = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24:14]==11'h125                        ) ? 1'b1 : 1'b0; // 0x4000 x1
 // 0x498000 - 0x4981ff
-assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_addr[24: 9]==16'h24C0                      ) ? 1'b1 : 1'b0; // x200
+assign sl_wr_5A      = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24: 9]==16'h24C0                       ) ? 1'b1 : 1'b0; // 0x200 x1
 // 0x498200 - 0x4983ff
-assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_addr[24: 9]==16'h24C1                      ) ? 1'b1 : 1'b0; // x200
+assign sl_wr_7A      = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24: 9]==16'h24C1                       ) ? 1'b1 : 1'b0; // 0x200 x1
 // 0x498400 - 0x4985ff
-assign sl_wr_ep1     = (ioctl_wr && !ioctl_index && ioctl_addr[24: 9]==16'h24C2                      ) ? 1'b1 : 1'b0; // x200
+assign sl_wr_ep1     = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr[24: 9]==16'h24C2                       ) ? 1'b1 : 1'b0; // 0x200 x1
 // 0x498600
 
 `ifndef MODELSIM
@@ -488,7 +474,7 @@ assign sl_wr_ep1     = (ioctl_wr && !ioctl_index && ioctl_addr[24: 9]==16'h24C2 
 
 		// controller interface
 		.I_ADDR(sdram_addr),
-		.I_DATA(sdram_data),
+		.I_DATA({acc_bytes,ioctl_dout}),
 		.I_WE(sdram_we),
 		.O_RDY(sdram_ready),
 		.O_DATA(slv_VDATA),
@@ -510,92 +496,92 @@ assign sl_wr_ep1     = (ioctl_wr && !ioctl_index && ioctl_addr[24: 9]==16'h24C2 
 	// 32 M10K blocks
 	// ROM0 BIOS 0x000000, 0x4000
 	dpram #(14,16) mp_rom0
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM0 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM0    ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM0 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                           ), .q_b(slv_ROM0     ));
 
 	// 64 M10K blocks
 	// ROM1 0x10000, 0x08000
 	dpram #(15,16) mp_rom1
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM1 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM1    ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM1 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                           ), .q_b(slv_ROM1     ));
 
 	// 64 M10K blocks
 	// ROM2 0x20000, 0x08000
 	dpram #(15,16) mp_rom2
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM2 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM2    ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM2 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                           ), .q_b(slv_ROM2     ));
 
 	// 32 M10K blocks
 	// ROM3 0x30000, INDIANA JONES only region, remapped to 0x070000 instead.
 //	dpram #(14,16) mp_rom3
-//	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM3 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
-//	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_ROM3    ));
+//	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM3 ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[7:0],ioctl_dout}), .q_a(             ),
+//	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                           ), .q_b(slv_ROM3     ));
 
 	// 64 M10K blocks
 	// ROM5 0x50000, 0x08000
 	dpram #(15,16) mp_rom5
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM5 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM5    ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM5 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                           ), .q_b(slv_ROM5     ));
 
 	// 64 M10K blocks
 	// ROM6 0x60000, 0x08000
 	dpram #(15,16) mp_rom6
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM6 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM6    ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM6 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                           ), .q_b(slv_ROM6     ));
 
 	// 64 M10K blocks
 	// ROM7 0x70000, 0x08000
 	dpram #(15,16) mp_rom7
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM7 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                            ), .q_b(slv_ROM7    ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ROM7 ), .address_a(ioctl_addr[15:1]), .data_a({acc_bytes[7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[15:1]), .data_b(                           ), .q_b(slv_ROM7     ));
 
 	// 32 M10K blocks
 	// Slapstic 0x80000, 0x04000
 	dpram #(14,16) mp_rom_slap
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SLAP ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[ 7:0],ioctl_dout}), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                            ), .q_b(slv_SLAP    ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SLAP ), .address_a(ioctl_addr[14:1]), .data_a({acc_bytes[7:0],ioctl_dout}), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_MADEC[14:1]), .data_b(                           ), .q_b(slv_SLAP     ));
 
 	// 16 M10K blocks
 	// Audiocpu 0x4000, 0x4000
 	dpram #(14, 8) ap_srom0
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SROM0), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_SROM0   ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SROM0), .address_a(ioctl_addr[13:0]), .data_a(                ioctl_dout ), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                           ), .q_b(slv_SROM0    ));
 
 	// 16 M10K blocks
 	// Audiocpu 0x8000, 0x4000
 	dpram #(14, 8) ap_srom1
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SROM1), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_SROM1   ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SROM1), .address_a(ioctl_addr[13:0]), .data_a(                ioctl_dout ), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                           ), .q_b(slv_SROM1    ));
 
 	// 16 M10K blocks
 	// Audiocpu 0xC000, 0x4000
 	dpram #(14, 8) ap_srom2
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SROM2), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                            ), .q_b(slv_SROM2   ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_SROM2), .address_a(ioctl_addr[13:0]), .data_a(                ioctl_dout ), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(   slv_SBA[13:0]), .data_b(                           ), .q_b(slv_SROM2    ));
 
 	// 8 M10K blocks
 	// Alphanumerics ROM
-	dpram  #(14,8) al_rom_2B
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_2B   ), .address_a(ioctl_addr[13:0]), .data_a(                 ioctl_dout ), .q_a(            ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(  slv_PA2B[13:0]), .data_b(                            ), .q_b(slv_PD2B    ));
+	dpram  #(14,8) rom_alpha
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_2B   ), .address_a(ioctl_addr[13:0]), .data_a(                ioctl_dout ), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b(  slv_PA2B[13:0]), .data_b(                           ), .q_b(slv_PD2B     ));
 
 	// 1 M10K blocks
 	// Color PROM
-	dpram  #(9,8) cp_rom_5A
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_5A   ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD4A       ));
+	dpram  #(9,8) rom_color
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_5A   ), .address_a(ioctl_addr[ 8:0]), .data_a(                ioctl_dout ), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_PADDR[ 8:0]), .data_b(                           ), .q_b(slv_PD4A     ));
 
 	// 1 M10K blocks
 	// Remap PROM
-	dpram  #(9,8) cp_rom_7A
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_7A   ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_PADDR[ 8:0]), .data_b(                            ), .q_b(slv_PD7A       ));
+	dpram  #(9,8) rom_remap
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_7A   ), .address_a(ioctl_addr[ 8:0]), .data_a(                ioctl_dout ), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(           ), .address_b( slv_PADDR[ 8:0]), .data_b(                           ), .q_b(slv_PD7A     ));
 
 	// 1 M10K blocks
 	// EPROM
 	dpram  #(9,8) mp_eprom
-	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ep1  ), .address_a(ioctl_addr[ 8:0]), .data_a(                 ioctl_dout ), .q_a(               ),
-	 .clock_b(clk_sys), .enable_b(), .wren_b(sl_wr_ep2  ), .address_b( slv_MADEC[ 9:1]), .data_b(              slv_eprom_dout), .q_b(slv_eprom_din  ));
+	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ep1  ), .address_a(ioctl_addr[ 8:0]), .data_a(                ioctl_dout ), .q_a(             ),
+	 .clock_b(clk_sys), .enable_b(), .wren_b(sl_wr_ep2  ), .address_b( slv_MADEC[ 9:1]), .data_b(             slv_eprom_dout), .q_b(slv_eprom_din));
 `else
 	assign sdram_ready = 0;
 
@@ -655,8 +641,8 @@ assign slv_SDATA =
 // Slapstic Types: marble=103 (x67), indytemp=105 (x69), peterpak=107 (x6B), roadrunn=108 (x6C), roadb109=109 (x6D), roadb110=110 (x6E)
 
 wire [7:0] inputs;
-wire [7:0] adc_bit7, adc_bit6;
-wire [7:0] switches;
+reg [7:0] adc_bit7, adc_bit6;
+reg [4:0] switches;
 
 // direction control inputs
 // J102 2,3,4,6,8,9,7,5 = P2-U,D,L,R P1-U,D,L,R active high
@@ -886,7 +872,7 @@ assign VGA_B  = {b,4'd0};
 bmp_out #( "BI" ) bmp_out
 (
 	.clk_i(clk_7M),
-	.dat_i({r,4'b0,g,4'b0,b,4'b0}),
+	.dat_i({RGB_in[11:8],4'b0,RGB_in[ 7:4],4'b0,RGB_in[ 3:0],4'b0}),
 	.hs_i(HSync),
 	.vs_i(VSync)
 );

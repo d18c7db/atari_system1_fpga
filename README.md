@@ -4,8 +4,8 @@
 * Indiana Jones - Playable without any visual issues but sounds sometimes are cut off prematurely.  
 * Peter Pack Rat - Playable, no obvious issues.  
 * Marble Madness - Playable with joystick as trackball control.  
-* Road Runner - Playable, boots, can coin up, controls work but has sprite issues .  
-* Road Blasters - Not playable, boots, can coin up but has sprite issues and video is messed up.  
+* Road Runner - Playable but sprites sometimes disappear.  
+* Road Blasters - Playable but has some small video issues.  
 
 ## About  
 FPGA implementation of Atari's System 1 (LSI version) arcade platform from 1984.  

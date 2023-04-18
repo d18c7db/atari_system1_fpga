@@ -75,13 +75,14 @@ architecture RTL of VIDEO is
 		sl_VSCRCLK_last,
 
 --		sl_2HDLn,
+		sl_2J_Y9,
 		sl_4C_Y,
 		sl_4H,
 --		sl_4HDDn,
 		sl_4HDL,
 		sl_4HDLn,
 		sl_4Hn,
-		sl_ALBNK,
+		sl_ALBNK_CTF,
 		sl_BR_Wn,
 		sl_COMPSYNCn,
 		sl_CRAMWRn,
@@ -127,6 +128,9 @@ architecture RTL of VIDEO is
 		sl_VSCRLDn,
 		sl_VSYNCn
 								: std_logic := '1';
+	signal
+		slv_2J_sel
+								: std_logic_vector( 1 downto 0) := (others=>'0');
 	signal
 		slv_MPBS,
 		slv_VRAC
@@ -224,6 +228,7 @@ begin
 	O_4H       <= slv_H(2);
 	O_8H       <= slv_H(3);
 	O_CPU_D    <= slv_MDO;
+	O_ADDR2B   <= slv_ROM_2B_addr;
 
 	sl_SYSRESn <= I_SYSRESn;
 	sl_CRAMWRn <= I_CRAMWRn;
@@ -313,6 +318,7 @@ begin
 	port map (
 		I_CK    => I_MCKR,
 		I_ST    => sl_PFHSTn,
+		I_CTF   => sl_ALBNK_CTF,
 		I_4H    => sl_4H,
 		I_HS    => sl_HSCRLDn,
 		I_SPC   => sl_PFSPCn,
@@ -383,16 +389,16 @@ begin
 			slv_MPBS(0) <= '0';
 			sl_PP19     <= '0';
 			sl_TBRESn   <= '0';
-			sl_ALBNK    <= '0';
+			sl_ALBNK_CTF<= '0';
 		elsif (sl_MISCn_last = '1' and sl_MISCn = '0') then
 			sl_SNDRSTn  <= slv_VBD(7); -- Sound CPU reset
 			sl_TBTEST   <= slv_VBD(6); -- Trackball test
-			slv_MPBS(2) <= slv_VBD(5); -- MO RAM bank select
-			slv_MPBS(1) <= slv_VBD(4); -- MO RAM bank select
-			slv_MPBS(0) <= slv_VBD(3); -- MO RAM bank select
-			sl_PP19     <= slv_VBD(2); -- PF tile bank select
+			slv_MPBS(2) <= slv_VBD(5); -- MO bank select
+			slv_MPBS(1) <= slv_VBD(4); -- MO bank select
+			slv_MPBS(0) <= slv_VBD(3); -- MO bank select
+			sl_PP19     <= slv_VBD(2); -- PF bank select
 			sl_TBRESn   <= slv_VBD(1); -- Trackball resolution
-			sl_ALBNK    <= slv_VBD(0); -- AL tile bank select
+			sl_ALBNK_CTF<= slv_VBD(0); -- AL bank select
 		end if;
 	end process;
 
@@ -426,7 +432,12 @@ begin
 		if sl_VSCRLDn = '0' then
 			slv_PFV <= slv_VBD( 8 downto 0);
 		elsif sl_VSCRCLK_last = '0' and sl_VSCRCLK = '1' then
-			slv_PFV <= slv_PFV + 1;
+			-- ALBNK is CTF in SP-299
+			if sl_ALBNK_CTF = '1' then
+				slv_PFV <= slv_PFV - 1;
+			else
+				slv_PFV <= slv_PFV + 1;
+			end if;
 		end if;
 	end process;
 
@@ -451,7 +462,29 @@ begin
 	slv_MGRA( 9 downto  1) <= slv_MM            when sl_4HDLn = '0' else slv_PP;
 
 	-- gates 1F, 4L, 5L
-	sl_MATCHn <= (not (((sl_VRD13 xor sl_VRESETn) xor slv_1H_S(4)) and slv_1H_S(3) and slv_3H_S(4)) ) and sl_4HDL;
+--	sl_MATCHn <= (not (((sl_VRD13 xor sl_VRESETn) xor slv_1H_S(4)) and slv_1H_S(3) and slv_3H_S(4)) ) and sl_4HDL;
+	sl_MATCHn <=
+		sl_4HDL and
+		not ( sl_2J_Y9 and
+			( (sl_VRD13 xor sl_VRESETn) xor slv_1H_S(4))
+		);
+
+	slv_2J_sel <= slv_3H_S(4) & slv_1H_S(3);
+
+	sl_2J_Y9 <=	    sl_ALBNK_CTF		when slv_2J_sel="00" else
+					'0'		when slv_2J_sel="01" else
+					'0'		when slv_2J_sel="10" else
+			not sl_ALBNK_CTF;	--	when slv_2J_sel="11"
+
+--	slv_MM(8) <= (sl_MM8 or slv_4H_S(4));
+	slv_MM(8) <= 	(sl_MM8 xor slv_4H_S(4))					when slv_2J_sel="00" else
+						(sl_MM8 xor slv_4H_S(4)) xor sl_ALBNK_CTF		when slv_2J_sel="01" else
+						(sl_MM8 xor slv_4H_S(4)) xor sl_ALBNK_CTF		when slv_2J_sel="10" else
+						(sl_MM8 xor slv_4H_S(4));				--	when slv_2J_sel="11"
+
+	slv_MM(7 downto 4) <= slv_4H_S(3 downto 0);
+	slv_MM(3 downto 1) <= slv_2H_S(2 downto 0) when sl_ALBNK_CTF = '0' else not slv_2H_S(2 downto 0); -- as per SP-299
+
 
 	-- latches 2F, 3F
 	p_2F_3F : process
@@ -469,12 +502,12 @@ begin
 	slv_1H_A <= slv_V(7 downto 4);
 	slv_2H_A <= slv_V(3 downto 0);
 	slv_3H_B <= slv_1H_S(2 downto 0) & slv_2H_S(3);
-	slv_4H_B <= slv_3H_S(3 downto 0);
+	slv_4H_B <= slv_3H_S(3 downto 0) when sl_ALBNK_CTF = '0' else not slv_3H_S(3 downto 0); -- as per SP-299
 
 	-- adders 1H, 2H, 3H, 4H
 	slv_1H_S <= ('0' & slv_1H_A + slv_1H_B) + ("000" & slv_2H_S(4));
 	slv_2H_S <= ('0' & slv_2H_A + slv_2H_B) + "0001";
-	slv_3H_S <= ('0' & slv_3H_A + slv_3H_B) + "0001";
+	slv_3H_S <= ('0' & slv_3H_A + slv_3H_B) + ("000" & not sl_ALBNK_CTF); -- as per SP-299
 	slv_4H_S <= ('0' & slv_4H_A + slv_4H_B);
 
 	-- latch 4F
@@ -489,25 +522,23 @@ begin
 			slv_4H_A  <= slv_VRD( 3 downto 0);
 		end if;
 	end process;
-	slv_MM(8) <= (sl_MM8 or slv_4H_S(4));
-	slv_MM(7 downto 4) <= slv_4H_S(3 downto 0);
-	slv_MM(3 downto 1) <= slv_2H_S(2 downto 0);
 
 	p_3C : process
 	begin
 		wait until rising_edge(I_MCKR);
 		if slv_H(2 downto 0) = "011" then -- falling edge /4H
-			-- 1A, 3C latch
-			slv_ROM_2B_addr(12 downto 4) <= slv_VRD( 8 downto 0);
+			-- 1/2A, 3C latch
+			-- on SP-299 addr bit 13 is taken from VRD9 but on SP-286 it is connected to ALBNK selector
+			-- the only games that uses a 16K ALPHA ROM are indytempc and roadblstcg
+			slv_ROM_2B_addr(13 downto 4) <= slv_VRD(9 downto 0);
 		end if;
 	end process;
 
 	-- unlatched part of address bus
 	slv_ROM_2B_addr(3 downto 0) <= slv_V(2 downto 0) & sl_4Hn;
-	slv_ROM_2B_addr(13) <= sl_ALBNK; -- not used because 2B ROM is only 8K
+--	slv_ROM_2B_addr(13) <= sl_ALBNK_CTF; -- not used because 2/3B ROM is only 8K
 
 	-- 2/3B ROM (same as 5F)
-	O_ADDR2B <= slv_ROM_2B_addr(13 downto 0);
 	slv_ROM_2B_data <= I_DATA2B;
 
 	-- 1B, 2B shifters S1 S0 11=load 10=shift left 01=shift right 00=inhibit

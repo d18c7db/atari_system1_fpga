@@ -20,6 +20,7 @@ entity MAIN is
 	port(
 		I_MCKR      : in  std_logic; -- 7MHz
 		I_XCKR      : in  std_logic; -- 14MHz
+		I_MD7       : in  std_logic;
 		I_4H        : in  std_logic;
 		I_8H        : in  std_logic;
 		I_RESET     : in  std_logic; -- active high
@@ -103,7 +104,6 @@ architecture RTL of MAIN is
 		sl_CRBUSn,
 		sl_DTACKn,
 		sl_E2PROMn,
---		sl_EEP_OEn,
 		sl_HSCRLDn,
 		sl_IBUSn,
 		sl_INPUTn,
@@ -182,7 +182,6 @@ architecture RTL of MAIN is
 		slv_13K_data,
 		slv_13L_data,
 		slv_SBDI,
---		slv_EEPROM,
 		slv_INPUTS,
 		slv_LETADB,
 		slv_ADC_data
@@ -226,7 +225,7 @@ begin
 	O_MDATA      <= slv_cpu_do;
 	O_SYSRESn    <= sl_SYSRESn;
 	O_EEPWR      <= not (sl_WLn or sl_E2PROMn);
-	
+
 	slv_VBUSD    <= I_VBUSD;
 	slv_ADC_data <= I_ADC_DATA;
 	sl_AJSINTn   <= not (I_ADC_EOC and sl_8H8); --gate 15J
@@ -248,15 +247,16 @@ begin
 
 	-- CPU input data bus mux
 	slv_cpu_di <=
-		slv_12K_data & slv_12L_data when sl_R_Wn = '1' and sl_RAM0   = '1' else
-		slv_13K_data & slv_13L_data when sl_R_Wn = '1' and sl_RAM1   = '1' else
-								slv_MEXTD when sl_R_Wn = '1' and slv_ROMn /= "11111" else
-								slv_VBUSD when sl_R_Wn = '1' and sl_VBUSn  = '0' else
-				 x"FF" & slv_ADC_DATA when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RAJS    = '1' else
-				 x"FF" & slv_SBDI     when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_SNDRDn  = '0' else
-				 x"FF" & slv_LETADB   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RLETAn  = '0' else
-				 x"FF" & I_EEPDATA    when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_E2PROMn = '0' else
-				 x"FF" & slv_INPUTS   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_INPUTn  = '0' else
+		slv_12K_data & slv_12L_data when sl_R_Wn = '1' and sl_RAM0   = '1'                          else
+		slv_13K_data & slv_13L_data when sl_R_Wn = '1' and sl_RAM1   = '1'                          else
+								slv_MEXTD when sl_R_Wn = '1' and slv_ROMn /= "11111"                      else
+								slv_VBUSD when sl_R_Wn = '1' and sl_VBUSn  = '0'                          else
+				 x"FF" & slv_ADC_DATA when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RAJS    = '1'     else
+				 x"FF" & slv_SBDI     when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_SNDRDn  = '0'     else
+				 x"FF" & slv_LETADB   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_RLETAn  = '0'     else
+				 x"FF" & I_EEPDATA    when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_E2PROMn = '0'     else
+				 x"FF" & slv_INPUTS   when sl_R_Wn = '1' and sl_IBUSn  = '0' and sl_INPUTn  = '0'     else
+		x"FF" & I_MD7 & "1111111"   when sl_R_Wn = '1' and sl_MEXTn  = '0' and slv_cpu_ad(18) = '1' else
 		(others=>'0');
 
 	-------------

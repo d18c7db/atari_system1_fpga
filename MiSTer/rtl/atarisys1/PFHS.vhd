@@ -22,6 +22,7 @@ entity PFHS is
 	port(
 		I_CK     : in  std_logic;                    -- MCKR
 		I_ST     : in  std_logic;                    -- PFHST
+		I_CTF    : in  std_logic;                    -- CTF (when '1' inverts O_PFH)
 		I_4H     : in  std_logic;                    -- 4H
 		I_HS     : in  std_logic;                    -- HSCRLD
 		I_SPC    : in  std_logic;                    -- PFSPC
@@ -60,7 +61,7 @@ architecture RTL of PFHS is
 		slv_11E
 								: std_logic_vector(8 downto 0) := (others=>'1');
 begin
-	O_PFH <= slv_8E_9B;
+	O_PFH <= slv_8E_9B when I_CTF = '0' else not slv_8E_9B;
 	O_XP	<= slv_4D;
 
 	-- 10F and 1B latches
