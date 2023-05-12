@@ -100,6 +100,7 @@ architecture logic of ATARI_CART is
 		sl_GLDn,
 		sl_srq,
 		sl_45f_qa,
+		sl_45f_qa_t,
 		sl_GLDn_last,
 		sl_RD240Kn,
 		sl_SNDEXTn,
@@ -114,6 +115,7 @@ architecture logic of ATARI_CART is
 		slv_BS
 								: std_logic_vector( 1 downto 0):=(others=>'0');
 	signal
+		slv_45f,
 		slv_14S
 								: std_logic_vector( 3 downto 0):=(others=>'1');
 	signal
@@ -184,6 +186,9 @@ begin
 	sl_RD240Kn <= I_MEXTn or I_MA18n or I_BW_Rn;
 
 	-- counter 4/5F is kept in "hold" mode (pins ENT, ENP grounded) so just (ab)used as a 1 bit latch
+	-- deviation from schematic, it was determined that INT3 was occuring too early and causing video
+	-- problems with roadblasters due to V offset being loaded too early (VSCRCLK is basically /HSYNC)
+	-- so here we delay INT3 by about 3 GLDn pulses so V offset is loaded after the VSCRCLK pulse
 	p_45F : process
 	begin
 		wait until rising_edge(I_MCKR);
@@ -191,7 +196,14 @@ begin
 		if sl_GLDn_last = '0' and sl_GLDn = '1' then
 			-- if /LD asserted
 			if I_MATCHn = '0' and slv_MGRA(19 downto 4) = x"FFFF" then
-				sl_45f_qa <= not (slv_MGRA(3) or slv_MGRA(2) or slv_MGRA(1));
+				sl_45f_qa_t <= not (slv_MGRA(3) or slv_MGRA(2) or slv_MGRA(1));
+				slv_45f <= "0011"; -- delay by 3
+			end if;
+			-- countdown to actual signal latch
+			if slv_45f /= "0000" then
+				slv_45f <= slv_45f - 1;
+			else
+				sl_45f_qa <= sl_45f_qa_t;
 			end if;
 		end if;
 	end process;
