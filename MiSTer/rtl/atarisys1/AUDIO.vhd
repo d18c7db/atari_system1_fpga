@@ -1,12 +1,12 @@
---	(c) 2020 d18c7db(a)hotmail
+-- (c) 2020 d18c7db(a)hotmail
 --
---	This program is free software; you can redistribute it and/or modify it under
---	the terms of the GNU General Public License version 3 or, at your option,
---	any later version as published by the Free Software Foundation.
+-- This program is free software; you can redistribute it and/or modify it under
+-- the terms of the GNU General Public License version 3 or, at your option,
+-- any later version as published by the Free Software Foundation.
 --
---	This program is distributed in the hope that it will be useful,
---	but WITHOUT ANY WARRANTY; without even the implied warranty of
---	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 --
 -- For full details, see the GNU General Public License at www.gnu.org/licenses
 
@@ -17,7 +17,7 @@ library ieee;
 
 entity AUDIO is
 	port(
-		I_MCKR      : in  std_logic;	-- 7.14MHz
+		I_MCKR      : in  std_logic; -- 7.14MHz
 		I_1H        : in  std_logic;
 		I_2H        : in  std_logic;
 		O_B02       : out std_logic;
@@ -53,25 +53,25 @@ end AUDIO;
 architecture RTL of AUDIO is
 	component jt51
 	port (
-		rst		:	 in std_logic;
-		clk		:	 in std_logic;
-		cen		:	 in std_logic;
-		cen_p1	:	 in std_logic;
-		cs_n		:	 in std_logic;
-		wr_n		:	 in std_logic;
-		a0			:	 in std_logic;
-		din		:	 in std_logic_vector(7 downto 0);
-		dout		:	 out std_logic_vector(7 downto 0);
-		ct1		:	 out std_logic;
-		ct2		:	 out std_logic;
-		irq_n		:	 out std_logic;
-		sample	:	 out std_logic;
-		left		:	 out std_logic_vector(15 downto 0);
-		right		:	 out std_logic_vector(15 downto 0);
-		xleft		:	 out signed(15 downto 0);
-		xright	:	 out signed(15 downto 0);
-		dacleft	:	 out std_logic_vector(15 downto 0);
-		dacright	:	 out std_logic_vector(15 downto 0)
+		rst     : in  std_logic;
+		clk     : in  std_logic;
+		cen     : in  std_logic;
+		cen_p1  : in  std_logic;
+		cs_n    : in  std_logic;
+		wr_n    : in  std_logic;
+		a0      : in  std_logic;
+		din     : in  std_logic_vector(7 downto 0);
+		dout    : out std_logic_vector(7 downto 0);
+		ct1     : out std_logic;
+		ct2     : out std_logic;
+		irq_n   : out std_logic;
+		sample  : out std_logic;
+		left    : out std_logic_vector(15 downto 0);
+		right   : out std_logic_vector(15 downto 0);
+		xleft   : out signed(15 downto 0);
+		xright  : out signed(15 downto 0);
+		dacleft : out std_logic_vector(15 downto 0);
+		dacright: out std_logic_vector(15 downto 0)
 	);
 	end component;
 
@@ -242,10 +242,10 @@ begin
 
 	-- 15H 3:8 decoder
 	slv_15H_Y(7) <= sl_MXTn  or ( not slv_SBA(6) ) or ( not slv_SBA(5) ) or ( not slv_SBA(4) );
---	slv_15H_Y(6) <= sl_MXTn  or ( not slv_SBA(6) ) or ( not slv_SBA(5) ) or (     slv_SBA(4) );	-- unused
---	slv_15H_Y(5) <= sl_MXTn  or ( not slv_SBA(6) ) or (     slv_SBA(5) ) or ( not slv_SBA(4) );	-- unused
---	slv_15H_Y(4) <= sl_MXTn  or ( not slv_SBA(6) ) or (     slv_SBA(5) ) or (     slv_SBA(4) );	-- unused
---	slv_15H_Y(3) <= sl_MXTn  or (     slv_SBA(6) ) or ( not slv_SBA(5) ) or ( not slv_SBA(4) );	-- unused
+--	slv_15H_Y(6) <= sl_MXTn  or ( not slv_SBA(6) ) or ( not slv_SBA(5) ) or (     slv_SBA(4) ); -- unused
+--	slv_15H_Y(5) <= sl_MXTn  or ( not slv_SBA(6) ) or (     slv_SBA(5) ) or ( not slv_SBA(4) ); -- unused
+--	slv_15H_Y(4) <= sl_MXTn  or ( not slv_SBA(6) ) or (     slv_SBA(5) ) or (     slv_SBA(4) ); -- unused
+--	slv_15H_Y(3) <= sl_MXTn  or (     slv_SBA(6) ) or ( not slv_SBA(5) ) or ( not slv_SBA(4) ); -- unused
 	slv_15H_Y(2) <= sl_MXTn  or (     slv_SBA(6) ) or ( not slv_SBA(5) ) or (     slv_SBA(4) );
 	slv_15H_Y(1) <= sl_MXTn  or (     slv_SBA(6) ) or (     slv_SBA(5) ) or ( not slv_SBA(4) );
 	slv_15H_Y(0) <= sl_MXTn  or (     slv_SBA(6) ) or (     slv_SBA(5) ) or (     slv_SBA(4) );

@@ -5,7 +5,7 @@ debug
 doc
 greybox_tmp
 incremental_db
-output_files
+output_files*
 simulation
 hc_output
 scaler

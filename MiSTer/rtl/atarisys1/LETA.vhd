@@ -57,7 +57,7 @@ begin
 			end if;
 
 			ck_last <= ck;
-			-- we trigger or rising edge of LETA clock
+			-- we trigger on rising edge of LETA clock
 			if resn = '1' then
 				-- reset counters
 				counters <= (others => (others => '0'));

@@ -73,7 +73,7 @@ begin
 	sl_BUFCLRn <= slv_NXL_delay(7);
 	sl_CLRn    <= sl_PAD or sl_BUFCLRn;
 
-	-- recreate part of the horizontal counter and generate other internal signals
+	-- recreate part of the horizontal counter and generate some internal signals
 	p_hcnt : process
 	begin
 		wait until rising_edge(I_MCKR);
@@ -91,12 +91,6 @@ begin
 
 	-- 4J, 3D on SP-277 schema sheet 8
 	sl_LDn  <= sl_4H or sl_H02n or sl_PAD;
-
-	-- 2H 1H  /H03 /H02 /H01 /GLD
-	-- 0  0    1    1    1    0
-	-- 0  1    1    1    0    1
-	-- 1  0    1    0    1    1
-	-- 1  1    0    1    1    1
 	sl_GLDn <= ((    slv_H(1)) or (    slv_H(0)));
 	sl_H01n <= ((    slv_H(1)) or (not slv_H(0)));
 	sl_H02n <= ((not slv_H(1)) or (    slv_H(0)));
@@ -114,19 +108,6 @@ begin
 			slv_LB <= slv_LB + 1;
 		end if;
 	end process;
-
---         V     V         V     V
---/4HD3  __--------________--------__
--- 4HD3  --________--------________--
---/4HDD  --------________--------____
--- 4HDD  ________--------________----
--- 4HD   ______--------________------
--- 4H    ____--------________--------
--- GLDn  ----__------__------__------
--- H01   ------__------__------__----
--- H02   __------__------__------__--
--- H03   --__------__------__------__
--- MCKR  -_-_-_-_-_-_-_-_-_-_-_-_-_-_
 
 	p_MOSR7 : process
 	begin

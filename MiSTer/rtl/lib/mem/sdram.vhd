@@ -107,8 +107,8 @@ begin
 	O_RDY <= '1' when (state = IDLE) else '0';
 
 	-- assign SDRAM pins
-	SDRAM_DQML <= '0';
-	SDRAM_DQMH <= '0';
+	SDRAM_DQML <= '0'; -- chip DQML pin shorted to A11 on PCB
+	SDRAM_DQMH <= '0'; -- chip DQMH pin shorted to A12 on PCB
 	SDRAM_CLK  <= not I_CLK; -- delay SDRAM clk 180 degrees
 	SDRAM_CKE  <= not I_RST; -- CKE always high except during reset
 	SDRAM_BA   <= I_ADDR(22 downto 21) when (state=ACTV) or (state=RDWR) else (others => '0');

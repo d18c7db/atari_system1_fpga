@@ -330,6 +330,20 @@ begin
 		O_XP    => slv_PFX
 	);
 
+	u_MOHLBLSI : entity work.MOHLB_LSI
+	port map (
+		I_MCKR   => I_MCKR,
+		I_NXLn   => sl_NXLn,
+		I_VRD    => slv_VRD,
+		I_LMPDn  => sl_LMPDn,
+		I_MOSR   => I_MOSR,
+
+		O_MPX    => slv_MPX,
+		O_GLDn   => sl_GLDn,
+		O_H01n   => sl_H01n,
+		O_H03n   => sl_H03n
+	);
+
 	-------------
 	-- sheet 8 --
 	-------------
@@ -558,20 +572,6 @@ begin
 	--------------
 	-- sheet 10 --
 	--------------
-
-	u_MOHLBLSI : entity work.MOHLB_LSI
-	port map (
-		I_MCKR   => I_MCKR,
-		I_NXLn   => sl_NXLn,
-		I_VRD    => slv_VRD,
-		I_LMPDn  => sl_LMPDn,
-		I_MOSR   => I_MOSR,
-
-		O_MPX    => slv_MPX,
-		O_GLDn   => sl_GLDn,
-		O_H01n   => sl_H01n,
-		O_H03n   => sl_H03n
-	);
 
 	-- Graphic Priority Control
 	u_1C : entity work.GPC
