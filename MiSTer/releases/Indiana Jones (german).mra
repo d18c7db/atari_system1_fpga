@@ -110,7 +110,7 @@
 		<!-- 0x20000 - 0x2FFFF MAINCPU ROMs 32Kx16 -->
 		<interleave output="16">
 			<part crc="3fcb199f" map="01" name="136036.464" zip="indytempd.zip"/>
-			<part crc="d6bda19a" map="10" name="136036.463 zip="indytempd.zip""/>
+			<part crc="d6bda19a" map="10" name="136036.463" zip="indytempd.zip"/>
 		</interleave>
 
 		<!-- 0x30000 - 0x3FFFF Filler 32Kx16 -->
