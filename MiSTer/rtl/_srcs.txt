@@ -7,8 +7,8 @@ pll.v
 
 atarisys1/RGBI.vhd
 #lib/debug/debug.vhd
-#lib/debug/async_receiver.v
-#lib/debug/async_transmitter.v
+#lib/debug/async_rx.v
+#lib/debug/async_tx.v
 lib/jt51
 lib/trackball.v
 lib/m6522.vhd
@@ -20,6 +20,7 @@ lib/T65/T65.vhd
 lib/TG68K/TG68K_Pack.vhd
 lib/TG68K/TG68KdotC_Kernel.vhd
 lib/TG68K/TG68K_ALU.vhd
+lib/TG68K/TG68K.vhd
 lib/bitmap/bmp_pkg.vhd
 lib/bitmap/bmp_out.vhd
 #lib/spi_flash.vhd
@@ -186,7 +187,6 @@ atarisys1/PFHS.vhd
 atarisys1/SLAGS.vhd
 atarisys1/SYNGEN.vhd
 atarisys1/TMS5220.vhd
-atarisys1/TG68K.vhd
 atarisys1/SLAPSTIC.vhd
 atarisys1/CART.vhd
 

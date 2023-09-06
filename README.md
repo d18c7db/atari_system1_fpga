@@ -1,11 +1,11 @@
 # Atari System-1 FPGA Arcade  
 
 ## Work In Progress  
-* Indiana Jones - Playable without any visual issues but sounds sometimes are cut off prematurely.  
+* Indiana Jones - Playable, no obvious issues.  
 * Peter Pack Rat - Playable, no obvious issues.  
 * Marble Madness - Playable with joystick as trackball control.  
-* Road Runner - Playable but sprites sometimes disappear.  
-* Road Blasters - Playable but has some small video issues.  
+* Road Runner - Playable but some sprites disappear.  
+* Road Blasters - Playable but has some video issues.  
 
 ## About  
 FPGA implementation of Atari's System 1 (LSI version) arcade platform from 1984.  

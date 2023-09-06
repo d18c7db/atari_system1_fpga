@@ -96,9 +96,6 @@ architecture RTL of MAIN is
 		sl_8J_En,
 		sl_AJSINTn,
 		sl_ASn,
-		sl_BLDs,
-		sl_BR_Wn,
-		sl_BW_Rn,
 		sl_CRAMWRn,
 		sl_CRAMn,
 		sl_CRBUSn,
@@ -198,11 +195,11 @@ architecture RTL of MAIN is
 								: std_logic_vector(15 downto 0) := (others=>'U');
 	signal
 		slv_cpu_ad
-								: std_logic_vector(23 downto 0) := (others=>'U');
+								: std_logic_vector(31 downto 0) := (others=>'U');
 begin
-	O_BW_Rn      <= sl_BW_Rn;
+	O_BW_Rn      <= not sl_R_Wn;
 	O_MA18n      <= not slv_cpu_ad(18);
-	O_BLDS       <= sl_BLDS;
+	O_BLDS       <= not sl_LDSn;
 	O_ROMn       <= slv_ROMn;
 	O_BASn       <= sl_ASn;
 	O_VBUSn      <= sl_VBUSn;
@@ -316,35 +313,34 @@ begin
 
 	-- Wrapper around 68010 soft core
 	u_12H : entity work.TG68K
+	generic map (
+		CPU        => "01"           -- 00->68000  01->68010  11->68020
+	)
 	port map (
-		-- ins
 		CLK        => I_MCKR,        -- CLK 7.1591MHz
-		RST        => sl_SYSRESn,    -- RESET active low
-										-- HALT  in sync with reset
+		RESET      => sl_SYSRESn,    -- RESET active low
+		HALT       => sl_SYSRESn,    -- HALT  in sync with reset
 
-									-- BR		tied high
-									-- BGACK	tied high
-									-- BERR	tied high
-		clkena_ext => '1',
+		BERR       => '0',           -- BERR tied high (inverse logic)
 		IPL        => slv_IPL,       -- IPL
-		DTACK      => sl_DTACKn,     -- DTACK active low
-		VPA        => sl_VPAn,       -- VPA   active low
-		DI         => slv_cpu_di,    -- DATA in
-
-		-- outs
+		ADDR       => slv_cpu_ad,    -- ADDR
+		FC         => slv_FC,        -- FC2..0
+		DATAI      => slv_cpu_di,    -- DATA in
+		DATAO      => slv_cpu_do,    -- DATA out
+---- bus control
+--		BG         => open,
+--		BR         => '1',           -- BR    tied high
+--		BGACK      => '1',           -- BGACK tied high
+-- async interface
 		AS         => sl_ASn,        -- AS
 		UDS        => sl_UDSn,       -- UDS
 		LDS        => sl_LDSn,       -- LDS
-		WR         => sl_R_Wn,       -- R/W
-												-- E   not connected
-												-- VMA not connected
-												-- BG  not connected
-		FC         => slv_FC,        -- FC2..0
-		ADDR       => slv_cpu_ad,    -- ADDR
-		DO         => slv_cpu_do,    -- DATA out
-
-		cpusel     => "01",          -- CPU type selector 00->68000  01->68010  11->68020
-		nRSTout    => open           -- reset out (not used);
+		RW         => sl_R_Wn,       -- R/W
+		DTACK      => sl_DTACKn,     -- DTACK active low
+-- sync interface
+		E          => open,          -- E   not connected
+		VPA        => sl_VPAn,       -- VPA   active low
+		VMA        => open           -- VMA not connected
 	);
 
 	-- reset circuit
@@ -422,15 +418,10 @@ begin
 	-- gates 5H
 --	sl_VRAMRDn   <= sl_VRAMn or sl_RLn;
 
-	-- gates 8K
-	sl_WHn       <= sl_UDSn or sl_BR_Wn;
-	sl_WLn       <= sl_LDSn or sl_BR_Wn;
-	sl_RLn       <= sl_LDSn or sl_BW_Rn;
-
-	-- gates 8F, 10K
-	sl_BR_Wn     <= not sl_BW_Rn;
-	sl_BW_Rn     <= not sl_R_Wn;
-	sl_BLDS      <= not sl_LDSn;
+	-- gates 8K, 8F, 10K
+	sl_WHn       <= sl_UDSn or sl_R_Wn;
+	sl_WLn       <= sl_LDSn or sl_R_Wn;
+	sl_RLn       <= sl_LDSn or (not sl_R_Wn);
 
 	-- gates 7J
 	sl_SNDRDn    <= slv_14D_Y(6);
@@ -440,7 +431,7 @@ begin
 	sl_RLETAn    <= slv_14D_Y(1);
 	sl_E2PROMn   <= slv_14D_Y(0);
 	sl_CRBUSn    <= sl_LDSn or sl_CRAMn;
-	sl_CRAMWRn   <= sl_LDSn or (sl_CRAMn or sl_BR_Wn);
+	sl_CRAMWRn   <= sl_LDSn or (sl_CRAMn or sl_R_Wn);
 
 	-- gates 5H, 10C
 	sl_RAJS      <= (not (sl_RAJSn or sl_RLn));

@@ -31,6 +31,7 @@ set_global_assignment -name VHDL_FILE rtl/lib/T65/T65.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/T65/T65_ALU.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/T65/T65_MCode.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/T65/T65_Pack.vhd
+set_global_assignment -name VHDL_FILE rtl/lib/TG68K/TG68K.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/TG68K/TG68K_ALU.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/TG68K/TG68K_Pack.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/TG68K/TG68KdotC_Kernel.vhd
@@ -52,7 +53,6 @@ set_global_assignment -name VHDL_FILE rtl/atarisys1/RGBI.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/SLAGS.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/SLAPSTIC.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/SYNGEN.vhd
-set_global_assignment -name VHDL_FILE rtl/atarisys1/TG68K.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/TMS5220.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/MAIN.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/AUDIO.vhd
