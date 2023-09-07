@@ -22,12 +22,11 @@ entity MOHLB_TTL is
 		I_MCKR      : in  std_logic;
 		I_NXLn      : in  std_logic;
 		I_LMPDn     : in  std_logic;
+		I_421H      : in  std_logic_vector( 2 downto 0); -- 4H 2H 1H
 		I_VRD       : in  std_logic_vector(15 downto 0);
 		I_MOSR      : in  std_logic_vector( 6 downto 0);
 		O_MPX       : out std_logic_vector( 7 downto 0);
-		O_GLDn      : out std_logic;
-		O_H01n      : out std_logic;
-		O_H03n      : out std_logic
+		O_GLDn      : out std_logic
 	);
 end MOHLB_TTL;
 
@@ -50,12 +49,7 @@ architecture RTL of MOHLB_TTL is
 		sl_4HD,
 		sl_4HDD,
 		sl_CLRAn,
-		sl_CLRBn,
-
-		sl_GLDn,
-		sl_H01n,
-		sl_H02n,
-		sl_H03n
+		sl_CLRBn
 								: std_logic := '0';
 
 	signal
@@ -73,9 +67,6 @@ architecture RTL of MOHLB_TTL is
 		slv_3J
 								: std_logic_vector( 8 downto 0) := (others=>'0');
 	signal
-		slv_H
-								: std_logic_vector( 2 downto 0) := (others=>'1');
-	signal
 		slv_VRD
 								: std_logic_vector(15 downto 0) := (others=>'0');
 
@@ -90,27 +81,17 @@ begin
 	sl_NXLn  <= I_NXLn;
 	slv_VRD  <= I_VRD;
 	sl_LMPDn <= I_LMPDn;
+	sl_4H    <= I_421H(2);
+	sl_2H    <= I_421H(1);
+	sl_1H    <= I_421H(0);
 
 	O_MPX    <= slv_MPX;
-
-	O_GLDn   <= sl_GLDn;
-	O_H01n   <= sl_H01n;
---	O_H02n   <= sl_H02n;
-	O_H03n   <= sl_H03n;
-
-	sl_4H    <= slv_H(2);
-	sl_2H    <= slv_H(1);
-	sl_1H    <= slv_H(0);
+	O_GLDn   <= sl_2H or sl_1H;
 
 	slv_MOSR <= (not sl_MOn) & I_MOSR;
 
-	sl_GLDn  <= (    sl_2H) or (    sl_1H);
-	sl_H01n  <= (    sl_2H) or (not sl_1H);
-	sl_H02n  <= (not sl_2H) or (    sl_1H);
-	sl_H03n  <= (not sl_2H) or (not sl_1H);
-
-	sl_LDAn  <= sl_4H or sl_H02n or (not sl_PADB) ;
-	sl_LDBn  <= sl_4H or sl_H02n or (    sl_PADB) ;
+	sl_LDAn  <= sl_4H or (not sl_2H) or sl_1H or (not sl_PADB) ;
+	sl_LDBn  <= sl_4H or (not sl_2H) or sl_1H or (    sl_PADB) ;
 
 	sl_ACSn  <= (    sl_PADB ) and not (sl_LMPDn and ( not ( slv_MOSR(3) and slv_MOSR(2) and slv_MOSR(1) and slv_MOSR(0) ) ) );
 	sl_BCSn  <= (not sl_PADB ) and not (sl_LMPDn and ( not ( slv_MOSR(3) and slv_MOSR(2) and slv_MOSR(1) and slv_MOSR(0) ) ) );
@@ -127,12 +108,6 @@ begin
 		sl_4HD3n <= not sl_4HDD;
 		slv_NXLD <= slv_NXLD(6 downto 0) & sl_NXLn;
 		sl_PADB  <= (not sl_PADB) xor sl_BUFCLRn;
-
-		if (sl_NXLn='0' and sl_4H='1') then
-			slv_H<="111";
-		else
-			slv_H <= slv_H + 1;
-		end if;
 	end process;
 
 	p_3J : process

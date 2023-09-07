@@ -353,9 +353,38 @@ begin
 	--	common address for PROMs 4/5A, 7A on SP-282 or 2D, 1/2D on SP-299
 	O_PADDR <= sl_BMO_PFn & slv_MGRA(19 downto 12);
 
-	process (I_SLAP_TYPE, I_MATCHn, I_PD4A, I_PD7A)
+	process (I_SLAP_TYPE, I_MATCHn, I_PD4A, I_PD7A, slv_MGRA)
 	begin
 		if (I_SLAP_TYPE = 108) or (I_SLAP_TYPE = 109) or (I_SLAP_TYPE = 110) then
+			-- if Roadrunner or Roadblasters use variation SP-298 / SP-299
+			-- !!! THIS TOTALLY DOESN'T WORK AT ALL !!!
+			-- PROM 2D on SP-299
+--			if I_MATCHn = '0' then
+--				sl_NOROM7n <= '0';
+--				sl_NOROM6n <= '0';
+--				sl_NOROM5n <= I_PD4A(5);
+--				sl_NOROM4n <= I_PD4A(4);
+--				sl_NOROM3n <= I_PD4A(7);
+--				sl_GD7P7   <= I_PD4A(3);
+--				sl_GD7P6   <= I_PD4A(2);
+--				sl_GD7P5   <= I_PD4A(1);
+--				sl_GD7P4   <= I_PD4A(0);
+--				sl_GD7P3   <= I_PD4A(6);
+--			else
+--				sl_NOROM7n <= '1';
+--				sl_NOROM6n <= '1';
+--				sl_NOROM5n <= '1';
+--				sl_NOROM4n <= '1';
+--				sl_NOROM3n <= '1';
+--				sl_GD7P7   <= '1';
+--				sl_GD7P6   <= '1';
+--				sl_GD7P5   <= '1';
+--				sl_GD7P4   <= '1';
+--				sl_GD7P3   <= '1';
+--			end if;
+--
+--			-- PROM 1/2D , decoder 1D, buffers 2H, 3H, 4H on SP-299
+--			slv_GBA <=  I_PD7A & slv_MGRA(11 downto 1);
 
 			-- if Roadrunner or Roadblasters use this variation
 			-- derived from MAME source code since schema SP-299 doesn't work

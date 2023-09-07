@@ -89,8 +89,6 @@ architecture RTL of VIDEO is
 		sl_CRAMn,
 		sl_CRBUSn,
 		sl_GLDn,
-		sl_H01n,
-		sl_H03n,
 		sl_HSCRLDn,
 		sl_HSYNCn,
 		sl_LMPDn,
@@ -319,7 +317,7 @@ begin
 		I_CK    => I_MCKR,
 		I_ST    => sl_PFHSTn,
 		I_CTF   => sl_ALBNK_CTF,
-		I_4H    => sl_4H,
+		I_421H  => slv_H(2 downto 0),
 		I_HS    => sl_HSCRLDn,
 		I_SPC   => sl_PFSPCn,
 		I_D     => slv_VBD(8 downto 0),
@@ -334,14 +332,13 @@ begin
 	port map (
 		I_MCKR   => I_MCKR,
 		I_NXLn   => sl_NXLn,
+		I_421H   => slv_H(2 downto 0),
 		I_VRD    => slv_VRD,
 		I_LMPDn  => sl_LMPDn,
 		I_MOSR   => I_MOSR,
 
 		O_MPX    => slv_MPX,
-		O_GLDn   => sl_GLDn,
-		O_H01n   => sl_H01n,
-		O_H03n   => sl_H03n
+		O_GLDn   => sl_GLDn
 	);
 
 	-------------
@@ -350,10 +347,10 @@ begin
 
 	-- 6E, 7E, 8E, 6D, 7D, 8D selectors create video RAM address
 	slv_VRA <=
-		slv_PFV(8 downto 3) & slv_PFH(8 downto 3)   when slv_VRAC(1 downto 0) = "00" else -- c0
-		'0' & slv_MPBS & sl_4HDL & sl_H01n & slv_MN when slv_VRAC(1 downto 0) = "01" else -- c1
-		'1' & slv_V(7 downto 3) & slv_H(8 downto 3) when slv_VRAC(1 downto 0) = "10" else -- c2
-		slv_MA(12 downto 1);                     -- when slv_VRAC(1 downto 0) = "11" else -- c3
+		slv_PFV(8 downto 3) & slv_PFH(8 downto 3)                        when slv_VRAC(1 downto 0) = "00" else -- c0
+		'0' & slv_MPBS & sl_4HDL & (slv_H(1) or (not slv_H(0))) & slv_MN when slv_VRAC(1 downto 0) = "01" else -- c1
+		'1' & slv_V(7 downto 3) & slv_H(8 downto 3)                      when slv_VRAC(1 downto 0) = "10" else -- c2
+		slv_MA(12 downto 1);                                          -- when slv_VRAC(1 downto 0) = "11" else -- c3
 
 	-- chip 4C 8:1 encoder
 	sl_4C_Y   <=
@@ -559,7 +556,7 @@ begin
 	p_1B_2B : process
 	begin
 		wait until falling_edge(I_MCKR);
-		if sl_H03n = '0' then -- load
+		if slv_H(1 downto 0) = "11" then -- load on H3
 			slv_shift_2B <= slv_ROM_2B_data(7 downto 4);
 			slv_shift_1B <= slv_ROM_2B_data(3 downto 0);
 		else -- shift msb
@@ -578,7 +575,7 @@ begin
 	port map (
 		I_CK     => I_MCKR,
 		I_PFM    => sl_PFSC_MOn,
-		I_4H     => sl_4H,
+		I_421H   => slv_H(2 downto 0),
 		I_SEL    => sl_CRAMn,
 
 		-- AL serialised data

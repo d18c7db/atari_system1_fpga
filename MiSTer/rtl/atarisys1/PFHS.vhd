@@ -23,7 +23,7 @@ entity PFHS is
 		I_CK     : in  std_logic;                    -- MCKR
 		I_ST     : in  std_logic;                    -- PFHST
 		I_CTF    : in  std_logic;                    -- CTF (when '1' inverts O_PFH)
-		I_4H     : in  std_logic;                    -- 4H
+		I_421H   : in  std_logic_vector(2 downto 0); -- 4H 2H 1H
 		I_HS     : in  std_logic;                    -- HSCRLD
 		I_SPC    : in  std_logic;                    -- PFSPC
 		I_D      : in  std_logic_vector(8 downto 0); -- VBD
@@ -37,16 +37,6 @@ end PFHS;
 
 architecture RTL of PFHS is
 	type RAM_ARRAY is array (0 to 7) of std_logic_vector(7 downto 0);
-	signal
-		sl_H03,
-		sl_4HD,
-		sl_4H_last,
-		sl_HS_last,
-		sl_SPC_last
-								: std_logic := '1';
-	signal
-		slv_hcnt
-								: std_logic_vector(1 downto 0) := (others=>'1');
 	signal
 		RAM_4M_5M_addr
 								: std_logic_vector(2 downto 0) := (others=>'1');
@@ -118,9 +108,8 @@ begin
 	-- 8E, 9B counters
 	p_8E_9B : process
 	begin
-		-- until rising edge I_4H in schema, we use H03 to detect rising edge
 		wait until rising_edge(I_CK);
-		if sl_H03 = '1' and I_4H = '0' then
+		if I_421H = "011" then -- rising edge 4H
 			if I_ST = '0' then
 				slv_8E_9B <= slv_10F(8 downto 3);
 			else
@@ -128,17 +117,4 @@ begin
 			end if;
 		end if;
 	end process;
-
-	-- recreate part of the horizontal counter to generate the H03 signal
-	p_hcnt : process
-	begin
-		wait until rising_edge(I_CK);
-		sl_4HD <= I_4H;
-		if (sl_4HD='0' and I_4H='1') then
-			slv_hcnt<="01";
-		else
-			slv_hcnt <= slv_hcnt + 1;
-		end if;
-	end process;
-	sl_H03 <= slv_hcnt(1) and slv_hcnt(0);
 end RTL;

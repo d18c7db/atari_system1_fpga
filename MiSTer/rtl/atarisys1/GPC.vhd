@@ -22,7 +22,7 @@ entity GPC is
 	port(
 		I_CK   : in  std_logic;                    -- MCKR
 		I_PFM  : in  std_logic;                    -- PFSC/MO
-		I_4H   : in  std_logic;                    -- 4H
+		I_421H : in  std_logic_vector(2 downto 0); -- 4H 2H 1H
 		I_SEL  : in  std_logic;                    -- /CRAM
 		I_AL   : in  std_logic_vector(1 downto 0); -- APIX
 		I_MA   : in  std_logic_vector(1 downto 0); -- MA9, MA10
@@ -39,14 +39,11 @@ architecture RTL of GPC is
 		sl_gate,
 		sl_8C6,
 		sl_3F2,
-		sl_1C12,
-		sl_4HD,
-		sl_3H
+		sl_1C12
 								: std_logic := '1';
 	signal
 		PROM_3E_data,
-		slv_CRAS,
-		slv_hcnt
+		slv_CRAS
 								: std_logic_vector(1 downto 0) := (others=>'1');
 	signal
 		slv_ALC
@@ -102,30 +99,16 @@ begin
 	p_3H : process
 	begin
 		wait until rising_edge(I_CK);
-		if (sl_3H='1') and (I_4H='0') then
+		if (I_421H="011") then -- rising edge 4H
 			slv_3H <= I_D;
 		end if;
 	end process;
-
-	-- The old circuit built with discrete chips is gated by "/H03 = 1H nand 2H;" but LSI chip does not have
-	-- 1H, 2H or /H03 coming in so here we recreate part of the horizontal counter to generate the 3H signal
-	p_hcnt : process
-	begin
-		wait until rising_edge(I_CK);
-		sl_4HD <= I_4H;
-		if (sl_4HD='0' and I_4H='1') then
-			slv_hcnt<="01";
-		else
-			slv_hcnt <= slv_hcnt + 1;
-		end if;
-	end process;
-	sl_3H <= slv_hcnt(1) and slv_hcnt(0);
 
 	-- 3F latch
 	p_3F : process
 	begin
 		wait until falling_edge(I_CK);
-		if sl_3H='1' then
+		if I_421H(1 downto 0)="11" then -- 3H
 			sl_3F2	<= slv_3H(3);
 			slv_ALC	<= slv_3H(2 downto 0);
 		end if;

@@ -20,12 +20,11 @@ entity MOHLB_LSI is
 		I_MCKR      : in  std_logic;
 		I_NXLn      : in  std_logic;
 		I_LMPDn     : in  std_logic;
+		I_421H      : in  std_logic_vector( 2 downto 0); -- 4H 2H 1H
 		I_VRD       : in  std_logic_vector(15 downto 0);
 		I_MOSR      : in  std_logic_vector( 6 downto 0);
 		O_MPX       : out std_logic_vector( 7 downto 0);
-		O_GLDn      : out std_logic;
-		O_H01n      : out std_logic;
-		O_H03n      : out std_logic
+		O_GLDn      : out std_logic
 	);
 end MOHLB_LSI;
 
@@ -40,9 +39,7 @@ architecture RTL of MOHLB_LSI is
 		sl_BCSn,
 		sl_MOn,
 		sl_NXLn,
-		sl_GLDn,
-		sl_H01n,
-		sl_H03n
+		sl_GLDn
 								: std_logic := '0';
 
 	signal
@@ -65,8 +62,6 @@ begin
 
 	O_MPX    <= slv_MPX;
 	O_GLDn   <= sl_GLDn;
-	O_H01n   <= sl_H01n;
-	O_H03n   <= sl_H03n;
 
 	-------------
 	-- sheet 7 --
@@ -78,13 +73,12 @@ begin
 		I_MCKR        => I_MCKR,
 		I_VRD         => slv_VRD(15 downto 5),
 		I_NXLn        => sl_NXLn,
+		I_421H        => I_421H,
 
 		O_BQ          => slv_BQA,
 		O_PA          => sl_PADBn,
 		O_PAn         => sl_PADB,
 		O_GLDn        => sl_GLDn,
-		O_H01n        => sl_H01n,
-		O_H03n        => sl_H03n,
 		O_MOn         => sl_MOn
 	);
 
@@ -105,13 +99,12 @@ begin
 		I_MCKR        => I_MCKR,
 		I_VRD         => slv_VRD(15 downto 5),
 		I_NXLn        => sl_NXL_B,
+		I_421H        => I_421H,
 
 		O_BQ          => slv_BQB,
---		O_PA          => open,
+		O_PA          => open,
 		O_PAn         => sl_PA,
 		O_GLDn        => open,
-		O_H01n        => open,
-		O_H03n        => open,
 		O_MOn         => open
 	);
 

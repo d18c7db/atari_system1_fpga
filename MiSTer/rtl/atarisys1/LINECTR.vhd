@@ -22,14 +22,12 @@ entity LINECTR is
 		I_MCKR   : in  std_logic;
 		I_VRD    : in  std_logic_vector(15 downto 5);
 		I_NXLn   : in  std_logic;
+		I_421H   : in  std_logic_vector( 2 downto 0); -- 4H 2H 1H
 
 		O_BQ     : out std_logic_vector(8 downto 0);
 		O_PA     : out std_logic;
 		O_PAn    : out std_logic;
 		O_GLDn   : out std_logic;
-		O_H01n   : out std_logic;
-		O_H02n   : out std_logic;
-		O_H03n   : out std_logic;
 		O_MOn    : out std_logic
 	);
 end LINECTR;
@@ -37,21 +35,13 @@ end LINECTR;
 architecture RTL of LINECTR is
 	signal
 		sl_LDn,
-		sl_4H,
 		sl_PAD,
 		sl_NXLn,
 		sl_CLRn,
-		sl_GLDn,
-		sl_H01n,
-		sl_H02n,
-		sl_H03n,
 		sl_MOSR7D,
 		sl_BUFCLRn,
 		sl_MOn
 								: std_logic := '1';
-	signal
-		slv_H
-								: std_logic_vector( 2 downto 0) := (others=>'1');
 	signal
 		slv_NXL_delay
 								: std_logic_vector( 7 downto 0) := (others=>'1');
@@ -60,41 +50,27 @@ architecture RTL of LINECTR is
 		slv_3J
 								: std_logic_vector( 8 downto 0) := (others=>'1');
 begin
-	O_GLDn     <= sl_GLDn;
-	O_H01n     <= sl_H01n;
-	O_H02n     <= sl_H02n;
-	O_H03n     <= sl_H03n;
+	O_GLDn     <= (I_421H(1) or I_421H(0));
 	O_PAn      <= not sl_PAD;
 	O_PA       <=     sl_PAD;
 	O_BQ       <= slv_LB;
 	O_MOn      <= sl_MOn;
 	sl_NXLn    <= I_NXLn;
-	sl_4H      <= slv_H(2);
 	sl_BUFCLRn <= slv_NXL_delay(7);
 	sl_CLRn    <= sl_PAD or sl_BUFCLRn;
 
-	-- recreate part of the horizontal counter and generate some internal signals
-	p_hcnt : process
+	-- generate some internal signals
+	p_nxl : process
 	begin
 		wait until rising_edge(I_MCKR);
 		-- /BUFCLR signal is just /NXL delayed 8 clocks
 		slv_NXL_delay <= slv_NXL_delay(6 downto 0) & sl_NXLn;
 		-- create PADB signal from recovered /BUFCLRN
 		sl_PAD   <= (not sl_PAD) xor sl_BUFCLRn;
-
-		if (sl_NXLn='0' and sl_4H='1') then
-			slv_H<="111";
-		else
-			slv_H <= slv_H + 1;
-		end if;
 	end process;
 
 	-- 4J, 3D on SP-277 schema sheet 8
-	sl_LDn  <= sl_4H or sl_H02n or sl_PAD;
-	sl_GLDn <= ((    slv_H(1)) or (    slv_H(0)));
-	sl_H01n <= ((    slv_H(1)) or (not slv_H(0)));
-	sl_H02n <= ((not slv_H(1)) or (    slv_H(0)));
-	sl_H03n <= ((not slv_H(1)) or (not slv_H(0)));
+	sl_LDn  <= I_421H(2) or ((not I_421H(1)) or (I_421H(0))) or sl_PAD;
 
 	-- 3T, 3R, 3W, 3U, 3S, 3X counters
 	p_ctrs : process
@@ -112,11 +88,11 @@ begin
 	p_MOSR7 : process
 	begin
 		wait until rising_edge(I_MCKR);
-		if (sl_H01n = '0') and (sl_4H = '1') then -- rising 4HDD
+		if (I_421H = "101") then -- rising 4HDD
 			sl_MOSR7D  <= I_VRD(15);
 			slv_3J     <= I_VRD(13 downto 5); -- latch 3J
 		end if;
-		if (sl_H02n = '0') and (sl_4H = '0') then -- rising /4HD3
+		if (I_421H = "010") then -- rising /4HD3
 			sl_MOn <= sl_MOSR7D; -- VRD15 delayed by 4HDD and then by /4HD3
 		end if;
 	end process;
