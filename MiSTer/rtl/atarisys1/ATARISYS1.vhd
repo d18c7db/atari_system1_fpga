@@ -32,10 +32,8 @@ entity FPGA_ATARISYS1 is
 		-- Active high reset
 		I_RESET    : in  std_logic;
 
-		-- Bit 7 and bit 6 for the eight ADC inputs, the other bits are assumed 1
-		I_ADCB7    : in  std_logic_vector( 7 downto 0);
-		I_ADCB6    : in  std_logic_vector( 7 downto 0);
-
+		O_ADC_ADDR : out std_logic_vector( 2 downto 0);
+		I_ADC_DATA : in  std_logic_vector( 7 downto 0);
 		-- Trackball inputs active low:
 		I_CLK      : in  std_logic_vector(3 downto 0); -- HCLK2,VCLK2,HCLK1,VCLK1
 		I_DIR      : in  std_logic_vector(3 downto 0); -- HDIR2,VDIR2,HDIR1,VDIR1
@@ -192,23 +190,7 @@ begin
 		if sl_adc_soc_last = '0' and sl_adc_soc = '1' then
 			slv_adc_ctr <=  (others=>'0');
 			sl_adc_eoc <= '0';
-
-			-- Some  games use one ADC channel as up/idle/down or left/idle/right control (0xFF / 0x80 / 0x00)
-			-- Other games use one ADC channel as a simple on/off (0xFF / 0x00)
-			-- So with just the top two bits we can present the following values to each ADC channel
-			-- 11_111111 (0xFF) on value
-			-- 10_000000 (0x80) idle / center
-			-- 01_111111 (0x7F) idle / center
-			-- 00_000000 (0x00) off value
-			slv_adc_data(7) <= I_ADCB7(to_integer(unsigned(slv_adc_addr)));
-			-- extend value of bit 6 to all lower bits
-			slv_adc_data(6) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
-			slv_adc_data(5) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
-			slv_adc_data(4) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
-			slv_adc_data(3) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
-			slv_adc_data(2) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
-			slv_adc_data(1) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
-			slv_adc_data(0) <= I_ADCB6(to_integer(unsigned(slv_adc_addr)));
+			slv_adc_data <= I_ADC_DATA;
 
 		-- fake a 100uS conversion delay, may not be needed but it's as per datasheet
 		elsif slv_adc_ctr > "1011001011" then -- after 715 cycles of 140ns = 100uS
@@ -218,12 +200,14 @@ begin
 		end if;
 	end process;
 
+	O_LEDS    <= (others=>'0');
 	O_HBLANK  <= sl_HBLANKn;
 	O_VBLANK  <= sl_VBLANKn;
 	O_SBA     <= slv_SBA;
 	O_MA18n   <= sl_MA18n;
 	O_ROMn    <= slv_ROMn;
 	O_EEPDATA <= slv_MDO(7 downto 0);
+	O_ADC_ADDR<= slv_adc_addr;
 
 	u_main : entity work.MAIN
 	port map (

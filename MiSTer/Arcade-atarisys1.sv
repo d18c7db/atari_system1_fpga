@@ -188,15 +188,12 @@ assign USER_OUT = '1;
 assign {UART_RTS, UART_TXD, UART_DTR} = 0;
 assign {SD_SCK, SD_MOSI, SD_CS} = 'Z;
 assign {SDRAM_DQ, SDRAM_A, SDRAM_BA, SDRAM_CLK, SDRAM_CKE, SDRAM_DQML, SDRAM_DQMH, SDRAM_nWE, SDRAM_nCAS, SDRAM_nRAS, SDRAM_nCS} = 'Z;
-assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;  
+assign {DDRAM_CLK, DDRAM_BURSTCNT, DDRAM_ADDR, DDRAM_DIN, DDRAM_BE, DDRAM_RD, DDRAM_WE} = '0;
 
 assign VGA_F1 = 0;
 assign VGA_SCALER  = 0;
 assign VGA_DISABLE = 0;
 assign HDMI_FREEZE = 0;
-
-// Slapstic Types: marble=103 (x67), indytemp=105 (x69), peterpak=107 (x6B), roadrunn=108 (x6C), roadb109=109 (x6D), roadb110=110 (x6E)
-integer     slap_type = 105;
 
 wire         clk_7M;
 wire         clk_14M;
@@ -249,7 +246,7 @@ reg  m_coin_aux = 1'b0;
 reg  m_coin_l   = 1'b0;
 reg  m_coin_r   = 1'b0;
 
-wire m_service = status[13];
+wire m_service = status[6];
 wire [2:0] fx  = status[5:3];
 
 //assign {FB_PAL_CLK, FB_FORCE_BLANK, FB_PAL_ADDR, FB_PAL_DOUT, FB_PAL_WR} = '0;
@@ -267,12 +264,11 @@ localparam CONF_STR = {
 	"O[122:121],Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"O[5:3],Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
-	"O[8],Mouse Buttons,Normal,Swapped;",
-	"O[10:9],Mouse speed,100%,200%,400%,800%;",
-	"O[11],Joystick mode,Digital,Analog;",
-	"O[12],Joystick speed,High,Low;",
+	"O[6],Service,Off,On;",
 	"-;",
-	"O[13],Service,Off,On;",
+	"O[7],Mouse Buttons,Normal,Swapped;",
+	"O[9:8],Marble Speed,1:1,1:2,1:4,1:8;",
+	"-;",
 	"R[0],Reset;",
 	"-;",
 	"J1,Button1,Button2,Button3,Button4,Coin,VStart;",
@@ -294,6 +290,7 @@ pll pll
 );
 
 // Slapstic Types: marble=103 (x67), indytemp=105 (x69), peterpak=107 (x6B), roadrunn=108 (x6C), roadb109=109 (x6D), roadb110=110 (x6E)
+integer     slap_type = 105;
 always @(posedge clk_sys) if (ioctl_wr && (ioctl_index==1)) slap_type <= ioctl_dout;
 
 // keyboard controls - map keycodes to actions
@@ -329,19 +326,19 @@ end
 // ps2_mouse(0)=1 L button pressed
 // ps2_mouse(1)=1 R buttin pressed
 // ps2_mouse(2)=1 M button pressed
-// mouse controls - allow remap of mouse button order
+// mouse controls - allow swap of L/R mouse buttons
 always @(posedge clk_sys)
 begin
-	case(status[8])
+	case(status[7])
 	1'b0: // normal
-	begin
-		mouse_L <= ps2_mouse[0];
-		mouse_R <= ps2_mouse[1];
-	end
-	1'b1: // swap
 	begin
 		mouse_R <= ps2_mouse[0];
 		mouse_L <= ps2_mouse[1];
+	end
+	1'b1: // swap
+	begin
+		mouse_L <= ps2_mouse[0];
+		mouse_R <= ps2_mouse[1];
 	end
 	endcase
 end
@@ -583,9 +580,21 @@ assign sl_wr_ep1     = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr
 	(.clock_a(clk_sys), .enable_a(), .wren_a(sl_wr_ep1  ), .address_a(ioctl_addr[ 8:0]), .data_a(                ioctl_dout ), .q_a(             ),
 	 .clock_b(clk_sys), .enable_b(), .wren_b(sl_wr_ep2  ), .address_b( slv_MADEC[ 9:1]), .data_b(             slv_eprom_dout), .q_b(slv_eprom_din));
 `else
+// pragma translate_off
 	assign sdram_ready = 0;
 
-	// hps_io outputs
+	// arcade_video module outputs
+	assign CLK_VIDEO = clk_sys;
+	assign CE_PIXEL = ce_pix;
+	assign VGA_SL = 0;
+	assign VGA_DE = ~(HBlank | VBlank);
+	assign VGA_HS = HSync;
+	assign VGA_VS = VSync;
+	assign VGA_R  = {RGB_in[11:8],4'b0};
+	assign VGA_G  = {RGB_in[ 7:4],4'b0};
+	assign VGA_B  = {RGB_in[ 3:0],4'b0};
+
+	// hps_io module outputs
 	assign buttons = 0;
 	assign ioctl_download = 0;
 	assign ioctl_wr = 0;
@@ -601,6 +610,15 @@ assign sl_wr_ep1     = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr
 
 	`include "tb/debug_roms.v"
 
+	bmp_out #( "BI" ) bmp_out
+	(
+		.clk_i(clk_7M),
+		.dat_i({RGB_in[11:8],4'b0,RGB_in[ 7:4],4'b0,RGB_in[ 3:0],4'b0}),
+		.hs_i(HSync),
+		.vs_i(VSync)
+	);
+
+// pragma translate_on
 `endif
 
 // Note: to save some memory we alias ROM3 with ROM7.
@@ -624,7 +642,7 @@ assign slv_SDATA =
 	(~slv_SROMn[2])?slv_SROM2:
 	8'h0;
 
-// SP-282 ##################################################################################
+// SP-276 SP-277 SP-282 SP-286 SP-298 #########################################
 // J102         J103        P104            P105               J106
 //  1 +5         1 +5        1 +5           1 Self Test         1 +5
 //  2 P2 Up      2 H_CLK2    2 Coin Ctr 1   2 Right Audio GND   2 N/C
@@ -635,184 +653,162 @@ assign slv_SDATA =
 //  7 P1 Left    7 H_DIR1    7                                  7 SW2   P2 Start/Whip
 //  8 P1 Up      8 V_CLK1    8 KEY                              8 SW4
 //  9 P1 Down    9 KEY       9 Left Coin                        9 SW1   P1 Start/Whip
-// 10 KEY       10 V_DIR1   10 Right Coin                      10 SW3
+// 10 KEY       10 V_DIR1   10 Right Coin                      10 SW3   Jump
 // 11 GND       11 GND      11 GND                             11 GND
 
-// Slapstic Types: marble=103 (x67), indytemp=105 (x69), peterpak=107 (x6B), roadrunn=108 (x6C), roadb109=109 (x6D), roadb110=110 (x6E)
+// Roadblasters
+// Gas pedal, pot tied across +5V and GND with wiper going to J103-P
+// Wheel connects CLK to P103-17 and DIR to P103-A
+// Trigger button to P103-10 (SW2)
+// Thumb button to P103-L (SW1)
 
-wire [7:0] inputs;
-reg [7:0] adc_bit7, adc_bit6;
+reg [7:0] joystick_l_analog_0_lo = 0;
+reg [7:0] joystick_l_analog_0_hi = 0;
+reg [7:0] joystick_r_analog_0_lo = 0;
+reg [7:0] joystick_r_analog_0_hi = 0;
+reg [7:0] inputs;
 reg [4:0] switches;
-
-// direction control inputs
-// J102 2,3,4,6,8,9,7,5 = P2-U,D,L,R P1-U,D,L,R active high
-assign inputs =
-	// for Indy (105) shift them by one (000UDLR0) else default to (0000UDLR)
-	(slap_type==105)?({3'b0, (kbd1[7:4] | joystick_0[3:0]), 1'b0}) :
-                    ({4'b0, (kbd1[7:4] | joystick_0[3:0])      });
+reg [2:0] adc_addr;
+reg [7:0] adc_data;
+reg wheel_mode;
 
 always @(posedge clk_sys) begin
-	// default state of ADC inputs at VCC/2
-	adc_bit7 = 8'd255;
-	adc_bit6 = 8'd0;
-	// ########################################
-	// marblemad ##############################
-	// ########################################
+	// Marblemad ############################################
 	if (slap_type==103)
 	begin
+		wheel_mode = 0;
+		// direction control inputs
+		inputs =
+		// for Marblemad the trackball is mounted 45 degree clockwise, so up becomes up-left, etc
+			({4'b0,
+			(kbd1[7] | kbd1[4]) | (joystick_0[3] | joystick_0[0]), // U = UL c0-- c1++
+			(kbd1[6] | kbd1[5]) | (joystick_0[2] | joystick_0[1]), // D = DR c0++ c1--
+			(kbd1[5] | kbd1[7]) | (joystick_0[1] | joystick_0[3]), // L = DL c0++ c1++
+			(kbd1[4] | kbd1[6]) | (joystick_0[0] | joystick_0[2])  // R = UR c0-- c1--
+		});
 		// NC NC NC Action Action
 		switches = ({3'b111, ~(kbd1[0] | joystick_0[4] | mouse_L), ~(kbd1[1] | joystick_0[5] | mouse_R)});
+		// Directional analog type control from trackball which appears to be mounted with a 45 degree clockwise rotation
+		// so U is UL, D is DR, L is LD and R is RU
+
+
 	end
-	// ########################################
-	// indytemp ###############################
-	// ########################################
+	// Indytemp #############################################
 	if (slap_type==105)
 	begin
-		// on/off style control
-		adc_bit7 = inputs;
-		adc_bit6 = inputs;
+		// direction control inputs
+		inputs =
+		// for Indy (105) shift them by one (000UDLR0) else default to (0000UDLR)
+		({3'b0, (kbd1[7:4] | joystick_0[3:0]), 1'b0});
 		// NC NC NC Whip Whip
 		switches = ({3'b111, ~(kbd1[0] | joystick_0[4]), ~(kbd1[1] | joystick_0[5])});
+		// Directional on/off switch type control
+		adc_data = inputs[adc_addr]?8'hff:8'h80;
 	end
-	// ########################################
-	// peterpak ###############################
-	// ########################################
+	// Peterpak #############################################
 	else if (slap_type==107)
 	begin
-		// on/off style control
-		adc_bit7 = inputs;
-		adc_bit6 = inputs;
+		// direction control inputs
+		inputs =
+		({4'b0, (kbd1[7:4] | joystick_0[3:0]) });
 		// NC NC Jump NC Throw
-		switches = ({2'b11,  ~(kbd1[0] | joystick_0[4]), 1'b1, ~(kbd1[1] | joystick_0[5])});
+		switches = ({2'b11, ~(kbd1[0] | joystick_0[4]), 1'b1, ~(kbd1[1] | joystick_0[5])});
+		// Directional on/off switch type control
+		adc_data = inputs[adc_addr]?8'hff:8'h80;
 	end
-	// ########################################
-	// roadrunn ###############################
-	// ########################################
+	// Roadrunn #############################################
 	else if ( slap_type==108 )
 	begin
+		// direction control inputs
+		inputs =
+		({4'b0, (kbd1[7:4] | joystick_0[3:0]) });
 		// NC NC NC Action Action
 		switches = ({3'b111, ~(kbd1[0] | joystick_0[4]), ~(kbd1[1] | joystick_0[5])});
-
-		// tristate type of control
-		// -128 10_000000 max negative movement
-		//   -1 11_111111 on  value
-		//    0 00_000000 off value / idle / center of range
-		//  127 01_111111 max positive movement
-		if (inputs[2]) // Down
-		begin
-			adc_bit7[7] = 1;
-			adc_bit6[7] = 1;
-		end
-		else if (inputs[3]) // Up
-		begin
-			adc_bit7[7] = 0;
-			adc_bit6[7] = 0;
-		end
-		else // center
-		begin
-			adc_bit7[7] = 1;
-			adc_bit6[7] = 0;
-		end
-
-		if (inputs[0]) // Right
-		begin
-			adc_bit7[0] = 0;
-			adc_bit6[0] = 0;
-		end
-		else if (inputs[1]) // Left
-		begin
-			adc_bit7[0] = 1;
-			adc_bit6[0] = 1;
-		end
-		else // center
-		begin
-			adc_bit7[0] = 1;
-			adc_bit6[0] = 0;
-		end
-
+		// Directional analog type control from joystick
+		if (adc_addr==3'd0)
+			// convert from signed to unsigned (^80) and invert range (^FF)
+			adc_data = joystick_l_analog_0[ 7:0]^8'h7f; // left=FF Center=80 Right=00
+		else if (adc_addr==3'd7)
+			// convert from signed to unsigned (^80)
+			adc_data = joystick_l_analog_0[15:8]^8'h80; // Down=FF Center=80 Up=00
+		else
+			adc_data = 8'h80;
 	end
-	// ########################################
-	// roadblasters ###########################
-	// ########################################
+	// Roadblasters #########################################
 	else if ( (slap_type==109) || (slap_type==110) )
 	begin
-		// NC NC NC Fire NC
-		switches = ({3'b111, ~(kbd1[0] | joystick_0[4]), 1'b1}) ;
-
-		// uses trackball X for L R
-
-		// throttle
-		adc_bit7[3] = 0;
-		adc_bit6[3] = (kbd1[1] | joystick_0[5]);
+		wheel_mode = 1;
+		// direction control inputs
+		inputs =
+		({4'b0, joystick_0[0],joystick_0[1],joystick_0[2],joystick_0[3]});
+		// NC NC NC Action Action
+		switches = ({3'b111, ~(kbd1[0] | joystick_0[4] | mouse_L), ~(kbd1[1] | joystick_0[5] | mouse_R)});
+		// Throttle analog type control
+		if ((adc_addr==3'd3) && (joystick_l_analog_0[15]))
+			// select negative range only (sign=1) discard sign bit and double (<<1) then invert range (^FF)
+			adc_data = {joystick_l_analog_0[14:8],1'b1}^8'hff; // Center=00 Up=FF
+		else
+			adc_data = 0;
+		// Directional analog type control from steering wheel left=7F, center=3F right=00
+		joystick_l_analog_0_hi = joystick_r_analog_0[15:8]; // up/down not used
+		joystick_l_analog_0_lo = joystick_l_analog_0[7:0] ; // left/right
 	end
 end
 
 wire [3:0]	clks, dirs;
 
-trackball tb1
+// for Marble player 1 or Road Blasters wheel mode (analog joy or mouse only)
+quad quad_p1
 (
-	.clk                  (clk_7M),
-	.flip                 (), // unused
-	.ps2_mouse            (ps2_mouse),
-	.mouse_speed          ( status[10:9]), // 00=100%, 01=200%, 10=400%, 11=800%
-	.joystick_mode        ( status[11]),   // 0 = digital, 1 = analog
-	.joystick_sensitivity (~status[12]),   // 0 = low, 1 = high
-	.joystick_analog      (joystick_l_analog_0),
-	.joystick             (inputs[3:0]),   // UDLR active high
-	.v_dir                (dirs[0]), // v dir 1
-	.v_clk                (clks[0]), // v clk 1
-	.h_dir                (dirs[1]), // h dir 1
-	.h_clk                (clks[1])  // h clk 1
+	.clk        (clk_7M),
+	.mode       (wheel_mode), // 1 = wheel, 0 = joy/mouse
+	.joy        (joystick_l_analog_0),
+	.mouse      (ps2_mouse),
+	.speed      (status[9:8]),
+	.XA         (dirs[0]),
+	.XB         (clks[0]),
+	.YA         (dirs[1]),
+	.YB         (clks[1])
 );
 
-trackball tb2
+// only used by Marble player 2
+quad quad_p2
 (
-	.clk                  (clk_7M),
-	.flip                 (), // unused
-	.ps2_mouse            (),
-	.mouse_speed          ( status[10:9]), // 00=100%, 01=200%, 10=400%, 11=800%
-	.joystick_mode        ( status[11]),   // 0 = digital, 1 = analog
-	.joystick_sensitivity (~status[12]),   // 0 = low, 1 = high
-	.joystick_analog      (joystick_r_analog_0),
-	.joystick             (kbd2[7:4]), // UDLR active high
-	.v_dir                (dirs[2]), // v dir 2
-	.v_clk                (clks[2]), // v clk 2
-	.h_dir                (dirs[3]), // h dir 2
-	.h_clk                (clks[3])  // h clk 2
+	.clk        (clk_7M),
+	.mode       (0),
+	.joy        (joystick_r_analog_0),
+	.mouse      ('b0),
+	.speed      (status[9:8]),
+	.XA         (dirs[2]),
+	.XB         (clks[2]),
+	.YA         (dirs[3]),
+	.YB         (clks[3])
 );
 
 FPGA_ATARISYS1 atarisys1
 (
 	.I_SLAP_TYPE (slap_type),
+	// System Clock
 	.I_CLK_7M    (clk_7M),
 	.I_CLK_14M   (clk_14M),
 
+	// Active high reset
 	.I_RESET     (sl_reset),
-
 	// SELFTEST, COIN_AUX, COIN_L, COIN_R, SW[5:1] active low
 	.I_SELFTESTn (~m_service),
 	.I_COIN      ({~m_coin_aux, ~(m_coin_r), ~(m_coin_l | joystick_0[8])}),
 	// J106 SW5,4,3,2,1 = NC, NC, Jump (NC), Whip2/Start2, Whip1/Start1
 	.I_SW        (switches),
 
-// when button is pressed ADC value goes full scale, else ADC value is VCC/2
-// we present 0xFF for button press and 0x7F for button release
-
 	// Each ADC input is biased to VCC/2 with resistors and can be pulled high or low or any value in between for analog controllers
-
 	// Some  games use an ADC channel as up/idle/down or left/idle/right control (0xF0 / 0x80 / 0x00)
 	// Other games use an ADC channel as a simple on/off (0xFF / 0x00)
-	// So with just the top two bits we can present the following values to each ADC channel
-	// -128 10_000000 max negative movement
-	//   -1 11_111111 on  value
-	//    0 00_000000 off value / idle / center of range
-	//  127 01_111111 max positive movement
-	.I_ADCB7     (adc_bit7),
-	.I_ADCB6     (adc_bit6),
+	.O_ADC_ADDR  (adc_addr),
+	.I_ADC_DATA  (adc_data),
 
 	// P103 LETA trackball inputs active low
-	.I_CLK(clks), // HCLK2,VCLK2,HCLK1,VCLK1
-	.I_DIR(dirs), // HDIR2,VDIR2,HDIR1,VDIR1
+	.I_CLK       (clks), // HCLK2,VCLK2,HCLK1,VCLK1
+	.I_DIR       (dirs), // HDIR2,VDIR2,HDIR1,VDIR1
 
 	.O_LEDS      (),
 
@@ -856,25 +852,4 @@ FPGA_ATARISYS1 atarisys1
 	.O_VADDR     (slv_VADDR),
 	.I_VDATA     (slv_VDATA)
 );
-
-/* These are output by arcade_video module
-assign CLK_VIDEO = clk_sys;
-assign CE_PIXEL = ce_pix;
-assign VGA_SL = 0;
-assign VGA_DE = ~(HBlank | VBlank);
-assign VGA_HS = HSync;
-assign VGA_VS = VSync;
-assign VGA_G  = {g,4'd0};
-assign VGA_R  = {r,4'd0};
-assign VGA_B  = {b,4'd0};
-*/
-// pragma translate_off
-bmp_out #( "BI" ) bmp_out
-(
-	.clk_i(clk_7M),
-	.dat_i({RGB_in[11:8],4'b0,RGB_in[ 7:4],4'b0,RGB_in[ 3:0],4'b0}),
-	.hs_i(HSync),
-	.vs_i(VSync)
-);
-// pragma translate_on
 endmodule

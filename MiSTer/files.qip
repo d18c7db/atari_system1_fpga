@@ -23,8 +23,9 @@ set_global_assignment -name VERILOG_FILE rtl/lib/jt51/jt51_pm.v
 set_global_assignment -name VERILOG_FILE rtl/lib/jt51/jt51_reg.v
 set_global_assignment -name VERILOG_FILE rtl/lib/jt51/jt51_sh.v
 set_global_assignment -name VERILOG_FILE rtl/lib/jt51/jt51_timers.v
-set_global_assignment -name VERILOG_FILE rtl/lib/trackball.v
 
+set_global_assignment -name VHDL_FILE rtl/lib/quad.vhd
+set_global_assignment -name VHDL_FILE rtl/lib/LETA_REP.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/m6522.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/POKEY.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/T65/T65.vhd
@@ -38,7 +39,6 @@ set_global_assignment -name VHDL_FILE rtl/lib/TG68K/TG68KdotC_Kernel.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/mem/dpram.vhd
 set_global_assignment -name VHDL_FILE rtl/lib/mem/sdram.vhd
 set_global_assignment -name  SDC_FILE rtl/lib/mem/sdram.sdc
-set_global_assignment -name VHDL_FILE rtl/atarisys1/LETA.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/PROM_5E.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/LS299.vhd
 set_global_assignment -name VHDL_FILE rtl/atarisys1/RAM_2K8.vhd

@@ -539,11 +539,11 @@ begin
 --	sl_EEP_OEn <= sl_8H5 and sl_SYSRESn;
 
 	-- 12C LETA trackball controller
-	p_LETA	: entity work.LETA
+	p_LETA	: entity work.LETA_REP
 	port map (
 		clk     => I_MCKR,
 		ck      => I_8H,
-		resn    => I_LETA_RES,
+		resoln  => I_LETA_RES,
 		cs      => sl_RLETAn,
 		test    => I_LETA_TST,
 		ad      => slv_cpu_ad( 2 downto 1),
