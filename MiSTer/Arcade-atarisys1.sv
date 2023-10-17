@@ -775,9 +775,9 @@ quad quad_p1
 quad quad_p2
 (
 	.clk        (clk_7M),
-	.mode       (0),
+	.mode       (1'b0),
 	.joy        (joystick_r_analog_0),
-	.mouse      ('b0),
+	.mouse      (25'b0),
 	.speed      (status[9:8]),
 	.XA         (dirs[2]),
 	.XB         (clks[2]),
