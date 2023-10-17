@@ -463,7 +463,7 @@ assign sl_wr_ep1     = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr
 		.ps2_key(ps2_key)
 	);
 
-	// 1536 M10K blocks gp_rom (6 x 32K x 64bits not used, replaced with sdram above due to size constraints)
+	// 1536 M10K blocks gp_rom (6 x 32K x 64bits not used, replaced with sdram below due to size constraints)
 	sdram #(.tCK_ns(1000/93.06817)) sdram
 	(
 		.I_RST(~pll_locked),
