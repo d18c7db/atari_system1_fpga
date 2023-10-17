@@ -7,10 +7,6 @@
 * Road Runner - Playable but some sprites disappear.  
 * Road Blasters - Playable but has a vertical green line on the left.  
 
-### NOTE on Marble Madness  
-The original arcade trackball was mounted with a 45 degree CCW rotation, so for example rotating the ball "up" would activate the "up-right" encoders.
-Therefore hold the mouse or joystick at a 45 degree counter-clockwise rotation so that the directional controls match.  
-
 ### NOTE on Road Blasters and Road Runner  
 The earlier schematics SP-282/SP-286 can address only four graphic ROM banks and this works well for Indy, Marble and Peter but Road Runner and Road Blasters need a total of seven graphic ROM banks and the chip select decoding has been updated in schematic SP-299  
 

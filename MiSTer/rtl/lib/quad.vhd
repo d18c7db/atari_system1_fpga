@@ -35,23 +35,35 @@ entity QUAD is
 end QUAD;
 
 architecture RTL of QUAD is
-	constant sample_interval : natural range 0 to 31 := 15;
-	signal sample            : natural range 0 to 31:= sample_interval;
-	signal idx               : natural range 0 to 15 := 12;
+	constant sample_interval          : natural range 0 to 31 := 15; -- number of timer timouts before joystick inputs are sampled
+	signal sample                     : natural range 0 to 31:= sample_interval;
+	signal idx                        : natural range 0 to 15 := 12; -- controls sensitivity
 
-	alias  mclk              : std_logic is mouse(24);
-	signal mclk_last         : std_logic := '0';
-	signal x_dir, y_dir      : std_logic := '0';
-	signal wheel             : signed( 3 downto 0) := (others => '0');
-	signal timer             : std_logic_vector(13 downto 0) := (others => '0'); -- clocked at 7.159Mhz gives 437 rollovers / second
-	signal x_ctr, y_ctr      : signed( 7 downto 0) := (others => '0');
+	alias  mclk                       : std_logic is mouse(24);
+	signal mclk_last                  : std_logic := '0';
+	signal x_dir, y_dir               : std_logic := '0';
+	signal timer                      : std_logic_vector(13 downto 0) := (others => '0'); -- clocked at 7.159Mhz gives 437 rollovers / second
+	signal wheel                      : signed( 3 downto 0) := (others => '0');
+	signal x_ctr, y_ctr               : signed( 7 downto 0) := (others => '0');
+	signal joy_h_xlat, joy_v_xlat     : signed( 8 downto 0) := (others => '0');
+	signal mouse_h_xlat, mouse_v_xlat : signed( 9 downto 0) := (others => '0');
 begin
+	-- index into timer counter for generating quadrature signals, lower index = more pulses/second
 	idx <=
 		10 when (mode = '0' and speed = "00") else -- 1:1 fastest
 		11 when (mode = '0' and speed = "01") else -- 1:2 fast
 		12 when (mode = '0' and speed = "10") else -- 1:4 medium
 		13 when (mode = '0' and speed = "11") else -- 1:8 slow
 		11; -- when in wheel mode
+
+	-- Translate joy coordinates on the Cartesian plane to remove 45 degree trackball rotation
+	-- x1 = x0*cos(45) – y0*sin(45) , y1 = x0*sin(45) + y0*cos(45)
+	-- at 45 degrees cos(45) = sin(45) = 0.707 so we remove that common factor and scale the vectors later to suit
+	joy_h_xlat   <= signed(joy(7) & joy( 7 downto 0)) - signed(joy(15) & joy(15 downto 8));
+	joy_v_xlat   <= signed(joy(7) & joy( 7 downto 0)) + signed(joy(15) & joy(15 downto 8));
+	-- Translate mouse coordinates on the Cartesian plane to remove 45 degree trackball rotation (also invert Y axis to match joystick)
+	mouse_h_xlat <= signed((mouse(4) & mouse(4) & mouse(15 downto  8))) + signed((mouse(5) & mouse(5) & mouse(23 downto 16)));
+	mouse_v_xlat <= signed((mouse(4) & mouse(4) & mouse(15 downto  8))) - signed((mouse(5) & mouse(5) & mouse(23 downto 16)));
 
 	-- generate horizontal quadrature outputs
 	p_QX : process
@@ -83,16 +95,17 @@ begin
 			mclk_last <= mclk; -- mouse clock seems to run at 62 Hz
 			if (mclk_last /= mclk) then
 				timer <= (others=>'1');
+				sample <= sample_interval;
 				-- Horizontal mouse movement
-				x_dir <= mouse(4); -- 1=L 0=R
-				x_ctr <= abs(signed((mouse(4) & mouse(15 downto  9))));
+				x_dir <= mouse_h_xlat(mouse_h_xlat'LEFT); -- 1=L 0=R
+				x_ctr <= abs(mouse_h_xlat(mouse_h_xlat'LEFT downto mouse_h_xlat'LEFT - x_ctr'LEFT));
 				-- Vertical mouse movement
-				y_dir <= not mouse(5); -- 0=U 1=D (invert to match joystick)
-				y_ctr <= abs(signed((mouse(5) & mouse(23 downto 17))));
+				y_dir <= mouse_v_xlat(mouse_v_xlat'LEFT); -- 1=U 0=D
+				y_ctr <= abs(mouse_v_xlat(mouse_v_xlat'LEFT downto mouse_v_xlat'LEFT - y_ctr'LEFT));
 			end if;
 		end if;
 
-		-- on timer rollover scan joystick and update x/y counters
+		-- on timer rollover update x/y and sample counters
 		if (timer = 0) then
 			if (sample = 0) then
 				sample <= sample_interval;
@@ -106,7 +119,7 @@ begin
 				y_ctr <= y_ctr - 1;
 			end if;
 
-			-- joystick is sampled every 7.158Mhz/(timer*sample_interval) roughly at 27Hz
+			-- joystick is sampled every 7.158Mhz/(timer*sample_interval) = about 27Hz
 			if (sample = 0) then
 				if (mode = '1') then -- if weel mode
 					if    (wheel = signed(joy(7 downto 4))) then
@@ -122,10 +135,10 @@ begin
 						wheel <= wheel + 1;
 					end if;
 				else -- else mouse/joystick mode
-					x_dir <= joy( 7); -- 1=L 0=R
-					x_ctr <= abs(signed(joy( 7 downto 0))/8);
-					y_dir <= joy(15); -- 1=U 0=D
-					y_ctr <= abs(signed(joy(15 downto 8))/8);
+					x_dir <= joy_h_xlat(joy_h_xlat'LEFT); -- 1=L 0=R
+					x_ctr <= abs(joy_h_xlat(joy_h_xlat'LEFT downto joy_h_xlat'LEFT - x_ctr'LEFT))/2;
+					y_dir <= joy_v_xlat(joy_v_xlat'LEFT); -- 1=U 0=D
+					y_ctr <= abs(joy_v_xlat(joy_v_xlat'LEFT downto joy_v_xlat'LEFT - y_ctr'LEFT))/2;
 				end if;
 			end if;
 		end if;
