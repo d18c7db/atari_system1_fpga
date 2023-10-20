@@ -41,16 +41,16 @@
 	// ROM patches range x00000-x0FFFF
 	assign slv_ROM0 =
 		// jump to 10000 skip mem checks
-		({slv_MADEC,1'b0}==16'h055E)?16'h4EF9:
-		({slv_MADEC,1'b0}==16'h0560)?16'h0001:
+		// ({slv_MADEC,1'b0}==16'h055E)?16'h4EF9:
+		// ({slv_MADEC,1'b0}==16'h0560)?16'h0001:
 		// credits = 1
-		({slv_MADEC,1'b0}==16'h3862)?16'h1481:
+		// (( ({slv_MADEC,1'b0}==16'h3862)?16'h1481:
 		slv_ROM0_loc;
 
 	// ROM patches range x10000-x1FFFF
 	assign slv_ROM1 =
 		// start game immediatley
-		({slv_MADEC,1'b0}==16'h77B4)?16'h7001:
+		// ({slv_MADEC,1'b0}==16'h77B4)?16'h7001:
 		slv_ROM1_loc;
 
 	// ROM patches range x20000-x2FFFF
@@ -304,29 +304,29 @@
 	// ROM patches range x00000-x0FFFF
 	assign slv_ROM0 =
 		// jump to 89C skip ROM checks, start game
-		({slv_MADEC,1'b0}==16'h055C)?16'h4EF8:
-		({slv_MADEC,1'b0}==16'h055E)?16'h089C:
+		// ({slv_MADEC,1'b0}==16'h055C)?16'h4EF8:
+		// ({slv_MADEC,1'b0}==16'h055E)?16'h089C:
 		slv_ROM0_loc;
 
 	// ROM patches range x10000-x1FFFF
 	assign slv_ROM1 =
 		// immediately start game
-		({slv_MADEC,1'b0}==16'h4E88)?16'h7006:
-		({slv_MADEC,1'b0}==16'h586C)?16'h0035:
-		({slv_MADEC,1'b0}==16'h5936)?16'h0010:
-		({slv_MADEC,1'b0}==16'h5942)?16'h0003:
-		({slv_MADEC,1'b0}==16'h595A)?16'h0001:
-		({slv_MADEC,1'b0}==16'h5964)?16'h0002:
-		({slv_MADEC,1'b0}==16'h5970)?16'h0004:
-		({slv_MADEC,1'b0}==16'h597E)?16'h0005:
-		({slv_MADEC,1'b0}==16'h598A)?16'h0014:
-		({slv_MADEC,1'b0}==16'h5994)?16'h0011:
-		({slv_MADEC,1'b0}==16'h59A0)?16'h0012:
-		({slv_MADEC,1'b0}==16'h59A8)?16'h0013:
-		({slv_MADEC,1'b0}==16'h59B2)?16'h0034:
-		({slv_MADEC,1'b0}==16'h59BE)?16'h0035:
-		({slv_MADEC,1'b0}==16'h6062)?16'h0001:
-		({slv_MADEC,1'b0}==16'hFAC8)?16'hFFF0:
+		// ({slv_MADEC,1'b0}==16'h4E88)?16'h7006:
+		// ({slv_MADEC,1'b0}==16'h586C)?16'h0035:
+		// ({slv_MADEC,1'b0}==16'h5936)?16'h0010:
+		// ({slv_MADEC,1'b0}==16'h5942)?16'h0003:
+		// ({slv_MADEC,1'b0}==16'h595A)?16'h0001:
+		// ({slv_MADEC,1'b0}==16'h5964)?16'h0002:
+		// ({slv_MADEC,1'b0}==16'h5970)?16'h0004:
+		// ({slv_MADEC,1'b0}==16'h597E)?16'h0005:
+		// ({slv_MADEC,1'b0}==16'h598A)?16'h0014:
+		// ({slv_MADEC,1'b0}==16'h5994)?16'h0011:
+		// ({slv_MADEC,1'b0}==16'h59A0)?16'h0012:
+		// ({slv_MADEC,1'b0}==16'h59A8)?16'h0013:
+		// ({slv_MADEC,1'b0}==16'h59B2)?16'h0034:
+		// ({slv_MADEC,1'b0}==16'h59BE)?16'h0035:
+		// ({slv_MADEC,1'b0}==16'h6062)?16'h0001:
+		// ({slv_MADEC,1'b0}==16'hFAC8)?16'hFFF0:
 		slv_ROM1_loc;
 
 	// ROM patches range x20000-x2FFFF
@@ -469,23 +469,23 @@
 	// ROM patches range x00000-x0FFFF
 	assign slv_ROM0 =
 		// jump to 102ee skip mem checks
-		({slv_MADEC,1'b0}==16'h0558)?16'h4ef9:
-		({slv_MADEC,1'b0}==16'h055a)?16'h0001:
-		({slv_MADEC,1'b0}==16'h055c)?16'h02ee:
-		// 
-		({slv_MADEC,1'b0}==16'h4572)?16'h4e75:
+		// ({slv_MADEC,1'b0}==16'h0558)?16'h4ef9:
+		// ({slv_MADEC,1'b0}==16'h055a)?16'h0001:
+		// ({slv_MADEC,1'b0}==16'h055c)?16'h02ee:
+		//
+		// ({slv_MADEC,1'b0}==16'h4572)?16'h4e75:
 		slv_ROM0_loc;
 
 	// ROM patches range x10000-x1FFFF
 	assign slv_ROM1 =
-		// 
-		({slv_MADEC,1'b0}==16'h034a)?16'h4e75:
-		// 
-		({slv_MADEC,1'b0}==16'h9946)?16'h0002:
-		// 
-		({slv_MADEC,1'b0}==16'h994e)?16'h0002:
-		// 
-		({slv_MADEC,1'b0}==16'h9d8c)?16'h9800:
+		//
+		// ({slv_MADEC,1'b0}==16'h034a)?16'h4e75:
+		//
+		// ({slv_MADEC,1'b0}==16'h9946)?16'h0002:
+		//
+		// ({slv_MADEC,1'b0}==16'h994e)?16'h0002:
+		//
+		// ({slv_MADEC,1'b0}==16'h9d8c)?16'h9800:
 		slv_ROM1_loc;
 
 	// ROM patches range x20000-x2FFFF
