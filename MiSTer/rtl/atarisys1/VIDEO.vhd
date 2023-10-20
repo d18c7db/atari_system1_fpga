@@ -306,7 +306,7 @@ begin
 		wait until rising_edge(I_MCKR);
 		if sl_NXLn = '0' then
 			sl_NXLn_star <= '0'; -- preset
-		elsif slv_H(2 downto 0) = "011" then -- falling edge /4H
+		elsif slv_H(2 downto 0) = "011" then -- rising edge 4H
 			sl_NXLn_star <= '1'; -- set
 		end if;
 	end process;
@@ -525,7 +525,7 @@ begin
 	p_4F : process
 	begin
 		wait until rising_edge(I_MCKR);
-		if slv_H(2 downto 0) = "100" then -- falling edge /4HDL
+		if slv_H(2 downto 0) = "100" then -- rising edge 4HDL
 			sl_MM19   <= slv_VRD(15);
 			sl_MM18   <= slv_VRD(14);
 			slv_MM(9) <= slv_VRD( 5);
@@ -537,7 +537,7 @@ begin
 	p_3C : process
 	begin
 		wait until rising_edge(I_MCKR);
-		if slv_H(2 downto 0) = "011" then -- falling edge /4H
+		if slv_H(2 downto 0) = "011" then -- rising edge 4H
 			-- 1/2A, 3C latch
 			-- on SP-299 addr bit 13 is taken from VRD9 but on SP-286 it is connected to ALBNK selector
 			-- the only games that uses a 16K ALPHA ROM are indytempc and roadblstcg
