@@ -608,7 +608,7 @@ assign sl_wr_ep1     = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr
 	assign status = 0; // 1 is reset, 0 is free run
 	assign direct_video = 0;
 
-	`include "tb/debug_roms.v"
+	`include "debug_roms.v"
 
 	bmp_out #( "BI" ) bmp_out
 	(

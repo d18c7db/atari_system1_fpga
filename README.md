@@ -4,15 +4,15 @@
 * Indiana Jones - Playable, no obvious issues.  
 * Peter Pack Rat - Playable, no obvious issues.  
 * Marble Madness - Playable with joystick or mouse as trackball control.  
-* Road Runner - Playable but some sprites disappear.  
-* Road Blasters - Playable but has a vertical green line on the left.  
+* Road Runner - Playable, no obvious issues.  
+* Road Blasters - Playable but has a permanent vertical green line on the left of the screen.  
 
-### NOTE on Road Blasters and Road Runner  
+### NOTE on Road Blasters  
 The earlier schematics SP-282/SP-286 can address only four graphic ROM banks and this works well for Indy, Marble and Peter but Road Runner and Road Blasters need a total of seven graphic ROM banks and the chip select decoding has been updated in schematic SP-299  
 
 However for some reason this decoding simply does not work at all for any games and just produces garbled graphics so due to this, I have looked at MAME source code and implemented their style of chip select decoding which is nothing like SP-299 and closer to SP-282 with some extra tweaks.  
 
-I have spent hours simulating the hardware and everything seems to work as designed but still the issue remains where Road Runner sprites disappear and Road Blasters has a vertical green line (pixel data supplied from ROM bank 7). I believe these problems are because the ROM bank decoding is still not fully sorted but I'm unable to find the proper way to do it.  
+I have spent hours simulating the hardware and everything seems to work as designed but still the issue remains where Road Blasters has a vertical green line (pixel data supplied from ROM bank 7). I believe this is because the ROM bank decoding is still not fully sorted but I'm unable to find the proper way to do it.  
 
 ## About  
 FPGA implementation of Atari's System 1 (LSI version) arcade platform from 1984.  
