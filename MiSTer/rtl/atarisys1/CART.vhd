@@ -176,7 +176,7 @@ begin
 	O_MOSR      <= slv_MOSR;
 	O_PFSR      <= slv_PFSR;
 	O_INT1n     <= '1';
-	O_INT3n     <= not (sl_srq and sl_45f_qa) when (I_SLAP_TYPE = 109 or I_SLAP_TYPE = 110) else '1';
+	O_INT3n     <= not (sl_srq and sl_45f_qa) when (I_SLAP_TYPE = 108 or I_SLAP_TYPE = 109 or I_SLAP_TYPE = 110) else '1';
 	O_WAITn     <= '1';
 	O_MD7       <= sl_45f_qa;
 
