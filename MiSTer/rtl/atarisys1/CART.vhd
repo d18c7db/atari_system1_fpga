@@ -212,10 +212,10 @@ begin
 	p_SRFF : process
 	begin
 		wait until rising_edge(I_MCKR);
-		-- set
+		-- set (enable INT3)
 		if sl_RD240Kn = '0' then
 			sl_srq <= '1';
-		-- reset
+		-- reset (disable INT3)
 		elsif sl_SNDRSTn = '0'then
 			sl_srq <= '0';
 		end if;
@@ -400,6 +400,16 @@ begin
 				sl_GD7P5   <= I_PD4A(1);
 				sl_GD7P4   <= I_PD4A(0);
 				sl_GD7P3   <= '1';
+				-- convert ROM selects back into an address vector
+				   if I_PD7A(4) = '0'                    then slv_GBA(19 downto 16) <= "0010"; -- GCS1
+				elsif I_PD7A(5) = '0'                    then slv_GBA(19 downto 16) <= "0100"; -- GCS2
+				elsif I_PD7A(6) = '0'                    then slv_GBA(19 downto 16) <= "0110"; -- GCS3
+				elsif I_PD7A(7) = '0'                    then slv_GBA(19 downto 16) <= "1000"; -- GCS4
+				elsif I_PD4A(6) = '0'                    then slv_GBA(19 downto 16) <= "1010"; -- GCS5
+				elsif I_PD4A(7) = '0' and I_PD4A(3)= '1' then slv_GBA(19 downto 16) <= "1100"; -- GCS6
+				elsif I_PD4A(7) = '0' and I_PD4A(3)= '0' then slv_GBA(19 downto 16) <= "1110"; -- GCS7
+				else                                          slv_GBA(19 downto 16) <= "0000";
+				end if;
 			else
 				sl_NOROM7n <= '1';
 				sl_NOROM6n <= '1';
@@ -411,20 +421,10 @@ begin
 				sl_GD7P5   <= '1';
 				sl_GD7P4   <= '1';
 				sl_GD7P3   <= '1';
+				slv_GBA(19 downto 16) <= "0000";
 			end if;
 
-			-- convert ROM selects back into an address vector
-			   if I_PD7A(4) = '0'                    then slv_GBA(19 downto 17) <= "001"; -- GCS1
-			elsif I_PD7A(5) = '0'                    then slv_GBA(19 downto 17) <= "010"; -- GCS2
-			elsif I_PD7A(6) = '0'                    then slv_GBA(19 downto 17) <= "011"; -- GCS3
-			elsif I_PD7A(7) = '0'                    then slv_GBA(19 downto 17) <= "100"; -- GCS4
-			elsif I_PD4A(6) = '0'                    then slv_GBA(19 downto 17) <= "101"; -- GCS5
-			elsif I_PD4A(7) = '0' and I_PD4A(3)= '1' then slv_GBA(19 downto 17) <= "110"; -- GCS6
-			elsif I_PD4A(7) = '0' and I_PD4A(3)= '0' then slv_GBA(19 downto 17) <= "111"; -- GCS7
-			else                                          slv_GBA(19 downto 17) <= (others=>'1');
-			end if;
-
-			slv_GBA(16 downto 1) <= '0' & I_PD7A(3 downto 0) & slv_MGRA(11 downto 1);
+			slv_GBA(15 downto 1) <= I_PD7A(3 downto 0) & slv_MGRA(11 downto 1);
 		else
 			-- else if others default to SP-282
 
@@ -440,6 +440,14 @@ begin
 				sl_GD7P5   <= I_PD4A(1);
 				sl_GD7P4   <= I_PD4A(0);
 				sl_GD7P3   <= '1';
+				-- PROM 7A on SP-282
+				-- convert ROM selects back into an address vector
+				   if I_PD7A(4) = '0'                    then slv_GBA(19 downto 16) <= "0010"; -- GCS1
+				elsif I_PD7A(5) = '0'                    then slv_GBA(19 downto 16) <= "0100"; -- GCS2
+				elsif I_PD7A(6) = '0'                    then slv_GBA(19 downto 16) <= "0110"; -- GCS3
+				elsif I_PD7A(7) = '0'                    then slv_GBA(19 downto 16) <= "1000"; -- GCS4
+				else                                          slv_GBA(19 downto 16) <= "0000";
+				end if;
 			else
 				sl_NOROM7n <= '1';
 				sl_NOROM6n <= '1';
@@ -451,22 +459,11 @@ begin
 				sl_GD7P5   <= '1';
 				sl_GD7P4   <= '1';
 				sl_GD7P3   <= '1';
-			end if;
-
-			-- PROM 7A on SP-282
-			-- convert ROM selects back into an address vector
-			   if I_PD7A(4) = '0'                    then slv_GBA(19 downto 17) <= "001"; -- GCS1
-			elsif I_PD7A(5) = '0'                    then slv_GBA(19 downto 17) <= "010"; -- GCS2
-			elsif I_PD7A(6) = '0'                    then slv_GBA(19 downto 17) <= "011"; -- GCS3
-			elsif I_PD7A(7) = '0'                    then slv_GBA(19 downto 17) <= "100"; -- GCS4
-
-
-
-			else                                          slv_GBA(19 downto 17) <= (others=>'1');
+				slv_GBA(19 downto 16) <= "0000";
 			end if;
 
 			-- buffers 3A, 6A
-			slv_GBA(16 downto 1) <= '0' & I_PD7A(3 downto 0) & slv_MGRA(11 downto 1);
+			slv_GBA(15 downto 1) <= I_PD7A(3 downto 0) & slv_MGRA(11 downto 1);
 		end if;
 	end process;
 
