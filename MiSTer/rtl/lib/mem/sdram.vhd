@@ -21,7 +21,7 @@ library ieee;
 entity sdram is
 	generic (
 		-- datasheet time constants in ns for AS4C32M16SB-6TIN speed device
-		tCK_ns        : real := 1000.0/100.0; -- clock cycle time typ 1000/(freq in MHz)
+		fCK_Mhz       : real :=      100.0; -- clock freq in MHz
 		CAS_Latency   : real :=        2.0; -- CAS Latency typ 2 or 3
 		tINIT_ns      : real :=   200000.0; -- see page 44 initialization, Micron typ 100us, Alliance typ. 200us
 		tREF_ns       : real :=     7800.0; -- refresh every 64ms/8192 or faster
@@ -71,13 +71,13 @@ architecture rtl of sdram is
   );
 
 	-- delays in clock cycles rounded up to nearest integer
-	constant tINIT         : integer := integer(ceil(tINIT_ns/tCK_ns));
-	constant tRFC          : integer := integer(ceil( tRFC_ns/tCK_ns));
-	constant tRCD          : integer := integer(ceil( tRCD_ns/tCK_ns));
-	constant tREF          : integer := integer(ceil( tREF_ns/tCK_ns));
-	constant tMRD          : integer := integer(ceil( tMRD_ns/tCK_ns));
-	constant tRP           : integer := integer(ceil(  tRP_ns/tCK_ns));
-	constant tRC           : integer := integer(ceil(  tRC_ns/tCK_ns));
+	constant tINIT         : integer := integer(ceil(tINIT_ns*fCK_Mhz/1000.0));
+	constant tRFC          : integer := integer(ceil( tRFC_ns*fCK_Mhz/1000.0));
+	constant tRCD          : integer := integer(ceil( tRCD_ns*fCK_Mhz/1000.0));
+	constant tREF          : integer := integer(ceil( tREF_ns*fCK_Mhz/1000.0));
+	constant tMRD          : integer := integer(ceil( tMRD_ns*fCK_Mhz/1000.0));
+	constant tRP           : integer := integer(ceil(  tRP_ns*fCK_Mhz/1000.0));
+	constant tRC           : integer := integer(ceil(  tRC_ns*fCK_Mhz/1000.0));
 	constant tCASL         : integer := integer(ceil(    CAS_Latency));
 
 	-- SDRAM commands drive pins /CS /RAS /CAS /WE
@@ -101,7 +101,7 @@ architecture rtl of sdram is
 
 	-- NOTE: ranges _must_ be large enough for longest possible delay at highest clock freq
 	signal cycl_ctr        : integer range 0 to 32767 := 0; -- 200us @160MHz 32000 cycles
-	signal rfsh_ctr        : integer range 0 to  2047 := 0; -- 7.8us @160MHz  1250 cycles
+	signal rfsh_ctr        : integer range 0 to  2047 := 0; -- 7.8us @160MHz  1250 cycles (8192 refreshes / 64ms = 128k/s)
 
 begin
 	O_RDY <= '1' when (state = IDLE) else '0';
