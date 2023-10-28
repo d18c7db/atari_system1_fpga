@@ -35,7 +35,7 @@ entity QUAD is
 end QUAD;
 
 architecture RTL of QUAD is
-	constant sample_interval          : natural range 0 to 31 := 15; -- number of timer timouts before joystick inputs are sampled
+	constant sample_interval          : natural range 0 to 31 := 15; -- number of timer timeouts before joystick inputs are sampled
 	signal sample                     : natural range 0 to 31:= sample_interval;
 	signal idx                        : natural range 0 to 15 := 12; -- controls sensitivity
 
