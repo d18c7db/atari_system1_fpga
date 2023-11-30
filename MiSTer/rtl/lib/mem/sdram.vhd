@@ -89,7 +89,6 @@ architecture rtl of sdram is
 	constant CMD_READ      : std_logic_vector(3 downto 0) := "0101";
 	constant CMD_ENDBURST  : std_logic_vector(3 downto 0) := "0110";
 	constant CMD_NOP       : std_logic_vector(3 downto 0) := "0111";
-	constant CMD_INHIBIT   : std_logic_vector(3 downto 0) := "1111";
 
 	type state_t is (INIT, MODE, IDLE, ACTV, RDWR, RFSH);
 	signal state, state_last : state_t := INIT;
@@ -111,16 +110,16 @@ begin
 	SDRAM_DQMH <= '0'; -- chip DQMH pin shorted to A12 on PCB
 	SDRAM_CLK  <= not I_CLK; -- delay SDRAM clk 180 degrees
 	SDRAM_CKE  <= not I_RST; -- CKE always high except during reset
-	SDRAM_BA   <= I_ADDR(22 downto 21) when (state=ACTV) or (state=RDWR) else (others => '0');
+	SDRAM_BA   <= I_ADDR(1 downto 0) when (state=ACTV) or (state=RDWR) else (others => '0');
 	(SDRAM_nCS, SDRAM_nRAS, SDRAM_nCAS, SDRAM_nWE) <= cmd; -- drive chip command lines
 
 	-- 4 banks x 8M x 16, banks=4 (BA1:0), rows=8K (A12:0) cols=1K (A9:0)
 	SDRAM_A    <=
 		"0010000000000"                   when state = INIT else
 		MODE_REG                          when state = MODE else
-		I_ADDR(20 downto 8)               when state = ACTV else
+		I_ADDR(14 downto 2)               when state = ACTV else
 --		"0010" & I_ADDR(7 downto 0) & '0' when state = RDWR else
-		"001" & I_ADDR(7 downto 0) & "00" when state = RDWR else
+		"001" & I_ADDR(22 downto 15) & "00" when state = RDWR else
 		(others => '0');
 
 	SDRAM_DQ   <=
