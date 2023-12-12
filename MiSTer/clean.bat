@@ -15,7 +15,7 @@ rmdir /s /q sys\.qsys_edit
 rmdir /s /q sys\vip
 for /d %%i in (sys\*_sim) do rmdir /s /q "%%i"
 for /d %%i in (rtl\*_sim) do rmdir /s /q "%%i"
-REM del build_id.v
+del build_id.v
 del c5_pin_model_dump.txt
 del PLLJ_PLLSPE_INFO.txt
 del /s *.json
