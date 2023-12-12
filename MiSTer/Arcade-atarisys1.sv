@@ -677,20 +677,10 @@ always @(posedge clk_sys) begin
 	if (slap_type==103)
 	begin
 		wheel_mode = 0;
-		// direction control inputs
-		inputs =
-		// for Marblemad the trackball is mounted 45 degree clockwise, so up becomes up-left, etc
-			({4'b0,
-			(kbd1[7] | kbd1[4]) | (joystick_0[3] | joystick_0[0]), // U = UL c0-- c1++
-			(kbd1[6] | kbd1[5]) | (joystick_0[2] | joystick_0[1]), // D = DR c0++ c1--
-			(kbd1[5] | kbd1[7]) | (joystick_0[1] | joystick_0[3]), // L = DL c0++ c1++
-			(kbd1[4] | kbd1[6]) | (joystick_0[0] | joystick_0[2])  // R = UR c0-- c1--
-		});
 		// NC NC NC Action Action
 		switches = ({3'b111, ~(kbd1[0] | joystick_0[4] | mouse_L), ~(kbd1[1] | joystick_0[5] | mouse_R)});
 		// Directional analog type control from trackball which appears to be mounted with a 45 degree clockwise rotation
 		// so U is UL, D is DR, L is LD and R is RU
-
 
 	end
 	// Indytemp #############################################
@@ -719,6 +709,7 @@ always @(posedge clk_sys) begin
 	// Roadrunn #############################################
 	else if ( slap_type==108 )
 	begin
+		adc_data = 8'h80; // default ADC value
 		// direction control inputs
 		inputs =
 		({4'b0, (kbd1[7:4] | joystick_0[3:0]) });
@@ -726,11 +717,21 @@ always @(posedge clk_sys) begin
 		switches = ({3'b111, ~(kbd1[0] | joystick_0[4]), ~(kbd1[1] | joystick_0[5])});
 		// Directional analog type control from joystick
 		if (adc_addr==3'd0)
-			// convert from signed to unsigned (^80) and invert range (^FF)
-			adc_data = joystick_l_analog_0[ 7:0]^8'h7f; // left=FF Center=80 Right=00
+			if (inputs[0])
+				adc_data = 8'h00; // R
+			else if (inputs[1])
+				adc_data = 8'hFF; // L
+			else
+				// convert from signed to unsigned (^80) and invert range (^FF)
+				adc_data = joystick_l_analog_0[ 7:0]^8'h7f; // left=FF Center=80 Right=00
 		else if (adc_addr==3'd7)
-			// convert from signed to unsigned (^80)
-			adc_data = joystick_l_analog_0[15:8]^8'h80; // Down=FF Center=80 Up=00
+			if (inputs[2])
+				adc_data = 8'hFF; // D
+			else if (inputs[3])
+				adc_data = 8'h00; // U
+			else
+				// convert from signed to unsigned (^80)
+				adc_data = joystick_l_analog_0[15:8]^8'h80; // Down=FF Center=80 Up=00
 		else
 			adc_data = 8'h80;
 	end
@@ -738,9 +739,6 @@ always @(posedge clk_sys) begin
 	else if ( (slap_type==109) || (slap_type==110) )
 	begin
 		wheel_mode = 1;
-		// direction control inputs
-		inputs =
-		({4'b0, joystick_0[0],joystick_0[1],joystick_0[2],joystick_0[3]});
 		// NC NC NC Action Action
 		switches = ({3'b111, ~(kbd1[0] | joystick_0[4] | mouse_L), ~(kbd1[1] | joystick_0[5] | mouse_R)});
 		// Throttle analog type control
