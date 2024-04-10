@@ -37,9 +37,7 @@ entity sdram is
 		I_RST         : in    std_logic; -- active high reset
 
 		I_ADDR        : in    std_logic_vector(22 downto 0); -- max 8M address by 64 bits (chip is 32M x16)
---		I_DATA        : in    std_logic_vector(31 downto 0);
 		I_DATA        : in    std_logic_vector(63 downto 0);
---		O_DATA        : out   std_logic_vector(31 downto 0);
 		O_DATA        : out   std_logic_vector(63 downto 0);
 		I_WE          : in    std_logic; -- active high write enable
 		O_RDY         : out   std_logic; -- active high ready, indicates chip is ready to RD/WR
@@ -66,7 +64,6 @@ architecture rtl of sdram is
     "00"  & -- Op Mode 00=standard operation
     "010" & -- CAS Latency 011 above 133MHz else 010
     '0'   & -- burst type 0=sequential 1=interleaved
---    "001"   -- burst length 000=1 001=2 010=4 011=8 111=full page when burst type=0
     "010"   -- burst length 000=1 001=2 010=4 011=8 111=full page when burst type=0
   );
 
@@ -95,7 +92,6 @@ architecture rtl of sdram is
 	signal we_last, dq_write : std_logic := '0';
 	signal cmd             : std_logic_vector( 3 downto 0) := CMD_NOP;
 	signal addr_last       : std_logic_vector(22 downto 0) := (others=>'1');
---	signal dq_data         : std_logic_vector(31 downto 0) := (others=>'0');
 	signal dq_data         : std_logic_vector(63 downto 0) := (others=>'0');
 
 	-- NOTE: ranges _must_ be large enough for longest possible delay at highest clock freq
@@ -118,7 +114,6 @@ begin
 		"0010000000000"                   when state = INIT else
 		MODE_REG                          when state = MODE else
 		I_ADDR(14 downto 2)               when state = ACTV else
---		"0010" & I_ADDR(7 downto 0) & '0' when state = RDWR else
 		"001" & I_ADDR(22 downto 15) & "00" when state = RDWR else
 		(others => '0');
 

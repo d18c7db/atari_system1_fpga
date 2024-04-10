@@ -213,8 +213,8 @@ wire         direct_video;
 wire         ioctl_download;
 wire         ioctl_wr;
 wire         ioctl_wait;
-wire  [ 7:0] ioctl_index;
-wire  [24:0] ioctl_addr;
+wire [ 15:0] ioctl_index;
+wire [ 26:0] ioctl_addr;
 wire  [ 7:0] ioctl_dout;
 
 assign AUDIO_S = 1'b1; // signed samples
@@ -608,7 +608,7 @@ assign sl_wr_ep1     = (ioctl_wr && !ioctl_index && ioctl_download && ioctl_addr
 	assign status = 0; // 1 is reset, 0 is free run
 	assign direct_video = 0;
 
-	`include "debug_roms.v"
+	`include "tb/debug_roms.v"
 
 	bmp_out #( "BI" ) bmp_out
 	(

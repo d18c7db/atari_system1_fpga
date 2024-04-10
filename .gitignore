@@ -1,11 +1,11 @@
 db
 tb
-pipistrello
 debug
 doc
 incremental_db
-output_files
+output_files*
 build_id.v
 c5_pin_model_dump.txt
-jtag.cdf
+*.cdf
+*.stp
 *.qws
