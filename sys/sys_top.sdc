@@ -39,6 +39,7 @@ set_false_path -from {cfg[*]}
 set_false_path -from {VSET[*]}
 set_false_path -to   {wcalc[*] hcalc[*]}
 set_false_path -to   {hdmi_width[*] hdmi_height[*]}
+set_false_path -to   {deb_* btn_en btn_up}
 
 set_multicycle_path -to {*_osd|osd_vcnt*} -setup 2
 set_multicycle_path -to {*_osd|osd_vcnt*} -hold 1
@@ -75,4 +76,5 @@ set_false_path -from {ascal|o_htotal* ascal|o_vtotal*}
 set_false_path -from {ascal|o_hsstart* ascal|o_vsstart* ascal|o_hsend* ascal|o_vsend*}
 set_false_path -from {ascal|o_hsize* ascal|o_vsize*}
 
-set_false_path -from {mcp23009|sd_cd}
+set_false_path -from {mcp23009|flg_*}
+set_false_path -to   {sysmem|fpga_interfaces|clocks_resets*}
