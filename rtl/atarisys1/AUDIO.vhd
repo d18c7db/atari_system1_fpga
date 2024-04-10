@@ -69,9 +69,9 @@ architecture RTL of AUDIO is
 		left    : out std_logic_vector(15 downto 0);
 		right   : out std_logic_vector(15 downto 0);
 		xleft   : out signed(15 downto 0);
-		xright  : out signed(15 downto 0);
-		dacleft : out std_logic_vector(15 downto 0);
-		dacright: out std_logic_vector(15 downto 0)
+		xright  : out signed(15 downto 0)
+--		dacleft : out std_logic_vector(15 downto 0);
+--		dacright: out std_logic_vector(15 downto 0)
 	);
 	end component;
 
@@ -317,9 +317,9 @@ begin
 
 		--	 Full resolution outputs
 		xleft    => O_YM_L,
-		xright   => O_YM_R,
-		dacleft  => open,
-		dacright => open
+		xright   => O_YM_R
+--		dacleft  => open,
+--		dacright => open
 	);
 
 	-- YM3012 DAC - not used becase YM2151 core outputs parallel sound data
