@@ -11,16 +11,10 @@ System-1 supported game cartridges according to MAME
 * Indiana Jones and the Temple of Doom (1985)  
 * RoadBlasters (1987)  
 
-## Known Issues
+## Known Issues  
 The following mra files don't work as expected.
 * Indiana Jones (cocktail).mra graphics tiles incorrectly offset, directional controls not working.
 * Indiana Jones (set 3).mra upside down corrupt or missing graphics, text is OK.
 
 ## Building  
-
-### Pipistrello  
-The project files are under `/pipistrello` and are setup for Xilinx ISE 14.7  
-On a [Pipistrello](http://pipistrello.saanlima.com/index.php?title=Welcome_to_Pipistrello) FPGA board, a [SRAM expansion](https://oshpark.com/profiles/d18c7db) daughterboard is needed.  
-
-### MiSTer
-The project files are under folder `/MiSTer` and are setup for Quartus 17  
+The project files are setup for Quartus 17  
